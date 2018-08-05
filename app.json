@@ -1,0 +1,25 @@
+{
+  "name": "Working PlusPlus++",
+  "description": "Like plusplus.chat, but one that actually works, because you can host it yourself ;)",
+  "website": "https://github.com/tdmalone/working-plusplus",
+  "repository": "https://github.com/tdmalone/working-plusplus",
+  "keywords": [
+    "slack",
+    "karma"
+  ],
+  "env": {
+    "SLACK_OAUTH_TOKEN": {
+      "description": "Token provided by Slack when installing to your team.",
+      "value": "xoxp-12345678910-12345678910-123456789101-abcdef1234567890abcdef1234567890"
+    }
+  },
+  "addons": [
+    "heroku-postgresql",
+    "timber-logging"
+  ],
+  "buildpacks": [
+    {
+      "url": "heroku/nodejs"
+    }
+  ]
+}
