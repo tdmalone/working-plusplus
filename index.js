@@ -67,6 +67,15 @@ app.post( '/', async ( request, response ) => {
     return;
   }
 
+  // Drop retries. This is controversial. But, because we're mainly gonna be running on free Heroku
+  // dynos, we'll be sleeping after inactivity. It takes longer than Slack's 3 second limit to start
+  // back up again, so Slack will retry immediately and then again in a minute - which will result
+  // in the action being carried out 3 times if we listen to it!
+  // @see https://api.slack.com/events-api#graceful_retries
+  if ( 'undefined' !== typeof request.headers['X-Slack-Retry-Num'] ) {
+    return;
+  }
+
   const text = event.text;
 
   // Drop text that doesn't mention anybody/anything.
