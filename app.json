@@ -9,17 +9,16 @@
   ],
   "env": {
     "SLACK_BOT_USER_OAUTH_ACCESS_TOKEN": {
-      "description": "Token provided by Slack for your bot user when installing the app to your team. See the installation instructions in the GitHub README for details. You can leave the placeholder here while installing and fill in later if you wish.",
+      "description": "Token provided by Slack for your bot user when installing the app to your team. Find this under Basic Information -> OAuth & Permissions within your Slack app management page.",
       "value": "xoxp-00000000000-000000000000-xxxxxxxxxxxxxxxxxxxxxxxx"
     },
     "SLACK_VERIFICATION_TOKEN": {
-      "description": "Token provided by Slack adding the app. See the installation instructions in the GitHub README for details. You can leave the placeholder here while installing and fill in later if you wish.",
+      "description": "Verification Token provided by Slack. Find this under Basic Information -> App Credentials within your Slack app management page.",
       "value": "xxxxxxxxxxxxxxxxxxxxxxxx"
     }
   },
   "addons": [
-    "heroku-postgresql",
-    "timber-logging"
+    "heroku-postgresql"
   ],
   "buildpacks": [
     {
