@@ -1,6 +1,6 @@
 {
   "name": "Working PlusPlus++",
-  "description": "Like plusplus.chat, but one that actually works, because you can host it yourself ;)",
+  "description": "Like plusplus.chat, but one that actually works, because you can host it yourself 😉",
   "website": "https://github.com/tdmalone/working-plusplus",
   "repository": "https://github.com/tdmalone/working-plusplus",
   "keywords": [
@@ -8,9 +8,13 @@
     "karma"
   ],
   "env": {
-    "SLACK_OAUTH_TOKEN": {
-      "description": "Token provided by Slack when installing to your team.",
-      "value": "xoxp-12345678910-12345678910-123456789101-abcdef1234567890abcdef1234567890"
+    "SLACK_BOT_USER_OAUTH_ACCESS_TOKEN": {
+      "description": "Token provided by Slack for your bot user when installing the app to your team. See the installation instructions in the GitHub README for details. You can leave the placeholder here while installing and fill in later if you wish.",
+      "value": "xoxp-00000000000-000000000000-xxxxxxxxxxxxxxxxxxxxxxxx"
+    },
+    "SLACK_VERIFICATION_TOKEN": {
+      "description": "Token provided by Slack adding the app. See the installation instructions in the GitHub README for details. You can leave the placeholder here while installing and fill in later if you wish.",
+      "value": "xxxxxxxxxxxxxxxxxxxxxxxx"
     }
   },
   "addons": [
