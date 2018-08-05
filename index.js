@@ -12,16 +12,18 @@ const express = require( 'express' ),
       slackClient = require('@slack/client'),
       pg = require( 'pg' );
 
-const SLACK_ACCESS_TOKEN = process.env.SLACK_BOT_USER_OAUTH_ACCESS_TOKEN,
+const SLACK_BOT_USER_OAUTH_ACCESS_TOKEN = process.env.SLACK_BOT_USER_OAUTH_ACCESS_TOKEN,
       SLACK_VERIFICATION_TOKEN = process.env.SLACK_VERIFICATION_TOKEN,
       DATABASE_URL = process.env.DATABASE_URL;
 
-// Let Heroku set a port if required.
+// Let Heroku set the port.
 const PORT = process.env.PORT || 80;
+
+const scoresTableName = 'scores';
 
 const app = express(),
       postgres = new pg.Pool({ connectionString: DATABASE_URL, ssl: true }),
-      slack = new slackClient.WebClient( SLACK_ACCESS_TOKEN );
+      slack = new slackClient.WebClient( SLACK_BOT_USER_OAUTH_ACCESS_TOKEN );
 
 app.use( bodyParser.json() );
 app.enable( 'trust proxy' );
@@ -123,21 +125,22 @@ app.post( '/', async ( request, response ) => {
 
   // Connect to the DB, and create a table if it's not yet there.
   const dbClient = await postgres.connect();
-  const dbCreateResult = await dbClient.query( 'CREATE EXTENSION IF NOT EXISTS citext; CREATE TABLE IF NOT EXISTS working_plusplus (item CITEXT PRIMARY KEY, score INTEGER);' );
+  const dbCreateResult = await dbClient.query( 'CREATE EXTENSION IF NOT EXISTS citext; CREATE TABLE IF NOT EXISTS ' + scoresTableName + ' (item CITEXT PRIMARY KEY, score INTEGER);' );
 
   // Atomically record the action.
   // TODO: Fix potential SQL injection issues here, even though we know the input should be safe.
-  const dbInsert = await dbClient.query( 'INSERT INTO working_plusplus VALUES (\'' + item + '\', ' + operation + '1) ON CONFLICT (item) DO UPDATE SET score = working_plusplus.score ' + operation + ' 1;' );
+  const dbInsert = await dbClient.query( 'INSERT INTO ' + scoresTableName + ' VALUES (\'' + item + '\', ' + operation + '1) ON CONFLICT (item) DO UPDATE SET score = ' + scoresTableName + '.score ' + operation + ' 1;' );
 
   // Get the new value.
   // TODO: Fix potential SQL injection issues here, even though we know the input should be safe.
-  const dbSelect = await dbClient.query( 'SELECT score FROM working_plusplus WHERE item = \'' + item + '\';' );
+  const dbSelect = await dbClient.query( 'SELECT score FROM ' + scoresTableName + ' WHERE item = \'' + item + '\';' );
   const score = dbSelect.rows[0].score;
 
   dbClient.release();
 
   // Respond.
-  // TODO: Add some much better messages here!
+  // TODO: Add some much better messages here! And also the ability to customise them - probably
+  //       via JSON objects in environment variables.
   const itemMaybeLinked = item.match( /U[A-Z0-9]{8}/ ) ? '<@' + item + '>' : item;
   slack.chat.postMessage({
     channel: event.channel,
