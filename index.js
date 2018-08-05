@@ -83,17 +83,18 @@ app.post( '/', async ( request, response ) => {
     return;
   }
 
-  // Drop text that doesn't include ++ or --.
-  if ( -1 === text.indexOf( '++' ) && -1 === text.indexOf( '--' ) ) {
+  // Drop text that doesn't include ++ or -- (or —, to support iOS replacing --).
+  if ( -1 === text.indexOf( '++' ) && -1 === text.indexOf( '--' ) && -1 === text.indexOf( '—' ) ) {
     return;
   }
 
   // If we're still here, it's a message to deal with!
 
-  // Get the user or 'thing' that is being spoken about.
-  const data = text.match( /@([A-Za-z0-9\.\-_]*?)>?\s*([\-+]{2})/ );
+  // Get the user or 'thing' that is being spoken about, and the 'operation' being done on it.
+  // We take the operation down to one character, and also support — due to iOS' replacement of --.
+  const data = text.match( /@([A-Za-z0-9\.\-_]*?)>?\s*([\-+]{2}|—{1})/ );
   const item = data[1];
-  const operation = data[2].substring( 0, 1 );
+  const operation = data[2].substring( 0, 1 ).replace( '—', '-' );
 
   // If we somehow didn't get anything, drop it. This can happen when eg. @++ is typed.
   if ( ! item.trim() ) {
