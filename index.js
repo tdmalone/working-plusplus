@@ -14,7 +14,8 @@ const SLACK_ACCESS_TOKEN = process.env.SLACK_BOT_USER_OAUTH_ACCESS_TOKEN,
       SLACK_VERIFICATION_TOKEN = process.env.SLACK_VERIFICATION_TOKEN,
       DATABASE_URL = process.env.DATABASE_URL;
 
-const PORT = 80;
+// Let Heroku set a port if required.
+const PORT = process.env.PORT || 80;
 
 const app = express(),
       postgres = new pg.Pool({ connectionString: DATABASE_URL, ssl: true }),
