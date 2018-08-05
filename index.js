@@ -1,0 +1,140 @@
+/**
+ *
+ *
+ * @see https://api.slack.com/events-api
+ * @author Tim Malone <tdmalone@gmail.com>
+ */
+
+const express = require( 'express' ),
+      bodyParser = require( 'body-parser' ),
+      slackClient = require('@slack/client'),
+      pg = require( 'pg' );
+
+const SLACK_ACCESS_TOKEN = process.env.SLACK_BOT_USER_OAUTH_ACCESS_TOKEN,
+      SLACK_VERIFICATION_TOKEN = process.env.SLACK_VERIFICATION_TOKEN,
+      DATABASE_URL = process.env.DATABASE_URL;
+
+const PORT = 80;
+
+const app = express(),
+      postgres = new pg.Pool({ connectionString: DATABASE_URL, ssl: true }),
+      slack = new slackClient.WebClient( SLACK_ACCESS_TOKEN );
+
+app.use( bodyParser.json() );
+app.enable( 'trust proxy' );
+
+app.get( '/', ( request, response ) => {
+  response.send( 'Test' );
+});
+
+app.post( '/', async ( request, response ) => {
+
+  console.log(
+    request.ip + ' ' + request.method + ' ' + request.path + ' ' + request.headers['user-agent']
+  );
+
+  // Respond to challenge sent by Slack during event subscription set up.
+  if ( request.body.challenge ) {
+    response.send( request.body.challenge );
+    console.info( '200 Challenge response sent' );
+    return;
+  }
+
+  // Sanity check for bad verification values.
+  if ( ! SLACK_VERIFICATION_TOKEN || 'xxxxxxxxxxxxxxxxxxxxxxxx' === SLACK_VERIFICATION_TOKEN ) {
+    response.status( 403 ).send( 'Access denied.' );
+    console.error( '403 Access denied - bad verification value' );
+    return;
+  }
+
+  // Check that this is Slack making the request.
+  // TODO: Move to calculating the signature instead (newer method).
+  if ( SLACK_VERIFICATION_TOKEN !== request.body.token ) {
+    response.status( 403 ).send( 'Access denied.' );
+    console.error( '403 Access denied - incorrect verification token' );
+    return;
+  }
+
+  // Send back a 200 OK now so Slack doesn't get upset.
+  response.send( '' );
+
+  const event = request.body.event;
+
+  // Drop events that aren't messages, or that don't have message text.
+  if ( 'message' !== event.type || ! event.text ) {
+    console.warn( 'Invalid event received (' + request.event.type + ') or event data missing' );
+    return;
+  }
+
+  const text = event.text;
+
+  // Drop text that doesn't mention anybody/anything.
+  if ( -1 === text.indexOf( '@' ) ) {
+    return;
+  }
+
+  // Drop text that doesn't include ++ or --.
+  if ( -1 === text.indexOf( '++' ) && -1 === text.indexOf( '--' ) ) {
+    return;
+  }
+
+  // If we're still here, it's a message to deal with!
+
+  // Get the user or 'thing' that is being spoken about.
+  const data = text.match( /@([A-Za-z0-9\.\-_]*?)>?\s*([\-+]{2})/ );
+  const item = data[1];
+  const operation = data[2].substring( 0, 1 );
+
+  // If we somehow didn't get anything, drop it. This can happen when eg. @++ is typed.
+  if ( ! item.trim() ) {
+    return;
+  }
+
+  // If the user is trying to ++ themselves...
+  if ( item === event.user && '+' === operation ) {
+
+    slack.chat.postMessage({
+      channel: event.channel,
+      text: 'Ah nope! Not cool <@' + event.user + '>!'
+    }).then( ( data ) => {
+      console.log(
+        data.ok ?
+          item + ' tried to alter their own score.' :
+          'Error occurred posting response to user altering their own score.'
+      );
+    });
+
+    return;
+
+  }
+
+  // Connect to the DB, and create a table if it's not yet there.
+  const dbClient = await postgres.connect();
+  const dbCreateResult = await dbClient.query( 'CREATE EXTENSION IF NOT EXISTS citext; CREATE TABLE IF NOT EXISTS working_plusplus (item CITEXT PRIMARY KEY, score INTEGER);' );
+
+  // Atomically record the action.
+  // TODO: Fix potential SQL injection issues here.
+  const dbInsert = await dbClient.query( 'INSERT INTO working_plusplus VALUES (\'' + item + '\', ' + operation + '1) ON CONFLICT (item) DO UPDATE SET score = working_plusplus.score ' + operation + ' 1;' );
+
+  // Get the new value.
+  // TODO: Fix potential SQL injection issues here.
+  const dbSelect = await dbClient.query( 'SELECT score FROM working_plusplus WHERE item = \'' + item + '\';' );
+  const score = dbSelect.rows[0].score;
+
+  dbClient.release();
+
+  // Respond.
+  // TODO: Add some much better messages here!
+  const itemMaybeLinked = item.match( /U[A-Z0-9]{8}/ ) ? '<@' + item + '>' : item;
+  slack.chat.postMessage({
+    channel: event.channel,
+    text: 'Heard ya loud and clear! *' + itemMaybeLinked + '* is now on ' + score + '.'
+  }).then( ( data ) => {
+    console.log( data.ok ? item + ' now on ' + score : 'Error occurred posting response.' );
+  });
+
+});
+
+app.listen( PORT, () => {
+  console.log( 'Listening on port ' + PORT + '.' )
+});
