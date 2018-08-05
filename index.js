@@ -25,7 +25,7 @@ app.use( bodyParser.json() );
 app.enable( 'trust proxy' );
 
 app.get( '/', ( request, response ) => {
-  response.send( 'Test' );
+  response.send( 'It works! However, this app only accepts POST requests for now.' );
 });
 
 app.post( '/', async ( request, response ) => {
@@ -49,7 +49,7 @@ app.post( '/', async ( request, response ) => {
   }
 
   // Check that this is Slack making the request.
-  // TODO: Move to calculating the signature instead (newer method).
+  // TODO: Move to calculating the signature instead (newer, more secure method).
   if ( SLACK_VERIFICATION_TOKEN !== request.body.token ) {
     response.status( 403 ).send( 'Access denied.' );
     console.error( '403 Access denied - incorrect verification token' );
@@ -124,11 +124,11 @@ app.post( '/', async ( request, response ) => {
   const dbCreateResult = await dbClient.query( 'CREATE EXTENSION IF NOT EXISTS citext; CREATE TABLE IF NOT EXISTS working_plusplus (item CITEXT PRIMARY KEY, score INTEGER);' );
 
   // Atomically record the action.
-  // TODO: Fix potential SQL injection issues here.
+  // TODO: Fix potential SQL injection issues here, even though we know the input should be safe.
   const dbInsert = await dbClient.query( 'INSERT INTO working_plusplus VALUES (\'' + item + '\', ' + operation + '1) ON CONFLICT (item) DO UPDATE SET score = working_plusplus.score ' + operation + ' 1;' );
 
   // Get the new value.
-  // TODO: Fix potential SQL injection issues here.
+  // TODO: Fix potential SQL injection issues here, even though we know the input should be safe.
   const dbSelect = await dbClient.query( 'SELECT score FROM working_plusplus WHERE item = \'' + item + '\';' );
   const score = dbSelect.rows[0].score;
 
