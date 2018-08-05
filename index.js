@@ -1,6 +1,8 @@
 /**
+ * Working PlusPlus++
+ * Like plusplus.chat, but one that actually works, because you can host it yourself! 😉
  *
- *
+ * @see https://github.com/tdmalone/working-plusplus
  * @see https://api.slack.com/events-api
  * @author Tim Malone <tdmalone@gmail.com>
  */
