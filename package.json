@@ -1,0 +1,15 @@
+{
+  "name": "working-plusplus",
+  "version": "0.0.1",
+  "description": "Like plusplus.chat, but one that actually works, because you can host it yourself 😉",
+  "main": "index.js",
+  "repository": "git@github.com:tdmalone/working-plusplus.git",
+  "author": "Tim Malone <tdmalone@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "@slack/client": "^4.3.1",
+    "body-parser": "^1.18.3",
+    "express": "^4.16.3",
+    "pg": "^7.4.3"
+  }
+}
