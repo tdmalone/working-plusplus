@@ -135,24 +135,35 @@ app.post( '/', async ( request, response ) => {
   }
 
   // Connect to the DB, and create a table if it's not yet there.
+  // We also set up the citext extension, so that we can easily be case insensitive.
   const dbClient = await postgres.connect();
-  const dbCreateResult = await dbClient.query( 'CREATE EXTENSION IF NOT EXISTS citext; CREATE TABLE IF NOT EXISTS ' + scoresTableName + ' (item CITEXT PRIMARY KEY, score INTEGER);' );
+  const dbCreateResult = await dbClient.query( '\
+    CREATE EXTENSION IF NOT EXISTS citext; \
+    CREATE TABLE IF NOT EXISTS ' + scoresTableName + ' (item CITEXT PRIMARY KEY, score INTEGER); \
+  ');
 
   // Atomically record the action.
   // TODO: Fix potential SQL injection issues here, even though we know the input should be safe.
-  const dbInsert = await dbClient.query( 'INSERT INTO ' + scoresTableName + ' VALUES (\'' + item + '\', ' + operation + '1) ON CONFLICT (item) DO UPDATE SET score = ' + scoresTableName + '.score ' + operation + ' 1;' );
+  const dbInsert = await dbClient.query( '\
+    INSERT INTO ' + scoresTableName + ' VALUES (\'' + item + '\', ' + operation + '1) \
+    ON CONFLICT (item) DO UPDATE SET score = ' + scoresTableName + '.score ' + operation + ' 1; \
+  ');
 
   // Get the new value.
   // TODO: Fix potential SQL injection issues here, even though we know the input should be safe.
-  const dbSelect = await dbClient.query( 'SELECT score FROM ' + scoresTableName + ' WHERE item = \'' + item + '\';' );
+  const dbSelect = await dbClient.query( '\
+    SELECT score FROM ' + scoresTableName + ' WHERE item = \'' + item + '\'; \
+  ');
   const score = dbSelect.rows[0].score;
 
   dbClient.release();
 
   // Respond.
+
   const itemMaybeLinked = item.match( /U[A-Z0-9]{8}/ ) ? '<@' + item + '>' : item;
   const pluralise = score === 1 ? '' : 's';
   const message = getRandomMessage( operation );
+
   slack.chat.postMessage({
     channel: event.channel,
     text: (
@@ -163,7 +174,7 @@ app.post( '/', async ( request, response ) => {
     console.log( data.ok ? item + ' now on ' + score : 'Error occurred posting response.' );
   });
 
-});
+}); // App.post.
 
 app.listen( PORT, () => {
   console.log( 'Listening on port ' + PORT + '.' )
