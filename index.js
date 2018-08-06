@@ -10,7 +10,8 @@
 const express = require( 'express' ),
       bodyParser = require( 'body-parser' ),
       slackClient = require('@slack/client'),
-      pg = require( 'pg' );
+      pg = require( 'pg' ),
+      messages = require( './messages' );
 
 const SLACK_BOT_USER_OAUTH_ACCESS_TOKEN = process.env.SLACK_BOT_USER_OAUTH_ACCESS_TOKEN,
       SLACK_VERIFICATION_TOKEN = process.env.SLACK_VERIFICATION_TOKEN,
@@ -24,6 +25,13 @@ const scoresTableName = 'scores';
 const app = express(),
       postgres = new pg.Pool({ connectionString: DATABASE_URL, ssl: true }),
       slack = new slackClient.WebClient( SLACK_BOT_USER_OAUTH_ACCESS_TOKEN );
+
+const getRandomMessage = ( operation ) => {
+  operation = operation.replace( '+', 'plus' ).replace( '-', 'minus' );
+  max = messages[ operation ].length - 1;
+  random = Math.floor( Math.random() * max );
+  return messages[ operation ][ random ];
+};
 
 app.use( bodyParser.json() );
 app.enable( 'trust proxy' );
@@ -109,9 +117,11 @@ app.post( '/', async ( request, response ) => {
   // If the user is trying to ++ themselves...
   if ( item === event.user && '+' === operation ) {
 
+    const message = getRandomMessage( 'selfPlus' );
+
     slack.chat.postMessage({
       channel: event.channel,
-      text: 'Ah nope! Not cool <@' + event.user + '>!'
+      text: '<@' + event.user + '> ' + message,
     }).then( ( data ) => {
       console.log(
         data.ok ?
@@ -140,12 +150,15 @@ app.post( '/', async ( request, response ) => {
   dbClient.release();
 
   // Respond.
-  // TODO: Add some much better messages here! And also the ability to customise them - probably
-  //       via JSON objects in environment variables.
   const itemMaybeLinked = item.match( /U[A-Z0-9]{8}/ ) ? '<@' + item + '>' : item;
+  const pluralise = score === 1 ? '' : 's';
+  const message = getRandomMessage( operation );
   slack.chat.postMessage({
     channel: event.channel,
-    text: 'Heard ya loud and clear! *' + itemMaybeLinked + '* is now on ' + score + '.'
+    text: (
+      message + ' ' +
+      '*' + itemMaybeLinked + '* is now on ' + score + ' point' + pluralise + '.'
+    )
   }).then( ( data ) => {
     console.log( data.ok ? item + ' now on ' + score : 'Error occurred posting response.' );
   });
