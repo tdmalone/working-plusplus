@@ -74,6 +74,34 @@ Completely open source, so do with it what you like. Or if you don't want to mak
 
 Further instructions, such as hosting elsewhere, upgrading, etc. are coming soon.
 
+## Contributing
+
+Contributions are welcome! [Create an issue](https://github.com/tdmalone/working-plusplus/issues/new) if there's something you'd like to see or [send a pull request](https://github.com/tdmalone/working-plusplus/compare) if you can implement it yourself.
+
+To develop locally, follow most of the *Installation* instructions above, except rather than deploying to Heroku, clone this repo locally and then install dependencies:
+
+    git clone https://github.com/tdmalone/working-plusplus
+    cd working-plusplus
+    yarn
+
+You'll need [Node.js](https://nodejs.org/) already installed on your system. In addition, if you don't have [Yarn](https://yarnpkg.com/en/) and don't want it, you can use `npm install` instead of `yarn` above (but you might not get _exactly_ the same dependencies).
+
+After installing, to run the app:
+
+    node index.js
+
+Or if you have the Heroku CLI installed:
+
+    heroku local
+
+If you make changes, press Ctrl+C to exit, and then run the app again to launch with your changes.
+
+For the most part, you'll need to be able to have Slack contact your development instance directly. If you don't have the ability to forward a port through to your machine, I recommend [ngrok](https://ngrok.com/). Download and extract, then in the directory you've extracted it in run:
+
+    ./ngrok http 80 # Or port 5000 if you're running with heroku local.
+
+*Further details are coming soon.*
+
 ## TODO
 
 Although it works, it's very basic. Enhancements include:
@@ -82,7 +110,6 @@ Although it works, it's very basic. Enhancements include:
 * Add a leaderboard
 * Add the ability to customise the messages the bot sends back
 * Move to the newer, more secure method of calculating signatures for incoming Slack hooks
-* Something you'd like to see? [Create an issue](https://github.com/tdmalone/working-plusplus/issues/new) or [send a pull request](https://github.com/tdmalone/working-plusplus/compare) if you can implement it yourself!
 
 ## License
 
