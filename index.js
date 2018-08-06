@@ -76,7 +76,8 @@ app.post( '/', async ( request, response ) => {
   // back up again, so Slack will retry immediately and then again in a minute - which will result
   // in the action being carried out 3 times if we listen to it!
   // @see https://api.slack.com/events-api#graceful_retries
-  if ( request.headers['X-Slack-Retry-Num'] ) {
+  if ( request.headers['x-slack-retry-num'] ) {
+    console.log( 'Skipping Slack retry.' );
     return;
   }
 
