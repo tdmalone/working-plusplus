@@ -23,7 +23,8 @@ const SLACK_OAUTH_ACCESS_TOKEN = process.env.SLACK_BOT_USER_OAUTH_ACCESS_TOKEN,
 /* eslint-enable no-process-env, no-magic-numbers */
 
 const scoresTableName = 'scores',
-      HTTP_403 = 403;
+      HTTP_403 = 403,
+      HTTP_500 = 500;
 
 const app = express(),
       postgres = new pg.Pool({
@@ -68,8 +69,8 @@ app.post( '/', async( request, response ) => {
 
   // Sanity check for bad verification values.
   if ( ! SLACK_VERIFICATION_TOKEN || 'xxxxxxxxxxxxxxxxxxxxxxxx' === SLACK_VERIFICATION_TOKEN ) {
-    response.status( HTTP_403 ).send( 'Access denied.' );
-    console.error( '403 Access denied - bad verification value' );
+    response.status( HTTP_500 ).send( 'Internal server error.' );
+    console.error( '500 Internal server error - bad verification value' );
     return;
   }
 
