@@ -80,29 +80,29 @@ Contributions are welcome! [Create an issue](https://github.com/tdmalone/working
 
 To develop locally, follow most of the *Installation* instructions above, except rather than deploying to Heroku, clone this repo locally and then install dependencies:
 
-    git clone https://github.com/tdmalone/working-plusplus
-    cd working-plusplus
-    yarn
+    $ git clone https://github.com/tdmalone/working-plusplus
+    $ cd working-plusplus
+    $ yarn
 
-You'll need [Node.js](https://nodejs.org/) already installed on your system. In addition, if you don't have [Yarn](https://yarnpkg.com/en/) and don't want it, you can use `npm install` instead of `yarn` above (but you might not get _exactly_ the same dependencies).
+You'll need [Node.js](https://nodejs.org/) already installed on your system. In addition, if you don't have [Yarn](https://yarnpkg.com/en/) and don't want it, you can use `npm install` instead of `yarn` above (but you might not get _exactly_ the same dependency versions).
 
 After installing, to run the app:
 
-    node index.js
+    $ node index.js
 
-Or if you have the Heroku CLI installed:
+Or if you have the [Heroku CLI](https://devcenter.heroku.com/articles/heroku-cli) installed:
 
-    heroku local
+    $ heroku local
 
-_For more help on running `heroku local`, see the [Heroku Local Dev Center article](https://devcenter.heroku.com/articles/heroku-local).
+_For more help on running `heroku local`, see the [Heroku Local Dev Center article](https://devcenter.heroku.com/articles/heroku-local)._
 
-If you make changes, press Ctrl+C to exit, and then run the app again to launch with your changes.
+If you make changes to the app, press Ctrl+C to exit, and then run it again.
 
-For the most part, you'll need to be able to have Slack contact your development instance directly. If you don't have the ability to forward a port through to your machine, I recommend [ngrok](https://ngrok.com/). Download and extract, then in the directory you've extracted it in run:
+Finally, you'll need to be able to have Slack contact your development instance directly. If you don't have the ability to forward a port through to your machine, I recommend [ngrok](https://ngrok.com/). Download and extract, then in the directory you've extracted it in run:
 
     ./ngrok http 80 # Or port 5000 if you're running with heroku local.
 
-*Further details are coming soon.*
+ngrok will provide you with the public URL your app is accessible on; this is the URL you'll need to use in Step 6 of the installation instructions above.
 
 ## TODO
 
