@@ -11,28 +11,39 @@
 
 const express = require( 'express' ),
       bodyParser = require( 'body-parser' ),
-      slackClient = require('@slack/client'),
+      slackClient = require( '@slack/client' ),
       pg = require( 'pg' ),
       messages = require( './messages' );
 
-const SLACK_BOT_USER_OAUTH_ACCESS_TOKEN = process.env.SLACK_BOT_USER_OAUTH_ACCESS_TOKEN,
+/* eslint-disable no-process-env, no-magic-numbers */
+const SLACK_OAUTH_ACCESS_TOKEN = process.env.SLACK_BOT_USER_OAUTH_ACCESS_TOKEN,
       SLACK_VERIFICATION_TOKEN = process.env.SLACK_VERIFICATION_TOKEN,
-      DATABASE_URL = process.env.DATABASE_URL;
+      DATABASE_URL = process.env.DATABASE_URL,
+      PORT = process.env.PORT || 80; // Let Heroku set the port.
+/* eslint-enable no-process-env, no-magic-numbers */
 
-// Let Heroku set the port.
-const PORT = process.env.PORT || 80;
-
-const scoresTableName = 'scores';
+const scoresTableName = 'scores',
+      HTTP_403 = 403;
 
 const app = express(),
-      postgres = new pg.Pool({ connectionString: DATABASE_URL, ssl: true }),
-      slack = new slackClient.WebClient( SLACK_BOT_USER_OAUTH_ACCESS_TOKEN );
+      postgres = new pg.Pool({
+        connectionString: DATABASE_URL,
+        ssl:              true
+      }),
+      slack = new slackClient.WebClient( SLACK_OAUTH_ACCESS_TOKEN );
 
+/**
+ * Retrieves a random message from the given pool of messages.
+ *
+ * @param {string} operation The name of the operation to retrieve potential messages for. Accepts
+ *                           'plus', 'minus', and 'selfPlus', as well as the shorthand '+' and '-'.
+ * @returns {string} A random message from the chosen pool.
+ */
 const getRandomMessage = ( operation ) => {
-  operation = operation.replace( '+', 'plus' ).replace( '-', 'minus' );
-  const max = messages[ operation ].length - 1;
+  const filteredOperation = operation.replace( '+', 'plus' ).replace( '-', 'minus' );
+  const max = messages[ filteredOperation ].length - 1;
   const random = Math.floor( Math.random() * max );
-  return messages[ operation ][ random ];
+  return messages[ filteredOperation ][ random ];
 };
 
 app.use( bodyParser.json() );
@@ -42,7 +53,7 @@ app.get( '/', ( request, response ) => {
   response.send( 'It works! However, this app only accepts POST requests for now.' );
 });
 
-app.post( '/', async ( request, response ) => {
+app.post( '/', async( request, response ) => {
 
   console.log(
     request.ip + ' ' + request.method + ' ' + request.path + ' ' + request.headers['user-agent']
@@ -57,7 +68,7 @@ app.post( '/', async ( request, response ) => {
 
   // Sanity check for bad verification values.
   if ( ! SLACK_VERIFICATION_TOKEN || 'xxxxxxxxxxxxxxxxxxxxxxxx' === SLACK_VERIFICATION_TOKEN ) {
-    response.status( 403 ).send( 'Access denied.' );
+    response.status( HTTP_403 ).send( 'Access denied.' );
     console.error( '403 Access denied - bad verification value' );
     return;
   }
@@ -65,7 +76,7 @@ app.post( '/', async ( request, response ) => {
   // Check that this is Slack making the request.
   // TODO: Move to calculating the signature instead (newer, more secure method).
   if ( SLACK_VERIFICATION_TOKEN !== request.body.token ) {
-    response.status( 403 ).send( 'Access denied.' );
+    response.status( HTTP_403 ).send( 'Access denied.' );
     console.error( '403 Access denied - incorrect verification token' );
     return;
   }
@@ -94,7 +105,7 @@ app.post( '/', async ( request, response ) => {
   // back up again, so Slack will retry immediately and then again in a minute - which will result
   // in the action being carried out 3 times if we listen to it!
   // @see https://api.slack.com/events-api#graceful_retries
-  if ( request.headers['x-slack-retry-num'] ) {
+  if ( request.headers['x-slack-retry-num']) {
     console.log( 'Skipping Slack retry.' );
     return;
   }
@@ -115,7 +126,7 @@ app.post( '/', async ( request, response ) => {
 
   // Get the user or 'thing' that is being spoken about, and the 'operation' being done on it.
   // We take the operation down to one character, and also support — due to iOS' replacement of --.
-  const data = text.match( /@([A-Za-z0-9\.\-_]*?)>?\s*([\-+]{2}|—{1})/ );
+  const data = text.match( /@([A-Za-z0-9.\-_]*?)>?\s*([-+]{2}|—{1})/ );
   const item = data[1];
   const operation = data[2].substring( 0, 1 ).replace( '—', '-' );
 
@@ -131,7 +142,7 @@ app.post( '/', async ( request, response ) => {
 
     slack.chat.postMessage({
       channel: event.channel,
-      text: '<@' + event.user + '> ' + message,
+      text:    '<@' + event.user + '> ' + message
     }).then( ( data ) => {
       console.log(
         data.ok ?
@@ -142,28 +153,28 @@ app.post( '/', async ( request, response ) => {
 
     return;
 
-  }
+  } // If self ++.
 
   // Connect to the DB, and create a table if it's not yet there.
   // We also set up the citext extension, so that we can easily be case insensitive.
   const dbClient = await postgres.connect();
-  const dbCreateResult = await dbClient.query( '\
+  await dbClient.query( '\
     CREATE EXTENSION IF NOT EXISTS citext; \
     CREATE TABLE IF NOT EXISTS ' + scoresTableName + ' (item CITEXT PRIMARY KEY, score INTEGER); \
-  ');
+  ' );
 
   // Atomically record the action.
   // TODO: Fix potential SQL injection issues here, even though we know the input should be safe.
-  const dbInsert = await dbClient.query( '\
+  await dbClient.query( '\
     INSERT INTO ' + scoresTableName + ' VALUES (\'' + item + '\', ' + operation + '1) \
     ON CONFLICT (item) DO UPDATE SET score = ' + scoresTableName + '.score ' + operation + ' 1; \
-  ');
+  ' );
 
   // Get the new value.
   // TODO: Fix potential SQL injection issues here, even though we know the input should be safe.
   const dbSelect = await dbClient.query( '\
     SELECT score FROM ' + scoresTableName + ' WHERE item = \'' + item + '\'; \
-  ');
+  ' );
   const score = dbSelect.rows[0].score;
 
   dbClient.release();
@@ -171,12 +182,12 @@ app.post( '/', async ( request, response ) => {
   // Respond.
 
   const itemMaybeLinked = item.match( /U[A-Z0-9]{8}/ ) ? '<@' + item + '>' : item;
-  const pluralise = score === 1 ? '' : 's';
+  const pluralise = 1 === score ? '' : 's';
   const message = getRandomMessage( operation );
 
   slack.chat.postMessage({
     channel: event.channel,
-    text: (
+    text:    (
       message + ' ' +
       '*' + itemMaybeLinked + '* is now on ' + score + ' point' + pluralise + '.'
     )
@@ -187,5 +198,5 @@ app.post( '/', async ( request, response ) => {
 }); // App.post.
 
 app.listen( PORT, () => {
-  console.log( 'Listening on port ' + PORT + '.' )
+  console.log( 'Listening on port ' + PORT + '.' );
 });
