@@ -25,7 +25,8 @@
   "jest": {
     "testMatch": [
       "**/tests/**/*.js"
-    ]
+    ],
+    "testURL": "http://localhost/"
   },
   "dependencies": {
     "@slack/client": "^4.3.1",
