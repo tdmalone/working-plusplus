@@ -73,9 +73,17 @@ app.post( '/', async ( request, response ) => {
 
   const event = request.body.event;
 
-  // Drop events that aren't messages, or that don't have message text.
-  if ( 'message' !== event.type || ! event.text ) {
-    console.warn( 'Invalid event received (' + request.event.type + ') or event data missing' );
+  // Drop events that aren't messages, that have a subtype, or that don't have message text.
+  if ( 'undefined' === typeof event.type ) {
+    console.warn( 'Event data missing' );
+    return;
+  }
+  if ( 'undefined' !== typeof event.subtype ) {
+    console.warn( 'Unsupported ' + event.type + ' event subtype: ' + event.subtype );
+    return;
+  }
+  if ( 'message' !== event.type || ! 'undefined' === typeof event.text || ! event.text ) {
+    console.warn( 'Invalid event received (' + event.type + ') or message text missing' );
     return;
   }
 
