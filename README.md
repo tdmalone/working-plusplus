@@ -94,6 +94,8 @@ Or if you have the Heroku CLI installed:
 
     heroku local
 
+_For more help on running `heroku local`, see the [Heroku Local Dev Center article](https://devcenter.heroku.com/articles/heroku-local).
+
 If you make changes, press Ctrl+C to exit, and then run the app again to launch with your changes.
 
 For the most part, you'll need to be able to have Slack contact your development instance directly. If you don't have the ability to forward a port through to your machine, I recommend [ngrok](https://ngrok.com/). Download and extract, then in the directory you've extracted it in run:
