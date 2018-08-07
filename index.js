@@ -7,6 +7,8 @@
  * @author Tim Malone <tdmalone@gmail.com>
  */
 
+'use strict';
+
 const express = require( 'express' ),
       bodyParser = require( 'body-parser' ),
       slackClient = require('@slack/client'),
@@ -28,8 +30,8 @@ const app = express(),
 
 const getRandomMessage = ( operation ) => {
   operation = operation.replace( '+', 'plus' ).replace( '-', 'minus' );
-  max = messages[ operation ].length - 1;
-  random = Math.floor( Math.random() * max );
+  const max = messages[ operation ].length - 1;
+  const random = Math.floor( Math.random() * max );
   return messages[ operation ][ random ];
 };
 
