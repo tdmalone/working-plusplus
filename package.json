@@ -10,7 +10,7 @@
     "lint": "DEBUG=eslint:cli-engine eslint --color --ignore-pattern '/coverage/' --ignore-pattern '/docs/' --ignore-pattern '!.eslintrc.js' \"**/*.js\"",
     "fix": "yarn lint --fix",
     "test": "yarn unit-tests",
-    "unit-tests": "jest --verbose --coverage"
+    "unit-tests": "PORT=5000 jest --verbose --coverage --forceExit"
   },
   "engines": {
     "node": "10.8.0",
