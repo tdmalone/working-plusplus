@@ -7,7 +7,7 @@
 
 'use strict';
 
-module.exports = {
+const messages = {
 
   plus: [
     'Congrats!',
@@ -46,4 +46,23 @@ module.exports = {
     'Not cool!'
   ]
 
+};
+
+/**
+ * Retrieves a random message from the given pool of messages.
+ *
+ * @param {string} operation The name of the operation to retrieve potential messages for. Accepts
+ *                           'plus', 'minus', and 'selfPlus', as well as the shorthand '+' and '-'.
+ * @returns {string} A random message from the chosen pool.
+ */
+const getRandomMessage = ( operation ) => {
+  const filteredOperation = operation.replace( '+', 'plus' ).replace( '-', 'minus' ),
+        max = messages[ filteredOperation ].length - 1,
+        random = Math.floor( Math.random() * max );
+
+  return messages[ filteredOperation ][ random ];
+};
+
+module.exports = {
+  getRandomMessage: getRandomMessage
 };

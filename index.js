@@ -13,8 +13,9 @@ const express = require( 'express' ),
       bodyParser = require( 'body-parser' ),
       slackClient = require( '@slack/client' ),
       pg = require( 'pg' ),
-      messages = require( './messages' );
+      { getRandomMessage } = require( './messages' );
 
+// Get environment variables.
 /* eslint-disable no-process-env, no-magic-numbers */
 const SLACK_OAUTH_ACCESS_TOKEN = process.env.SLACK_BOT_USER_OAUTH_ACCESS_TOKEN,
       SLACK_VERIFICATION_TOKEN = process.env.SLACK_VERIFICATION_TOKEN,
@@ -22,30 +23,17 @@ const SLACK_OAUTH_ACCESS_TOKEN = process.env.SLACK_BOT_USER_OAUTH_ACCESS_TOKEN,
       PORT = process.env.PORT || 80; // Let Heroku set the port.
 /* eslint-enable no-process-env, no-magic-numbers */
 
-const scoresTableName = 'scores',
-      HTTP_403 = 403,
-      HTTP_500 = 500;
-
-const app = express(),
-      postgres = new pg.Pool({
+const HTTP_403 = 403,
+      HTTP_500 = 500,
+      scoresTableName = 'scores',
+      postgresPoolConfig = {
         connectionString: DATABASE_URL,
         ssl:              true
-      }),
-      slack = new slackClient.WebClient( SLACK_OAUTH_ACCESS_TOKEN );
+      };
 
-/**
- * Retrieves a random message from the given pool of messages.
- *
- * @param {string} operation The name of the operation to retrieve potential messages for. Accepts
- *                           'plus', 'minus', and 'selfPlus', as well as the shorthand '+' and '-'.
- * @returns {string} A random message from the chosen pool.
- */
-const getRandomMessage = ( operation ) => {
-  const filteredOperation = operation.replace( '+', 'plus' ).replace( '-', 'minus' );
-  const max = messages[ filteredOperation ].length - 1;
-  const random = Math.floor( Math.random() * max );
-  return messages[ filteredOperation ][ random ];
-};
+const app = express(),
+      postgres = new pg.Pool( postgresPoolConfig ),
+      slack = new slackClient.WebClient( SLACK_OAUTH_ACCESS_TOKEN );
 
 app.use( bodyParser.json() );
 app.enable( 'trust proxy' );

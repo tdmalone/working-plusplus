@@ -10,14 +10,28 @@
 
 const messages = require( '../messages' );
 
-test( 'At least 1 plus operation message is exported', () => {
-  expect( messages.plus.length ).toBeGreaterThanOrEqual( 1 );
+test( 'A message is returned for the plus operation', () => {
+  expect( typeof messages.getRandomMessage( 'plus' ) ).toBe( 'string' );
 });
 
-test( 'At least 1 minus operation message is exported', () => {
-  expect( messages.minus.length ).toBeGreaterThanOrEqual( 1 );
+test( 'A message is returned for the plus shorthand (+) operation', () => {
+  expect( typeof messages.getRandomMessage( '+' ) ).toBe( 'string' );
 });
 
-test( 'At least 1 selfPlus operation message is exported', () => {
-  expect( messages.selfPlus.length ).toBeGreaterThanOrEqual( 1 );
+test( 'A message is returned for the minus operation', () => {
+  expect( typeof messages.getRandomMessage( 'minus' ) ).toBe( 'string' );
+});
+
+test( 'A message is returned for the minus shorthand (-) operation', () => {
+  expect( typeof messages.getRandomMessage( '-' ) ).toBe( 'string' );
+});
+
+test( 'A message is returned for the selfPlus operation', () => {
+  expect( typeof messages.getRandomMessage( 'selfPlus' ) ).toBe( 'string' );
+});
+
+test( 'An error occurs for an invalid operation', () => {
+  expect( () => {
+    messages.getRandomMessage( 'INVALID_OPERATION' );
+  }).toThrow();
 });
