@@ -17,6 +17,10 @@ const SLACK_BOT_USER_OAUTH_ACCESS_TOKEN = process.env.SLACK_BOT_USER_OAUTH_ACCES
       SLACK_VERIFICATION_TOKEN = process.env.SLACK_VERIFICATION_TOKEN,
       DATABASE_URL = process.env.DATABASE_URL;
 
+const OPERATION_SELF = 'selfPlus',
+      OPERATION_PLUS = 'plus',
+      OPERATION_MINUS = 'minus';
+
 // Let Heroku set the port.
 const PORT = process.env.PORT || 80;
 
@@ -27,7 +31,6 @@ const app = express(),
       slack = new slackClient.WebClient( SLACK_BOT_USER_OAUTH_ACCESS_TOKEN );
 
 const getRandomMessage = ( operation ) => {
-  operation = operation.replace( '+', 'plus' ).replace( '-', 'minus' );
   max = messages[ operation ].length - 1;
   random = Math.floor( Math.random() * max );
   return messages[ operation ][ random ];
@@ -117,7 +120,7 @@ app.post( '/', async ( request, response ) => {
   // If the user is trying to ++ themselves...
   if ( item === event.user && '+' === operation ) {
 
-    const message = getRandomMessage( 'selfPlus' );
+    const message = getRandomMessage(OPERATION_SELF);
 
     slack.chat.postMessage({
       channel: event.channel,
@@ -152,6 +155,7 @@ app.post( '/', async ( request, response ) => {
   // Respond.
   const itemMaybeLinked = item.match( /U[A-Z0-9]{8}/ ) ? '<@' + item + '>' : item;
   const pluralise = score === 1 ? '' : 's';
+  operation = operation.replace( '+', OPERATION_PLUS ).replace( '-', OPERATION_MINUS );
   const message = getRandomMessage( operation );
   slack.chat.postMessage({
     channel: event.channel,
