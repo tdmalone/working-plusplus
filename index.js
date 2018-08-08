@@ -11,15 +11,12 @@ const express = require( 'express' ),
       bodyParser = require( 'body-parser' ),
       slackClient = require('@slack/client'),
       pg = require( 'pg' ),
+      operation = require('./operations'),
       messages = require( './messages' );
 
 const SLACK_BOT_USER_OAUTH_ACCESS_TOKEN = process.env.SLACK_BOT_USER_OAUTH_ACCESS_TOKEN,
       SLACK_VERIFICATION_TOKEN = process.env.SLACK_VERIFICATION_TOKEN,
       DATABASE_URL = process.env.DATABASE_URL;
-
-const OPERATION_SELF = 'selfPlus',
-      OPERATION_PLUS = 'plus',
-      OPERATION_MINUS = 'minus';
 
 // Let Heroku set the port.
 const PORT = process.env.PORT || 80;
@@ -30,15 +27,15 @@ const app = express(),
       postgres = new pg.Pool({ connectionString: DATABASE_URL, ssl: true }),
       slack = new slackClient.WebClient( SLACK_BOT_USER_OAUTH_ACCESS_TOKEN );
 
-const getRandomMessage = ( operation, item, score ) => {
+const getRandomMessage = ( op, item, score ) => {
   var format = "";
 
-  switch(operation) {
-    case OPERATION_MINUS:
-    case OPERATION_PLUS:
+  switch(op) {
+    case operation.MINUS:
+    case operation.PLUS:
       format = "<message> *<item>* is now on <score> point<plural>.";
       break;
-    case OPERATION_SELF:
+    case operation.SELF:
     default:
       format = "<item> <message>";
       break;
@@ -46,9 +43,9 @@ const getRandomMessage = ( operation, item, score ) => {
 
   var plural = score == 1 ? "" : "s";
 
-  var max = messages[ operation ].length - 1;
+  var max = messages[ op ].length - 1;
   var random = Math.floor( Math.random() * max );
-  var message = messages[ operation ][ random ];
+  var message = messages[ op ][ random ];
 
   var formattedMessage = format.replace("<item>", item)
     .replace("<score>", score)
@@ -132,7 +129,7 @@ app.post( '/', async ( request, response ) => {
   // We take the operation down to one character, and also support — due to iOS' replacement of --.
   const data = text.match( /@([A-Za-z0-9\.\-_]*?)>?\s*([\-+]{2}|—{1})/ );
   const item = data[1];
-  const operation = data[2].substring( 0, 1 ).replace( '—', '-' );
+  const op = data[2].substring( 0, 1 ).replace( '—', '-' );
 
   // If we somehow didn't get anything, drop it. This can happen when eg. @++ is typed.
   if ( ! item.trim() ) {
@@ -140,9 +137,9 @@ app.post( '/', async ( request, response ) => {
   }
 
   // If the user is trying to ++ themselves...
-  if ( item === event.user && '+' === operation ) {
+  if ( item === event.user && '+' === op ) {
 
-    const message = getRandomMessage(OPERATION_SELF, '<@' + event.user + '>', 0);
+    const message = getRandomMessage(operation.SELF, '<@' + event.user + '>', 0);
 
     slack.chat.postMessage({
       channel: event.channel,
@@ -165,7 +162,7 @@ app.post( '/', async ( request, response ) => {
 
   // Atomically record the action.
   // TODO: Fix potential SQL injection issues here, even though we know the input should be safe.
-  const dbInsert = await dbClient.query( 'INSERT INTO ' + scoresTableName + ' VALUES (\'' + item + '\', ' + operation + '1) ON CONFLICT (item) DO UPDATE SET score = ' + scoresTableName + '.score ' + operation + ' 1;' );
+  const dbInsert = await dbClient.query( 'INSERT INTO ' + scoresTableName + ' VALUES (\'' + item + '\', ' + op + '1) ON CONFLICT (item) DO UPDATE SET score = ' + scoresTableName + '.score ' + op + ' 1;' );
 
   // Get the new value.
   // TODO: Fix potential SQL injection issues here, even though we know the input should be safe.
@@ -176,8 +173,8 @@ app.post( '/', async ( request, response ) => {
 
   // Respond.
   const itemMaybeLinked = item.match( /U[A-Z0-9]{8}/ ) ? '<@' + item + '>' : item;
-  operation = operation.replace( '+', OPERATION_PLUS ).replace( '-', OPERATION_MINUS );
-  const message = getRandomMessage( operation, itemMaybeLinked, score );
+  op = op.replace( '+', operation.PLUS ).replace( '-', operation.MINUS );
+  const message = getRandomMessage( op, itemMaybeLinked, score );
   slack.chat.postMessage({
     channel: event.channel,
     text: message
