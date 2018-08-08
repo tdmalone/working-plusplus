@@ -1,14 +1,13 @@
 /**
- * Tests the ./messages.js file.
+ * Unit tests on the messages.js file.
  *
+ * @see https://jestjs.io/docs/en/expect
  * @author Tim Malone <tdmalone@gmail.com>
  */
 
-/* global expect */
-
 'use strict';
 
-const messages = require( '../messages' );
+const messages = require( '../src/messages' );
 
 test( 'A message is returned for the plus operation', () => {
   expect( typeof messages.getRandomMessage( 'plus' ) ).toBe( 'string' );

@@ -106,7 +106,15 @@ ngrok will provide you with the public URL your app is accessible on. This is th
 
 Other than the modifications to steps 5 and 6, make sure you've followed all the rest of the installation instructions. You should then be set up and ready with a local development instance that you can interact with directly on Slack! If you run into any problems, feel free to [create an issue](https://github.com/tdmalone/working-plusplus/issues/new).
 
-When submitting pull requests, please check first that your changes pass linting and tests (`yarn lint` and `yarn test`). If you come across annoying *stylistic* linting rules, feel free to [change them](https://eslint.org/docs/rules/) in [`.eslintrc.js`](.eslintrc.js) as part of your pull request, providing they don't cause an adverse effect on existing code. You may also find `yarn fix` useful to automatically fix certain issues.
+### Linting and Running Tests
+
+Before submitting pull requests, please check that your changes pass linting and tests by running `yarn lint` and `yarn test`. These will also be run for you by Travis CI, but it's often quicker to debug and resolve the issues locally.
+
+You can run just the unit tests with `yarn unit-tests`, and just the integration tests with `yarn integration-tests`. By default `yarn test` will run unit tests first, and then only integration tests if the unit tests pass. It is normal to see errors while running the integration tests - some of the tests specifically check for these errors - but keep an eye on the exit code of the process to determine if it is successful (run `echo $?` immediately after running `yarn test` - you're looking for an exit code of `0` for a pass.)
+
+You can modify the default testing behaviour by adjusting the relevant `scripts` in [`package.json`](package.json) or in some cases by passing additional [Jest configuration parameters](https://jestjs.io/docs/en/configuration.html) on the command line.
+
+If you come across annoying *stylistic* linting rules, feel free to [change them](https://eslint.org/docs/rules/) in [`.eslintrc.js`](.eslintrc.js) as part of your pull request, providing they don't cause an adverse effect on existing code. Some linting issues can be automatically fixed by running `yarn fix`.
 
 ## TODO
 

@@ -1,12 +1,11 @@
 /**
- * Tests the main ./index.js file.
+ * Integration tests on the main ./index.js file.
  *
  * TODO: Add a lot more tests to this.
  *
+ * @see https://jestjs.io/docs/en/expect
  * @author Tim Malone <tdmalone@gmail.com>
  */
-
-/* global expect */
 
 'use strict';
 
