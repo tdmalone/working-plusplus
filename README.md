@@ -74,15 +74,64 @@ Completely open source, so do with it what you like. Or if you don't want to mak
 
 Further instructions, such as hosting elsewhere, upgrading, etc. are coming soon.
 
+## Contributing
+
+Contributions are welcome! [Create an issue](https://github.com/tdmalone/working-plusplus/issues/new) if there's something you'd like to see or [send a pull request](https://github.com/tdmalone/working-plusplus/compare) if you can implement it yourself.
+
+To develop locally, follow most of the *Installation* instructions above, except **instead of step 5** (deploying to Heroku), clone this repo locally and then install dependencies:
+
+    $ git clone https://github.com/tdmalone/working-plusplus
+    $ cd working-plusplus
+    $ yarn
+
+You'll need [Node.js](https://nodejs.org/) already installed on your system. In addition, if you don't have [Yarn](https://yarnpkg.com/en/) and don't want it, you can use `npm install` instead of `yarn` above (but you might not get _exactly_ the same dependency versions).
+
+After installing, to run the app:
+
+    $ node index.js
+
+Or if you have the [Heroku CLI](https://devcenter.heroku.com/articles/heroku-cli) installed:
+
+    $ heroku local
+
+_For more help on running `heroku local`, see the [Heroku Local Dev Center article](https://devcenter.heroku.com/articles/heroku-local)._
+
+If you make changes to the app, press Ctrl+C to exit, and then run it again.
+
+Finally, you'll need to be able to have Slack contact your development instance directly. If you don't have the ability to forward a port through to your machine, I recommend [ngrok](https://ngrok.com/). Download and extract, then in the directory you've extracted it in run:
+
+    ./ngrok http 80 # Or port 5000 if you're running with heroku local.
+
+ngrok will provide you with the public URL your app is accessible on. This is the URL you'll then need to use in **step 6** of the installation instructions above.
+
+Other than the modifications to steps 5 and 6, make sure you've followed all the rest of the installation instructions. You should then be set up and ready with a local development instance that you can interact with directly on Slack! If you run into any problems, feel free to [create an issue](https://github.com/tdmalone/working-plusplus/issues/new).
+
+### Linting and Running Tests
+
+Before submitting pull requests, please check that your changes pass linting and tests by running `yarn lint` and `yarn test`. These will also be run for you by Travis CI, but it's often quicker to debug and resolve the issues locally.
+
+You can run just the unit tests with `yarn unit-tests`, and just the integration tests with `yarn integration-tests`. By default `yarn test` will run unit tests first, and then only integration tests if the unit tests pass. It is normal to see errors while running the integration tests - some of the tests specifically check for these errors - but keep an eye on the exit code of the process to determine if it is successful (run `echo $?` immediately after running `yarn test` - you're looking for an exit code of `0` for a pass.)
+
+You can modify the default testing behaviour by adjusting the relevant `scripts` in [`package.json`](package.json) or in some cases by passing additional [Jest configuration parameters](https://jestjs.io/docs/en/configuration.html) on the command line.
+
+If you come across annoying *stylistic* linting rules, feel free to [change them](https://eslint.org/docs/rules/) in [`.eslintrc.js`](.eslintrc.js) as part of your pull request, providing they don't cause an adverse effect on existing code. Some linting issues can be automatically fixed by running `yarn fix`.
+
 ## TODO
 
-Although it works, it's very basic. Enhancements include:
+Although it works, it's very basic. Potential enhancements include:
 
-* Add tests
-* Add a leaderboard
-* Add the ability to customise the messages the bot sends back
+* Improve tests for much better coverage
+* A way to retrieve the current version/git hash from Slack, for sanity-checking of deployments
+* Leaderboard functionality (either, or both, via a full leaderboard on the web - with some sort of token or oauth - and a shorter leaderboard via a command in Slack)
+* The ability to customise the messages the bot sends back (eg. via environment variables)
 * Move to the newer, more secure method of calculating signatures for incoming Slack hooks
-* Something you'd like to see? [Create an issue](https://github.com/tdmalone/working-plusplus/issues/new) or [send a pull request](https://github.com/tdmalone/working-plusplus/compare) if you can implement it yourself!
+* A way to look up someone's karma without necessarily `++`'ing or `--`'ing them (eg. `@username==`)
+* Support for posting back messages within threads, rather than automatically jumping back out to the channel
+* Support for detecting multiple actions within one message
+* Natural language processing to figure out positive and negative sentiment automatically
+* Option to deduct karma instead of adding karma when someone tries to give themselves karma
+* Option to deduct karma automatically for swearing (with customisable word list?)
+* Record and make accessible how many karma points someone has _given_
 
 ## License
 

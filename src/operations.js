@@ -3,7 +3,7 @@
  */
 
 module.exports = {
-    PLUS: 'plus',
-    MINUS: 'minus',
-    SELF: 'selfPlus',
+  PLUS: 'plus',
+  MINUS: 'minus',
+  SELF: 'selfPlus',
 };

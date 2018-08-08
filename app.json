@@ -15,6 +15,10 @@
     "SLACK_VERIFICATION_TOKEN": {
       "description": "Verification Token provided by Slack. Find this under Basic Information -> App Credentials within your Slack app management page.",
       "value": "xxxxxxxxxxxxxxxxxxxxxxxx"
+    },
+    "YARN_PRODUCTION": {
+      "description": "This configures Heroku to only install production dependencies. See https://devcenter.heroku.com/articles/nodejs-support#package-installation for more details.",
+      "value": true
     }
   },
   "addons": [

@@ -1,0 +1,27 @@
+language: node_js
+node_js: 10.8.0
+
+cache:
+  yarn: true
+  directories:
+    - node_modules
+
+# Upgrade Yarn to the version specified in package.json.
+before_install:
+  - curl --location https://yarnpkg.com/install.sh | bash -s -- --version "$( node -e "console.log(require('./package.json').engines.yarn)" )"
+  - export PATH="$HOME/.yarn/bin:$PATH"
+
+install: yarn
+
+script:
+  - yarn lint
+  - yarn test
+
+# On success, deployments are automatically handled by Heroku.
+
+notifications:
+  email: false
+  slack:
+    on_start: always
+    rooms:
+      - secure: UbCK1YGnopRxELn0sxl1Ra7/c4GjAHYb77FRS3mzgOdIzg+C3VyAilIL1SpAS3ue7IGyG+DeTtVa1azC4Xwo9abpk5/wJQxYBFlBoYV2VO9JWgz74L4i/rW00cbFZDozCv1Df3mwq9OUe6S5eXDY4KSR36hod48aZ/PRwHL8uj/VyYku5JA1BI3nyIQx7N7Tn26jzQkC2M74aO4tN3FSwrYyV0805In43+rUKGnb65glJ+nxrW6A6lBsTH9MiIt2xk9FFBuF9ZQUjG0Fu4asOGROqJp4w5b1p7Hf2PVWB773oFQuNIi4H2jEiHO/QUAtmn8i5lCuzLpB1PuGmcQGIpw4GdZE5R0gZ7au0sgqmiNM20v+5L355M0+bK+BfyEKLz+rBIl0mmmWd1rXipErlhsmQRsp1bvMk7pjoeQGgJ4Qrt9NZYqkmBR/629fGsf68maSNR+AFbYzXeOcSq/6VK445QMdw8XygYiQVswS7Kyu3/s2VeaDJOPUORpJ2jehGsj5a1B0jTpPMYXGVMwYRfA5CqT8BqM0BvwvzHtyz/sGHodMr3UIodBWBIyDigP7Pk8gYN0hTsg6rVZ7SkjWgOKxcuwOnRwA36T9KfVfyEcDfbcyROl3fSTn5wNABBrUxaFU12paTlIQlZ4Gveh9W80xN5y9fHXWJb+B80bHbnA=
