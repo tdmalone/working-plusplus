@@ -78,7 +78,7 @@ Further instructions, such as hosting elsewhere, upgrading, etc. are coming soon
 
 Contributions are welcome! [Create an issue](https://github.com/tdmalone/working-plusplus/issues/new) if there's something you'd like to see or [send a pull request](https://github.com/tdmalone/working-plusplus/compare) if you can implement it yourself.
 
-To develop locally, follow most of the *Installation* instructions above, except rather than deploying to Heroku, clone this repo locally and then install dependencies:
+To develop locally, follow most of the *Installation* instructions above, except **instead of step 5** (deploying to Heroku), clone this repo locally and then install dependencies:
 
     $ git clone https://github.com/tdmalone/working-plusplus
     $ cd working-plusplus
@@ -102,11 +102,15 @@ Finally, you'll need to be able to have Slack contact your development instance 
 
     ./ngrok http 80 # Or port 5000 if you're running with heroku local.
 
-ngrok will provide you with the public URL your app is accessible on; this is the URL you'll need to use in Step 6 of the installation instructions above.
+ngrok will provide you with the public URL your app is accessible on. This is the URL you'll then need to use in **step 6** of the installation instructions above.
+
+Other than the modifications to steps 5 and 6, make sure you've followed all the rest of the installation instructions. You should then be set up and ready with a local development instance that you can interact with directly on Slack! If you run into any problems, feel free to [create an issue](https://github.com/tdmalone/working-plusplus/issues/new).
+
+When submitting pull requests, please check first that your changes pass linting and tests (`yarn lint` and `yarn test`). If you come across annoying *stylistic* linting rules, feel free to [change them](https://eslint.org/docs/rules/) in [`.eslintrc.js`](.eslintrc.js) as part of your pull request, providing they don't cause an adverse effect on existing code. You may also find `yarn fix` useful to automatically fix certain issues.
 
 ## TODO
 
-Although it works, it's very basic. Enhancements include:
+Although it works, it's very basic. Potential enhancements include:
 
 * Improve tests for much better coverage
 * A way to retrieve the current version/git hash from Slack, for sanity-checking of deployments
