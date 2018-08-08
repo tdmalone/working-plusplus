@@ -143,7 +143,7 @@ const handleEvent = async( event ) => {
   // Respond.
 
   const itemMaybeLinked = item.match( /U[A-Z0-9]{8}/ ) ? '<@' + item + '>' : item;
-  const pluralise = 1 === score ? '' : 's';
+  const pluralise = 1 === Math.abs( score ) ? '' : 's';
   const message = getRandomMessage( operation );
 
   slack.chat.postMessage({
