@@ -30,10 +30,32 @@ const app = express(),
       postgres = new pg.Pool({ connectionString: DATABASE_URL, ssl: true }),
       slack = new slackClient.WebClient( SLACK_BOT_USER_OAUTH_ACCESS_TOKEN );
 
-const getRandomMessage = ( operation ) => {
-  max = messages[ operation ].length - 1;
-  random = Math.floor( Math.random() * max );
-  return messages[ operation ][ random ];
+const getRandomMessage = ( operation, item, score ) => {
+  var format = "";
+
+  switch(operation) {
+    case OPERATION_MINUS:
+    case OPERATION_PLUS:
+      format = "<message> *<item>* is now on <score> point<plural>.";
+      break;
+    case OPERATION_SELF:
+    default:
+      format = "<item> <message>";
+      break;
+  }
+
+  var plural = score == 1 ? "" : "s";
+
+  var max = messages[ operation ].length - 1;
+  var random = Math.floor( Math.random() * max );
+  var message = messages[ operation ][ random ];
+
+  var formattedMessage = format.replace("<item>", item)
+    .replace("<score>", score)
+    .replace("<plural>", plural)
+    .replace("<message>", message);
+
+  return formattedMessage;
 };
 
 app.use( bodyParser.json() );
@@ -120,11 +142,11 @@ app.post( '/', async ( request, response ) => {
   // If the user is trying to ++ themselves...
   if ( item === event.user && '+' === operation ) {
 
-    const message = getRandomMessage(OPERATION_SELF);
+    const message = getRandomMessage(OPERATION_SELF, '<@' + event.user + '>', 0);
 
     slack.chat.postMessage({
       channel: event.channel,
-      text: '<@' + event.user + '> ' + message,
+      text: message,
     }).then( ( data ) => {
       console.log(
         data.ok ?
@@ -154,15 +176,11 @@ app.post( '/', async ( request, response ) => {
 
   // Respond.
   const itemMaybeLinked = item.match( /U[A-Z0-9]{8}/ ) ? '<@' + item + '>' : item;
-  const pluralise = score === 1 ? '' : 's';
   operation = operation.replace( '+', OPERATION_PLUS ).replace( '-', OPERATION_MINUS );
-  const message = getRandomMessage( operation );
+  const message = getRandomMessage( operation, itemMaybeLinked, score );
   slack.chat.postMessage({
     channel: event.channel,
-    text: (
-      message + ' ' +
-      '*' + itemMaybeLinked + '* is now on ' + score + ' point' + pluralise + '.'
-    )
+    text: message
   }).then( ( data ) => {
     console.log( data.ok ? item + ' now on ' + score : 'Error occurred posting response.' );
   });
