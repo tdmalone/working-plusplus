@@ -108,10 +108,18 @@ ngrok will provide you with the public URL your app is accessible on; this is th
 
 Although it works, it's very basic. Enhancements include:
 
-* Add tests
-* Add a leaderboard
-* Add the ability to customise the messages the bot sends back
+* Improve tests for much better coverage
+* A way to retrieve the current version/git hash from Slack, for sanity-checking of deployments
+* Leaderboard functionality (either, or both, via a full leaderboard on the web - with some sort of token or oauth - and a shorter leaderboard via a command in Slack)
+* The ability to customise the messages the bot sends back (eg. via environment variables)
 * Move to the newer, more secure method of calculating signatures for incoming Slack hooks
+* A way to look up someone's karma without necessarily `++`'ing or `--`'ing them (eg. `@username==`)
+* Support for posting back messages within threads, rather than automatically jumping back out to the channel
+* Support for detecting multiple actions within one message
+* Natural language processing to figure out positive and negative sentiment automatically
+* Option to deduct karma instead of adding karma when someone tries to give themselves karma
+* Option to deduct karma automatically for swearing (with customisable word list?)
+* Record and make accessible how many karma points someone has _given_
 
 ## License
 
