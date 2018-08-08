@@ -114,16 +114,16 @@ You can run just the unit tests with `yarn unit-tests`, and just the integration
 
 You can modify the default testing behaviour by adjusting the relevant `scripts` in [`package.json`](package.json) or in some cases by passing additional [Jest configuration parameters](https://jestjs.io/docs/en/configuration.html) on the command line.
 
-If you come across annoying *stylistic* linting rules, feel free to [change them](https://eslint.org/docs/rules/) in [`.eslintrc.js`](.eslintrc.js) as part of your pull request, providing they don't cause an adverse effect on existing code. Some linting issues can be automatically fixed by running `yarn fix`.
+If you come across annoying *stylistic* linting rules, feel free to [change them](https://eslint.org/docs/rules/) in [`.eslintrc.js`](.eslintrc.js) as part of your pull request, providing they don't cause an adverse effect on existing code. Many linting issues can be automatically fixed by running `yarn fix`.
 
 ## TODO
 
 Although it works, it's very basic. Potential enhancements include:
 
-* Improve tests for much better coverage
+* Improve tests for much better coverage **(in progress on [#dev](https://github.com/tdmalone/working-plusplus/tree/dev))**
 * A way to retrieve the current version/git hash from Slack, for sanity-checking of deployments
 * Leaderboard functionality (either, or both, via a full leaderboard on the web - with some sort of token or oauth - and a shorter leaderboard via a command in Slack)
-* The ability to customise the messages the bot sends back (eg. via environment variables)
+* The ability to customise the messages the bot sends back at runtime (eg. via environment variables)
 * Move to the newer, more secure method of calculating signatures for incoming Slack hooks
 * A way to look up someone's karma without necessarily `++`'ing or `--`'ing them (eg. `@username==`)
 * Support for posting back messages within threads, rather than automatically jumping back out to the channel
@@ -132,6 +132,7 @@ Although it works, it's very basic. Potential enhancements include:
 * Option to deduct karma instead of adding karma when someone tries to give themselves karma
 * Option to deduct karma automatically for swearing (with customisable word list?)
 * Record and make accessible how many karma points someone has _given_
+* Enhance messages to support interpolation of variables such as score and name of user or thing **(in progress, see [#1](https://github.com/tdmalone/working-plusplus/pull/1))**
 
 ## License
 
