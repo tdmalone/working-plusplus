@@ -110,7 +110,7 @@ Other than the modifications to steps 5 and 6, make sure you've followed all the
 
 Before submitting pull requests, please check that your changes pass linting and tests by running `yarn lint` and `yarn test`. These will also be run for you by Travis CI, but it's often quicker to debug and resolve the issues locally.
 
-You can run just the unit tests with `yarn unit-tests`, and just the integration tests with `yarn integration-tests`. By default `yarn test` will run unit tests first, and then only integration tests if the unit tests pass. It is normal to see errors while running the integration tests - some of the tests specifically check for these errors - but keep an eye on the exit code of the process to determine if it is successful (run `echo $?` immediately after running `yarn test` - you're looking for an exit code of `0` for a pass.)
+You can run just the unit tests with `yarn unit-tests`, and just the integration tests with `yarn integration-tests`. It is normal to see errors while running the integration tests - some of the tests specifically check for these errors - but keep an eye on the exit code of the process to determine if it is successful (run `echo $?` immediately after running `yarn test` - you're looking for an exit code of `0` for a pass.)
 
 You can modify the default testing behaviour by adjusting the relevant `scripts` in [`package.json`](package.json) or in some cases by passing additional [Jest configuration parameters](https://jestjs.io/docs/en/configuration.html) on the command line.
 
