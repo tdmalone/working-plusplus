@@ -9,13 +9,13 @@
   "scripts": {
     "lint": "DEBUG=eslint:cli-engine eslint --color --ignore-pattern '/coverage/' --ignore-pattern '/docs/' --ignore-pattern '!.eslintrc.js' \"**/*.js\"",
     "fix": "yarn lint --fix",
-    "test": "yarn unit-tests && yarn integration-tests",
+    "test": "PORT=5000 jest --verbose --coverage --forceExit",
     "unit-tests": "jest --verbose --coverage --testPathIgnorePatterns 'integration-tests'",
     "integration-tests": "PORT=5000 jest --forceExit integration-tests"
   },
   "engines": {
     "node": "10.8.0",
-    "yarn": "1.7.0"
+    "yarn": "1.9.4"
   },
   "keywords": [
     "slack",
