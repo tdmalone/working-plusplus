@@ -100,7 +100,7 @@ const handleEvent = async( event ) => {
   // If the user is trying to ++ themselves...
   if ( item === event.user && '+' === operation ) {
 
-    const message = getRandomMessage( operation.SELF, '<@' + event.user + '>', 0 );
+    const message = getRandomMessage( operations.SELF, '<@' + event.user + '>', 0 );
 
     slack.chat.postMessage({
       channel: event.channel,
