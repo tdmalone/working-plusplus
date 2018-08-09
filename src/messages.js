@@ -72,16 +72,15 @@ const getRandomMessage = ( op, item, score ) => {
       break;
 
     default:
-      throw "Invalid operation: " + op;
+      throw 'Invalid operation: ' + op;
   }
 
-  var plural = score == Math.abs( 1 ) ? '' : 's';
+  const plural = 1 === Math.abs( score ) ? '' : 's';
+  const max = messages[ op ].length - 1;
+  const random = Math.floor( Math.random() * max );
+  const message = messages[ op ][ random ];
 
-  var max = messages[ op ].length - 1;
-  var random = Math.floor( Math.random() * max );
-  var message = messages[ op ][ random ];
-
-  var formattedMessage = format.replace( '<item>', item )
+  const formattedMessage = format.replace( '<item>', item )
     .replace( '<score>', score )
     .replace( '<plural>', plural )
     .replace( '<message>', message );
