@@ -13,16 +13,8 @@ test( 'A message is returned for the plus operation', () => {
   expect( typeof messages.getRandomMessage( 'plus' ) ).toBe( 'string' );
 });
 
-test( 'A message is returned for the plus shorthand (+) operation', () => {
-  expect( typeof messages.getRandomMessage( '+' ) ).toBe( 'string' );
-});
-
 test( 'A message is returned for the minus operation', () => {
   expect( typeof messages.getRandomMessage( 'minus' ) ).toBe( 'string' );
-});
-
-test( 'A message is returned for the minus shorthand (-) operation', () => {
-  expect( typeof messages.getRandomMessage( '-' ) ).toBe( 'string' );
 });
 
 test( 'A message is returned for the selfPlus operation', () => {
