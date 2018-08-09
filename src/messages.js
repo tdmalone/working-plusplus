@@ -78,7 +78,7 @@ messages[operation.SELF] = [ {
  */
 const getRandomMessage = ( op, item, score ) => {
   const messageSets = messages[ op ];
-  var setRandom,
+  let setRandom,
       set,
       totalProbability = 0,
       chosenSet = null,

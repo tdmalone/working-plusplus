@@ -29,7 +29,9 @@ module.exports = {
       enforceConst:       true
     } ],
 
-    'no-multi-str': [ 'off' ]
+    'no-multi-str': [ 'off' ],
+    'no-var':       [ 'error' ],
+    'prefer-const': [ 'error' ]
 
   }
 

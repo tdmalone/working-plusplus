@@ -14,7 +14,7 @@ const operations = [
   'minus',
   'selfPlus'
 ];
-var op;
+let op;
 
 for ( op of operations ) {
   test( 'A message is returned for the ' + op + ' operation', () => {

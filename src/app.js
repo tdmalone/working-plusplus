@@ -67,7 +67,7 @@ const isValidEvent = ( event ) =>{
 
 /** Handles events sent from Slack. */
 const handleEvent = async( event ) => {
-  var operation;
+  let operation;
 
   // Drop events where the text that doesn't mention anybody/anything.
   if ( -1 === event.text.indexOf( '@' ) ) {
