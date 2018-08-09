@@ -9,17 +9,18 @@
 
 const messages = require( '../src/messages' );
 
-test( 'A message is returned for the plus operation', () => {
-  expect( typeof messages.getRandomMessage( 'plus' ) ).toBe( 'string' );
-});
+const operations = [
+  'plus',
+  'minus',
+  'selfPlus'
+];
+var op;
 
-test( 'A message is returned for the minus operation', () => {
-  expect( typeof messages.getRandomMessage( 'minus' ) ).toBe( 'string' );
-});
-
-test( 'A message is returned for the selfPlus operation', () => {
-  expect( typeof messages.getRandomMessage( 'selfPlus' ) ).toBe( 'string' );
-});
+for ( op of operations ) {
+  test( 'A message is returned for the ' + op + ' operation', () => {
+    expect( typeof messages.getRandomMessage( op ) ).toBe( 'string' );
+  });
+}
 
 test( 'An error occurs for an invalid operation', () => {
   expect( () => {
