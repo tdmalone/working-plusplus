@@ -27,6 +27,10 @@
     "testMatch": [
       "**/tests/**/*.js"
     ],
+    "testPathIgnorePatterns": [
+      "/node_modules/",
+      "/.eslintrc.js"
+    ],
     "testURL": "http://localhost/"
   },
   "dependencies": {
