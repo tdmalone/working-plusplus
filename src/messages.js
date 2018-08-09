@@ -31,6 +31,9 @@ messages[operation.PLUS] = [ {
     'Sincerest congratulations.',
     'Delicious.'
   ]
+}, {
+  'probability': 1,
+  'set':         [ ':shifty:' ]
 } ];
 
 messages[operation.MINUS] = [ {
@@ -45,6 +48,9 @@ messages[operation.MINUS] = [ {
     'Oh.',
     'Condolences.'
   ]
+}, {
+  'probability': 1,
+  'set':         [ ':shifty:' ]
 } ];
 
 messages[operation.SELF] = [ {
@@ -55,6 +61,9 @@ messages[operation.SELF] = [ {
     'No. Just no.',
     'Not cool!'
   ]
+}, {
+  'probability': 1,
+  'set':         [ ':shifty:' ]
 } ];
 
 /**
