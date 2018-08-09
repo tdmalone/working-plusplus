@@ -11,7 +11,7 @@ node_js: 10.8.0
 env:
   global:
     - DATABASE_USER: postgres # Default user as per Travis docs.
-    - DATABASE_NAME: travis_ci_test
+    - DATABASE_NAME: plusplus_tests
     - DATABASE_URL: postgres://$DATABASE_USER@localhost:5432/$DATABASE_NAME
 
 services:
