@@ -11,55 +11,69 @@ const operation = require( './operations' );
 
 const messages = {};
 
-messages[operation.PLUS] = [
-  'Congrats!',
-  'Got it!',
-  'Bravo.',
-  'Oh well done.',
-  'Nice work!',
-  'Well done.',
-  'Exquisite.',
-  'Lovely.',
-  'Superb.',
-  'Classic!',
-  'Charming.',
-  'Noted.',
-  'Well, well!',
-  'Well played.',
-  'Sincerest congratulations.',
-  'Delicious.'
-];
+messages[operation.PLUS] = [ {
+  'probability': 100,
+  'set':         [
+    'Congrats!',
+    'Got it!',
+    'Bravo.',
+    'Oh well done.',
+    'Nice work!',
+    'Well done.',
+    'Exquisite.',
+    'Lovely.',
+    'Superb.',
+    'Classic!',
+    'Charming.',
+    'Noted.',
+    'Well, well!',
+    'Well played.',
+    'Sincerest congratulations.',
+    'Delicious.'
+  ]
+} ];
 
-messages[operation.MINUS] = [
-  'Oh RLY?',
-  'Oh, really?',
-  'Oh :slightly_frowning_face:.',
-  'I see.',
-  'Ouch.',
-  'Oh là là.',
-  'Oh.',
-  'Condolences.'
-];
+messages[operation.MINUS] = [ {
+  'probability': 100,
+  'set':         [
+    'Oh RLY?',
+    'Oh, really?',
+    'Oh :slightly_frowning_face:.',
+    'I see.',
+    'Ouch.',
+    'Oh là là.',
+    'Oh.',
+    'Condolences.'
+  ]
+} ];
 
-messages[operation.SELF] = [
-  'Hahahahahahaha no.',
-  'Nope.',
-  'No. Just no.',
-  'Not cool!'
-];
+messages[operation.SELF] = [ {
+  'probability': 100,
+  'set':         [
+    'Hahahahahahaha no.',
+    'Nope.',
+    'No. Just no.',
+    'Not cool!'
+  ]
+} ];
 
 /**
  * Retrieves a random message from the given pool of messages.
  *
- * @param {string}  operation The name of the operation to retrieve potential messages for.
- *                            See operations.js
- * @param {string}  item      The subject of the message, either "<@user>" or "object".
- * @param {integer} score     The item's current score
+ * @param {string}  op    The name of the operation to retrieve potential messages for.
+ *                        See operations.js
+ * @param {string}  item  The subject of the message, either "<@user>" or "object".
+ * @param {integer} score The item's current score
  *
  * @returns {string} A random message from the chosen pool.
  */
 const getRandomMessage = ( op, item, score ) => {
-  var format = '';
+  const messageSets = messages[ op ];
+  var setRandom,
+      set,
+      totalProbability = 0,
+      chosenSet = null,
+      format = '';
 
   switch ( op ) {
     case operation.MINUS:
@@ -75,10 +89,30 @@ const getRandomMessage = ( op, item, score ) => {
       throw 'Invalid operation: ' + op;
   }
 
+  for ( set of messageSets ) {
+    totalProbability += set.probability;
+  }
+
+  setRandom = Math.floor( Math.random() * totalProbability );
+
+  for ( set of messageSets ) {
+    setRandom -= set.probability;
+
+    if ( 0 > setRandom ) {
+      chosenSet = set.set;
+
+      break;
+    }
+  }
+
+  if ( null === chosenSet ) {
+    throw 'Could not find set for ' + op + ' ran out of sets with ' + setRandom + ' remaining';
+  }
+
   const plural = 1 === Math.abs( score ) ? '' : 's';
-  const max = messages[ op ].length - 1;
+  const max = chosenSet.length - 1;
   const random = Math.floor( Math.random() * max );
-  const message = messages[ op ][ random ];
+  const message = chosenSet[ random ];
 
   const formattedMessage = format.replace( '<item>', item )
     .replace( '<score>', score )
