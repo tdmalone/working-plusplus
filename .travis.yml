@@ -28,7 +28,7 @@ before_install:
   - export PATH="$HOME/.yarn/bin:$PATH"
 
 install:
-  - yarn
+  - yarn --frozen-lockfile
 
 before_script:
   - psql --command="CREATE DATABASE $DATABASE_NAME;" --username="$DATABASE_USER"
