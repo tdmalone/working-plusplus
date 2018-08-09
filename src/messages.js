@@ -51,8 +51,11 @@ messages[operation.SELF] = [
 /**
  * Retrieves a random message from the given pool of messages.
  *
- * @param {string} operation The name of the operation to retrieve potential messages for. Accepts
- *                           'plus', 'minus', and 'selfPlus', as well as the shorthand '+' and '-'.
+ * @param {string}  operation The name of the operation to retrieve potential messages for.
+ *                            See operations.js
+ * @param {string}  item      The subject of the message, either "<@user>" or "object".
+ * @param {integer} score     The item's current score
+ *
  * @returns {string} A random message from the chosen pool.
  */
 const getRandomMessage = ( op, item, score ) => {
