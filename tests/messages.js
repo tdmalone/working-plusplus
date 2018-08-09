@@ -14,11 +14,12 @@ const operations = [
   'minus',
   'selfPlus'
 ];
-let op;
 
-for ( op of operations ) {
-  test( 'A message is returned for the ' + op + ' operation', () => {
-    expect( typeof messages.getRandomMessage( op ) ).toBe( 'string' );
+let operation;
+
+for ( operation of operations ) {
+  test( 'A message is returned for the ' + operation + ' operation', () => {
+    expect( typeof messages.getRandomMessage( operation ) ).toBe( 'string' );
   });
 }
 

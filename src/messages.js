@@ -7,11 +7,10 @@
 
 'use strict';
 
-const operation = require( './operations' );
-
+const operations = require( './operations' );
 const messages = {};
 
-messages[operation.PLUS] = [ {
+messages[operations.PLUS] = [ {
   'probability': 100,
   'set':         [
     'Congrats!',
@@ -36,7 +35,7 @@ messages[operation.PLUS] = [ {
   'set':         [ ':shifty:' ]
 } ];
 
-messages[operation.MINUS] = [ {
+messages[operations.MINUS] = [ {
   'probability': 100,
   'set':         [
     'Oh RLY?',
@@ -53,7 +52,7 @@ messages[operation.MINUS] = [ {
   'set':         [ ':shifty:' ]
 } ];
 
-messages[operation.SELF] = [ {
+messages[operations.SELF] = [ {
   'probability': 100,
   'set':         [
     'Hahahahahahaha no.',
@@ -69,33 +68,34 @@ messages[operation.SELF] = [ {
 /**
  * Retrieves a random message from the given pool of messages.
  *
- * @param {string}  op    The name of the operation to retrieve potential messages for.
- *                        See operations.js
- * @param {string}  item  The subject of the message, either "<@user>" or "object".
- * @param {integer} score The item's current score
+ * @param {string}  operation The name of the operation to retrieve potential messages for.
+ *                            See operations.js.
+ * @param {string}  item      The subject of the message, either "<@user>" or "object".
+ * @param {integer} score     The item's current score.
  *
  * @returns {string} A random message from the chosen pool.
  */
-const getRandomMessage = ( op, item, score ) => {
-  const messageSets = messages[ op ];
+const getRandomMessage = ( operation, item, score ) => {
+
+  const messageSets = messages[ operation ];
   let setRandom,
       set,
       totalProbability = 0,
       chosenSet = null,
       format = '';
 
-  switch ( op ) {
-    case operation.MINUS:
-    case operation.PLUS:
+  switch ( operation ) {
+    case operations.MINUS:
+    case operations.PLUS:
       format = '<message> *<item>* is now on <score> point<plural>.';
       break;
 
-    case operation.SELF:
+    case operations.SELF:
       format = '<item> <message>';
       break;
 
     default:
-      throw 'Invalid operation: ' + op;
+      throw 'Invalid operation: ' + operation;
   }
 
   for ( set of messageSets ) {
@@ -115,7 +115,9 @@ const getRandomMessage = ( op, item, score ) => {
   }
 
   if ( null === chosenSet ) {
-    throw 'Could not find set for ' + op + ' ran out of sets with ' + setRandom + ' remaining';
+    throw (
+      'Could not find set for ' + operation + ' ran out of sets with ' + setRandom + ' remaining'
+    );
   }
 
   const plural = 1 === Math.abs( score ) ? '' : 's';
@@ -130,7 +132,7 @@ const getRandomMessage = ( op, item, score ) => {
 
   return formattedMessage;
 
-};
+}; // GetRandomMessage.
 
 module.exports = {
   getRandomMessage: getRandomMessage
