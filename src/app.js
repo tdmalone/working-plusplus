@@ -66,6 +66,7 @@ const isValidEvent = ( event ) =>{
 
 /** Handles events sent from Slack. */
 const handleEvent = async( event ) => {
+  var operation;
 
   // Drop events where the text that doesn't mention anybody/anything.
   if ( -1 === event.text.indexOf( '@' ) ) {
@@ -90,7 +91,7 @@ const handleEvent = async( event ) => {
   // We take the operation down to one character, and also support — due to iOS' replacement of --.
   const data = event.text.match( /@([A-Za-z0-9.\-_]*?)>?\s*([-+]{2}|—{1})/ );
   const item = data[1];
-  const operation = data[2].substring( 0, 1 ).replace( '—', '-' );
+  operation = data[2].substring( 0, 1 ).replace( '—', '-' );
 
   // If we somehow didn't get anything, drop it. This can happen when eg. @++ is typed.
   if ( ! item.trim() ) {
