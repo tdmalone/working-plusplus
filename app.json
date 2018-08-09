@@ -18,7 +18,7 @@
     },
     "YARN_PRODUCTION": {
       "description": "This configures Heroku to only install production dependencies. See https://devcenter.heroku.com/articles/nodejs-support#package-installation for more details.",
-      "value": true
+      "value": "true"
     }
   },
   "addons": [
