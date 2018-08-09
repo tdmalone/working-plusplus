@@ -12,7 +12,8 @@
 
 const slackClient = require( '@slack/client' ),
       pg = require( 'pg' ),
-      { getRandomMessage } = require( './messages' );
+      { getRandomMessage } = require( './messages' ),
+      operations = require( './operations' );
 
 // Get environment variables.
 /* eslint-disable no-process-env */
@@ -99,11 +100,11 @@ const handleEvent = async( event ) => {
   // If the user is trying to ++ themselves...
   if ( item === event.user && '+' === operation ) {
 
-    const message = getRandomMessage( 'selfPlus' );
+    const message = getRandomMessage( operations.SELF, '<@' + event.user + '>', 0 );
 
     slack.chat.postMessage({
       channel: event.channel,
-      text:    '<@' + event.user + '> ' + message
+      text:    message
     }).then( ( data ) => {
       console.log(
         data.ok ?
@@ -143,15 +144,12 @@ const handleEvent = async( event ) => {
   // Respond.
 
   const itemMaybeLinked = item.match( /U[A-Z0-9]{8}/ ) ? '<@' + item + '>' : item;
-  const pluralise = 1 === Math.abs( score ) ? '' : 's';
-  const message = getRandomMessage( operation );
+  operation = operation.replace( '+', operations.PLUS ).replace( '-', operations.MINUS );
+  const message = getRandomMessage( operation, itemMaybeLinked, score );
 
   slack.chat.postMessage({
     channel: event.channel,
-    text:    (
-      message + ' ' +
-              '*' + itemMaybeLinked + '* is now on ' + score + ' point' + pluralise + '.'
-    )
+    text:    message
   }).then( ( data ) => {
     console.log( data.ok ? item + ' now on ' + score : 'Error occurred posting response.' );
   });
