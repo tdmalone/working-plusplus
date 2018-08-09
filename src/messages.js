@@ -7,7 +7,7 @@
 
 'use strict';
 
-const operation = require('./operations');
+const operation = require( './operations' );
 
 const messages = {};
 
@@ -61,7 +61,7 @@ messages[operation.SELF] = [
 const getRandomMessage = ( op, item, score ) => {
   var format = '';
 
-  switch(op) {
+  switch ( op ) {
     case operation.MINUS:
     case operation.PLUS:
       format = '<message> *<item>* is now on <score> point<plural>.';
@@ -69,7 +69,7 @@ const getRandomMessage = ( op, item, score ) => {
 
     case operation.SELF:
     default:
-    format = '<item> <message>';
+      format = '<item> <message>';
       break;
   }
 
@@ -79,14 +79,14 @@ const getRandomMessage = ( op, item, score ) => {
   var random = Math.floor( Math.random() * max );
   var message = messages[ op ][ random ];
 
-  var formattedMessage = format.replace('<item>', item)
-    .replace('<score>', score)
-    .replace('<plural>', plural)
-    .replace('<message>', message);
+  var formattedMessage = format.replace( '<item>', item )
+    .replace( '<score>', score )
+    .replace( '<plural>', plural )
+    .replace( '<message>', message );
 
-   return formattedMessage;
+  return formattedMessage;
 
-}
+};
 
 module.exports = {
   getRandomMessage: getRandomMessage

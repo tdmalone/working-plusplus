@@ -13,7 +13,7 @@
 const slackClient = require( '@slack/client' ),
       pg = require( 'pg' ),
       { getRandomMessage } = require( './messages' ),
-      operations = require('./operations');
+      operations = require( './operations' );
 
 // Get environment variables.
 /* eslint-disable no-process-env */
@@ -104,7 +104,7 @@ const handleEvent = async( event ) => {
 
     slack.chat.postMessage({
       channel: event.channel,
-      text: message,
+      text:    message
     }).then( ( data ) => {
       console.log(
         data.ok ?
@@ -149,7 +149,7 @@ const handleEvent = async( event ) => {
 
   slack.chat.postMessage({
     channel: event.channel,
-    text: message
+    text:    message
   }).then( ( data ) => {
     console.log( data.ok ? item + ' now on ' + score : 'Error occurred posting response.' );
   });
