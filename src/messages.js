@@ -68,9 +68,11 @@ const getRandomMessage = ( op, item, score ) => {
       break;
 
     case operation.SELF:
-    default:
       format = '<item> <message>';
       break;
+
+    default:
+      throw "Invalid operation: " + op;
   }
 
   var plural = score == Math.abs( 1 ) ? '' : 's';
