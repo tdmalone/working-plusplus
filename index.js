@@ -23,6 +23,11 @@ server.enable( 'trust proxy' );
 server.get( '/', app.handleGet );
 server.post( '/', app.handlePost );
 
-server.listen( PORT, () => {
+const listener = server.listen( PORT, () => {
   console.log( 'Listening on port ' + PORT + '.' );
 });
+
+module.exports = {
+  server:   server,
+  listener: listener
+};

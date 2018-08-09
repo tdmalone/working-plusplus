@@ -4,82 +4,221 @@
  * TODO: Add a lot more tests to this.
  *
  * @see https://jestjs.io/docs/en/expect
+ * @see https://jestjs.io/docs/en/asynchronous.html
+ * @see https://jestjs.io/docs/en/mock-functions#mocking-modules
  * @author Tim Malone <tdmalone@gmail.com>
  */
 
 'use strict';
 
-// Start the Express server.
-require( '../' );
+/******************************
+ * Environment Configuration.
+ ******************************/
 
-const http = require( 'http' );
+const http = require( 'http' ),
+      pg = require( 'pg' );
 
 /* eslint-disable no-process-env, no-magic-numbers */
-const PORT = process.env.PORT || 80;
+const originalProcessEnv = process.env;
+const PORT = process.env.PORT || 80,
+      SLACK_VERIFICATION_TOKEN = process.env.SLACK_VERIFICATION_TOKEN,
+      DATABASE_URL = process.env.DATABASE_URL,
+      DATABASE_USE_SSL = 'false' === process.env.DATABASE_USE_SSL ? false : true;
 /* eslint-enable no-process-env, no-magic-numbers */
 
 const HTTP_200 = 200,
-      HTTP_500 = 500;
+      HTTP_403 = 403,
+      HTTP_500 = 500,
+      scoresTableName = 'scores',
+      postgresPoolConfig = {
+        connectionString: DATABASE_URL,
+        ssl:              DATABASE_USE_SSL
+      };
+
+const postgres = new pg.Pool( postgresPoolConfig );
+
+const defaultRequestOptions = {
+  host:   'localhost',
+  method: 'POST',
+  port:   PORT,
+
+  headers: {
+    'Content-Type': 'application/json'
+  }
+};
+
+const databaseExistsQuery = 'SELECT EXISTS ( ' +
+  'SELECT 1 FROM information_schema.tables WHERE table_name = \'' + scoresTableName + '\'' +
+')';
+
+/******************************
+ * Jest Setup.
+ ******************************/
+
+// Catch all console output during tests.
+console.error = jest.fn();
+console.info = jest.fn();
+console.log = jest.fn();
+console.warn = jest.fn();
+
+// Drop the scores table before we start, as our tests rely on that.
+beforeAll( async( done ) => {
+  const dbClient = await postgres.connect();
+  await dbClient.query( 'DROP TABLE IF EXISTS ' + scoresTableName );
+  done();
+});
+
+// Clear module cache + reset environment variables before each test.
+beforeEach( () => {
+  jest.resetModules();
+  process.env = { ...originalProcessEnv }; // eslint-disable-line no-process-env
+});
+
+/******************************
+ * Express Server Tests.
+ ******************************/
 
 test( 'Server returns HTTP 200 for GET operations', done => {
-  http.get( 'http://localhost:' + PORT, response => {
-    expect( response.statusCode ).toBe( HTTP_200 );
-    done();
+  const listener = require( '../' ).listener;
+
+  listener.on( 'listening', () => {
+    http.get( 'http://localhost:' + PORT, response => {
+      listener.close();
+      expect( response.statusCode ).toBe( HTTP_200 );
+      done();
+    });
   });
+
 });
 
 test( 'Server correctly returns the Slack event challenge value', done => {
-
-  const requestOptions = {
-    host:   'localhost',
-    method: 'POST',
-    port:   PORT,
-
-    headers: {
-      'Content-Type': 'application/json'
-    }
-  };
+  const listener = require( '../' ).listener;
 
   const requestBody = {
     challenge: Math.random().toString()
   };
 
-  const request = http.request( requestOptions, response => {
-    let data = '';
-    response.on( 'data', chunk => {
-      data += chunk;
-    }).on( 'end', () => {
-      expect( response.statusCode ).toBe( HTTP_200 );
-      expect( data ).toBe( requestBody.challenge );
-      done();
-    });
-  });
+  listener.on( 'listening', () => {
+    const request = http.request( defaultRequestOptions, response => {
 
-  request.write( JSON.stringify( requestBody ) );
-  request.end();
+      let data = '';
+
+      response.on( 'data', chunk => {
+        data += chunk;
+      }).on( 'end', () => {
+        listener.close();
+        expect( response.statusCode ).toBe( HTTP_200 );
+        expect( data ).toBe( requestBody.challenge );
+        done();
+      });
+    });
+
+    request.write( JSON.stringify( requestBody ) );
+    request.end();
+
+  });
 });
 
 test( 'Server returns HTTP 500 when no verification token is set', done => {
 
-  const requestOptions = {
-    host:   'localhost',
-    method: 'POST',
-    port:   PORT
+  // eslint-disable-next-line no-process-env
+  delete process.env.SLACK_VERIFICATION_TOKEN;
+  const listener = require( '../' ).listener;
+
+  listener.on( 'listening', () => {
+    http.request( defaultRequestOptions, response => {
+      listener.close();
+      expect( response.statusCode ).toBe( HTTP_500 );
+      done();
+    }).end();
+  });
+
+});
+
+test( 'Server returns HTTP 500 when verification token is still set to the default', done => {
+
+  // eslint-disable-next-line no-process-env
+  process.env.SLACK_VERIFICATION_TOKEN = 'xxxxxxxxxxxxxxxxxxxxxxxx';
+  const listener = require( '../' ).listener;
+
+  listener.on( 'listening', () => {
+    http.request( defaultRequestOptions, response => {
+      listener.close();
+      expect( response.statusCode ).toBe( HTTP_500 );
+      done();
+    }).end();
+  });
+
+});
+
+test( 'Server returns HTTP 403 when verification token is incorrect', done => {
+
+  const listener = require( '../' ).listener;
+
+  const body = {
+    token: 'something_is_not_right'
   };
 
-  http.request( requestOptions, response => {
-    expect( response.statusCode ).toBe( HTTP_500 );
-    done();
-  }).end();
+  listener.on( 'listening', () => {
+
+    const request = http.request( defaultRequestOptions, response => {
+      listener.close();
+      expect( response.statusCode ).toBe( HTTP_403 );
+      done();
+    });
+
+    request.write( JSON.stringify( body ) );
+    request.end();
+
+  });
+});
+
+/********************
+ * Postgres Tests.
+ ********************/
+
+test( 'Database table does not exist yet', async() => {
+  const dbClient = await postgres.connect();
+  const query = await dbClient.query( databaseExistsQuery );
+  expect( query.rows[0].exists ).toBe( false );
+});
+
+// TODO: Need to mock Slack before we can run this.
+test.skip( 'Database table gets created on first request', async( done ) => {
+
+  expect.assertions( 1 );
+
+  const dbClient = await postgres.connect();
+  const listener = require( '../' ).listener;
+
+  const body = {
+    token: SLACK_VERIFICATION_TOKEN,
+    event: {
+      type: 'message',
+      text: '@something++'
+    }
+  };
+
+  listener.on( 'listening', () => {
+
+    const request = http.request( defaultRequestOptions, response => {
+      response.on( 'end', async() => {
+        listener.close();
+        const queryAfter = await dbClient.query( databaseExistsQuery );
+        expect( queryAfter.rows[0].exists ).toBe( true );
+        done();
+      });
+    });
+
+    request.write( JSON.stringify( body ) );
+    request.end();
+
+  });
 });
 
 // TODO: Mock Slack.
-// TODO: Mock Postgres (or use a local server).
 
-// TODO: Test server returns HTTP 403 when incorrect verification token is supplied.
 // TODO: Test server drops Slack retries.
-
-// TODO: Test DB table gets created.
 // TODO: Test CITEXT extension is added if not exists.
 
 // TODO: Test ++ works for brand new 'thing' A and then equals 1.

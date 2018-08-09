@@ -11,11 +11,14 @@ module.exports = {
   extends: [ 'tdmalone' ],
 
   parserOptions: {
-    ecmaVersion: 8
+    ecmaVersion: 9 // Aka ES2018. @see https://node.green/#ES2018
   },
 
   rules: {
-    'max-statements':   [ 'error', { max: 75 } ],
+
+    'max-nested-callbacks': [ 'error', { max: 4 } ],
+    'max-statements':       [ 'error', { max: 75 } ],
+
     'no-magic-numbers': [ 'error', {
       ignore: [
         -1,
@@ -25,7 +28,9 @@ module.exports = {
       ignoreArrayIndexes: true,
       enforceConst:       true
     } ],
+
     'no-multi-str': [ 'off' ]
+
   }
 
 };

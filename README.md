@@ -110,6 +110,8 @@ Other than the modifications to steps 5 and 6, make sure you've followed all the
 
 Before submitting pull requests, please check that your changes pass linting and tests by running `yarn lint` and `yarn test`. These will also be run for you by Travis CI, but it's often quicker to debug and resolve the issues locally.
 
+⚠️ _You will need access to a PostgreSQL server to run the integration tests. If you don't, just run the unit tests (see below) and let Travis CI run the full test suite for you._
+
 ℹ️ _If you don't have Yarn, you can replace any mention of `yarn` in this section with `npm run`._
 
 You can run just the unit tests with `yarn unit-tests`, and just the integration tests with `yarn integration-tests`. It is normal to see errors while running the integration tests - some of the tests specifically check for these errors - but keep an eye on the exit code of the process to determine if it is successful (run `echo $?` immediately after running `yarn test` - you're looking for an exit code of `0` for a pass.)

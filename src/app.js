@@ -19,7 +19,8 @@ const slackClient = require( '@slack/client' ),
 /* eslint-disable no-process-env */
 const SLACK_OAUTH_ACCESS_TOKEN = process.env.SLACK_BOT_USER_OAUTH_ACCESS_TOKEN,
       SLACK_VERIFICATION_TOKEN = process.env.SLACK_VERIFICATION_TOKEN,
-      DATABASE_URL = process.env.DATABASE_URL;
+      DATABASE_URL = process.env.DATABASE_URL,
+      DATABASE_USE_SSL = 'false' === process.env.DATABASE_USE_SSL ? false : true;
 /* eslint-enable no-process-env */
 
 const HTTP_403 = 403,
@@ -27,7 +28,7 @@ const HTTP_403 = 403,
       scoresTableName = 'scores',
       postgresPoolConfig = {
         connectionString: DATABASE_URL,
-        ssl:              true
+        ssl:              DATABASE_USE_SSL
       };
 
 const postgres = new pg.Pool( postgresPoolConfig ),

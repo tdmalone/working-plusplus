@@ -4,7 +4,6 @@
  * TODO: Add a lot more tests to this.
  *
  * @see https://jestjs.io/docs/en/expect
- * @see https://jestjs.io/docs/en/asynchronous.html
  * @author Tim Malone <tdmalone@gmail.com>
  */
 
@@ -12,9 +11,9 @@
 
 const app = require( '../src/app' );
 
-/**
+/********************
  * IsValidEvent.
- */
+ ********************/
 
 test( 'Event with message and text is reported as valid', () => {
   const event = {
@@ -69,9 +68,9 @@ test( 'Event with only a space as text is caught as invalid', () => {
   expect( app.isValidEvent( event ) ).toBe( false );
 });
 
-/**
+/********************
  * HandleEvent.
- */
+ ********************/
 
 test( 'Message without an @ symbol is dropped', () => {
   const event = {
