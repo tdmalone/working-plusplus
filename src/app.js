@@ -10,15 +10,15 @@
 
 'use strict';
 
-const slackClient = require( '@slack/client' ),
-      pg = require( 'pg' ),
+const pg = require( 'pg' ),
       { getRandomMessage } = require( './messages' ),
       operations = require( './operations' );
 
+let slack;
+
 // Get environment variables.
 /* eslint-disable no-process-env */
-const SLACK_OAUTH_ACCESS_TOKEN = process.env.SLACK_BOT_USER_OAUTH_ACCESS_TOKEN,
-      SLACK_VERIFICATION_TOKEN = process.env.SLACK_VERIFICATION_TOKEN,
+const SLACK_VERIFICATION_TOKEN = process.env.SLACK_VERIFICATION_TOKEN,
       DATABASE_URL = process.env.DATABASE_URL,
       DATABASE_USE_SSL = 'false' === process.env.DATABASE_USE_SSL ? false : true;
 /* eslint-enable no-process-env */
@@ -31,8 +31,12 @@ const HTTP_403 = 403,
         ssl: DATABASE_USE_SSL
       };
 
-const postgres = new pg.Pool( postgresPoolConfig ),
-      slack = new slackClient.WebClient( SLACK_OAUTH_ACCESS_TOKEN );
+const postgres = new pg.Pool( postgresPoolConfig );
+
+/** Injects the Slack client to be used for all outgoing messages. */
+const setSlackClient = ( client ) => {
+  slack = client;
+};
 
 /** Determines whether or not events sent from Slack can be handled by this app. */
 const isValidEvent = ( event ) => {
@@ -214,6 +218,7 @@ const handlePost = ( request, response ) => {
 }; // HandlePost.
 
 module.exports = {
+  setSlackClient: setSlackClient,
   isValidEvent: isValidEvent,
   handleEvent: handleEvent,
   handleGet: handleGet,

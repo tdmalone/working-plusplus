@@ -1,15 +1,16 @@
 /**
  * Unit tests on the main app.js file.
  *
- * TODO: Add a lot more tests to this.
- *
  * @see https://jestjs.io/docs/en/expect
  * @author Tim Malone <tdmalone@gmail.com>
  */
 
 'use strict';
 
-const app = require( '../src/app' );
+const app = require( '../src/app' ),
+      slack = require( './mocks/slack' );
+
+app.setSlackClient( slack );
 
 /********************
  * IsValidEvent.
@@ -105,8 +106,7 @@ test( 'Message without a valid user/item is dropped', () => {
   });
 });
 
-// TODO: Need to mock Slack (or change the code to make it easier to test) before we can run this.
-test.skip( 'User trying to ++ themselves is dropped', () => {
+test( 'User trying to ++ themselves is dropped', () => {
   const event = {
     type: 'message',
     text: '<@U12345678>++',
