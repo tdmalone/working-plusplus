@@ -28,6 +28,6 @@ const listener = server.listen( PORT, () => {
 });
 
 module.exports = {
-  server:   server,
+  server: server,
   listener: listener
 };
