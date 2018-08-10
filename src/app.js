@@ -33,12 +33,27 @@ const HTTP_403 = 403,
 
 const postgres = new pg.Pool( postgresPoolConfig );
 
-/** Injects the Slack client to be used for all outgoing messages. */
+/**
+ * Injects the Slack client to be used for all outgoing messages.
+ *
+ * @param {WebClient} client An instance of Slack's WebClient as documented at
+ *                           https://slackapi.github.io/node-slack-sdk/web_api and
+ *                           implemented at
+ *                           https://github.com/slackapi/node-slack-sdk/blob/master/src/WebClient.ts
+ * @returns {void}
+ */
 const setSlackClient = ( client ) => {
   slack = client;
 };
 
-/** Determines whether or not events sent from Slack can be handled by this app. */
+/**
+ * Determines whether or not incoming events from Slack can be handled by this app.
+ *
+ * @param {object} event A hash of a Slack event. See the documentation at
+ *                       https://api.slack.com/events-api#events_dispatched_as_json and
+ *                       https://api.slack.com/events/message for details.
+ * @returns {bool} Whether or not the app can handle the provided event.
+ */
 const isValidEvent = ( event ) => {
 
   // If the event has no type, something has gone wrong.
@@ -69,7 +84,15 @@ const isValidEvent = ( event ) => {
 
 }; // IsValidEvent.
 
-/** Handles events sent from Slack. */
+/**
+ * Handles events sent from Slack.
+ *
+ * @param {object} event A hash of a Slack event. See the documentation at
+ *                       https://api.slack.com/events-api#events_dispatched_as_json and
+ *                       https://api.slack.com/events/message for details.
+ * @return {bool|Promise} Either `false` if the event cannot be handled, or a Promise to send a
+ *                        Slack message back to the requesting channel.
+ */
 const handleEvent = async( event ) => {
   let operation;
 
@@ -172,12 +195,25 @@ const handleEvent = async( event ) => {
 
 }; // HandleEvent.
 
-/** Handles GET requests to the app. */
+/**
+ * Handles GET requests to the app.
+ *
+ * @param {express.req} request An Express request. See https://expressjs.com/en/4x/api.html#req.
+ * @param {express.res} response An Express response. See https://expressjs.com/en/4x/api.html#res.
+ * @return {void}
+ */
 const handleGet = ( request, response ) => {
   response.send( 'It works! However, this app only accepts POST requests for now.' );
 };
 
-/** Handles POST requests to the app. */
+/**
+ * Handles POST requests to the app.
+ *
+ * @param {express.req} request An Express request. See https://expressjs.com/en/4x/api.html#req.
+ * @param {express.res} response An Express response. See https://expressjs.com/en/4x/api.html#res.
+ * @return {bool|Promise} Either `false` if the event cannot be handled, or a Promise as returned
+ *                        by `handleEvent()`.
+ */
 const handlePost = ( request, response ) => {
 
   // Simple logging of requests.
