@@ -9,9 +9,9 @@
   "scripts": {
     "lint": "DEBUG=eslint:cli-engine eslint --color --ignore-pattern '/coverage/' --ignore-pattern '/docs/' --ignore-pattern '!.eslintrc.js' \"**/*.js\"",
     "fix": "yarn lint --fix",
-    "test": "PORT=5000 SLACK_VERIFICATION_TOKEN=abcdef123 DATABASE_URL=postgres://postgres@localhost:5432/plusplus_tests DATABASE_USE_SSL=false jest --verbose --coverage --forceExit",
-    "unit-tests": "jest --verbose --coverage --testPathIgnorePatterns 'integration-tests'",
-    "integration-tests": "PORT=5000 SLACK_VERIFICATION_TOKEN=abcdef123 DATABASE_URL=postgres://postgres@localhost:5432/plusplus_tests DATABASE_USE_SSL=false jest --forceExit integration-tests"
+    "test": "jest --forceExit",
+    "unit-tests": "SKIP_INTEGRATION_TESTS=true jest",
+    "integration-tests": "jest --forceExit integration-tests"
   },
   "engines": {
     "node": "10.8.0",
@@ -23,16 +23,6 @@
     "karma",
     "heroku"
   ],
-  "jest": {
-    "testMatch": [
-      "**/tests/**/*.js"
-    ],
-    "testPathIgnorePatterns": [
-      "/node_modules/",
-      "/.eslintrc.js"
-    ],
-    "testURL": "http://localhost/"
-  },
   "dependencies": {
     "@slack/client": "^4.3.1",
     "body-parser": "^1.18.3",
