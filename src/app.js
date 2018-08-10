@@ -189,14 +189,14 @@ const handlePost = ( request, response ) => {
   if ( request.body.challenge ) {
     response.send( request.body.challenge );
     console.info( '200 Challenge response sent' );
-    return;
+    return false;
   }
 
   // Sanity check for bad verification values - empty, or still set to the default.
   if ( ! SLACK_VERIFICATION_TOKEN || 'xxxxxxxxxxxxxxxxxxxxxxxx' === SLACK_VERIFICATION_TOKEN ) {
     response.status( HTTP_500 ).send( 'Internal server error.' );
     console.error( '500 Internal server error - bad verification value' );
-    return;
+    return false;
   }
 
   // Check that this is Slack making the request.
@@ -204,7 +204,7 @@ const handlePost = ( request, response ) => {
   if ( SLACK_VERIFICATION_TOKEN !== request.body.token ) {
     response.status( HTTP_403 ).send( 'Access denied.' );
     console.error( '403 Access denied - incorrect verification token' );
-    return;
+    return false;
   }
 
   // Send back a 200 OK now so Slack doesn't get upset.
@@ -217,7 +217,7 @@ const handlePost = ( request, response ) => {
   // @see https://api.slack.com/events-api#graceful_retries
   if ( request.headers['x-slack-retry-num']) {
     console.log( 'Skipping Slack retry.' );
-    return;
+    return false;
   }
 
   // Handle the event now, if it's valid.
