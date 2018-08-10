@@ -44,8 +44,7 @@ module.exports = {
       }
     ],
 
-    'max-nested-callbacks': [ 'error', { max: 4 } ],
-    'max-statements': [ 'error', { max: 75 } ],
+    'max-statements': [ 'error', { max: 30 } ],
 
     'no-magic-numbers': [
       'error',
