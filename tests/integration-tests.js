@@ -9,9 +9,9 @@
 
 'use strict';
 
-/******************************
+/****************************************************************
  * Environment Configuration.
- ******************************/
+ ****************************************************************/
 
 const http = require( 'http' ),
       pg = require( 'pg' ),
@@ -41,9 +41,16 @@ const scoresTableName = 'scores',
 
 const postgres = new pg.Pool( postgresPoolConfig );
 
-/******************************
+const defaultRequestOptions = {
+  host: 'localhost',
+  method: 'POST',
+  port: PORT,
+  headers: { 'Content-Type': 'application/json' }
+};
+
+/****************************************************************
  * Jest Setup.
- ******************************/
+ ****************************************************************/
 
 // Catch all console output during tests.
 console.error = jest.fn();
@@ -64,16 +71,57 @@ beforeEach( () => {
   process.env = { ...originalProcessEnv }; // eslint-disable-line no-process-env
 });
 
-/******************************
- * Express Server Tests.
- ******************************/
+/****************************************************************
+ * Boilerplate.
+ ****************************************************************/
 
-const defaultRequestOptions = {
-  host: 'localhost',
-  method: 'POST',
-  port: PORT,
-  headers: { 'Content-Type': 'application/json' }
-};
+/**
+ * Encapsulates all the boilerplate required to run the full request cycle for end-to-end tests.
+ * @param {string}   text     Message text to 'send' from a Slack user to the app.
+ * @param {callable} callback Function to call when the state is ready to test against.
+ * @returns {void}
+ */
+const testRunner = async( text, callback ) => {
+  const listener = require( '../' )({ slack: slackClientMock });
+
+  const body = {
+    token: SLACK_VERIFICATION_TOKEN,
+    event: {
+      type: 'message',
+      text: text
+    }
+  };
+
+  listener.on( 'listening', () => {
+
+    const request = http.request( defaultRequestOptions, response => {
+      let data = '';
+
+      response.on( 'data', chunk => {
+        data += chunk;
+      }).on( 'end', async() => {
+
+        console.log( data );
+        listener.close();
+
+        // Wait for the operations after the HTTP requests returns to be completed before testing.
+        setTimeout( async() => {
+          const dbClient = await postgres.connect();
+          callback( dbClient );
+        }, HTTP_RETURN_DELAY );
+
+      });
+    }); // Http.request.
+
+    request.write( JSON.stringify( body ) );
+    request.end();
+
+  }); // Listener listening.
+}; // TestRunner.
+
+/****************************************************************
+ * Express Server Tests.
+ ****************************************************************/
 
 test( 'Server returns HTTP 200 for GET operations', done => {
   const listener = require( '../' )();
@@ -188,9 +236,9 @@ test( 'POST request handler responds to Slack on retries, but then drops the eve
 
 });
 
-/********************
+/****************************************************************
  * Postgres Tests.
- ********************/
+ ****************************************************************/
 
 const tableExistsQuery = 'SELECT EXISTS ( ' +
   'SELECT 1 FROM information_schema.tables WHERE table_name = \'' + scoresTableName + '\'' +
@@ -216,47 +264,15 @@ test( 'Database case-insensitive extension does not exist yet', async() => {
  * @param {callable} done A callback to use for alerting Jest that the test is complete.
  * @return {void}
  */
-const doFirstRequest = async( done ) => {
-
+const doFirstRequest = ( done ) => {
   expect.assertions( 1 );
-  const listener = require( '../' )({ slack: slackClientMock });
 
-  const body = {
-    token: SLACK_VERIFICATION_TOKEN,
-    event: {
-      type: 'message',
-      text: '@something++'
-    }
-  };
-
-  listener.on( 'listening', () => {
-
-    const request = http.request( defaultRequestOptions, response => {
-      let data = '';
-
-      response.on( 'data', chunk => {
-        data += chunk;
-      }).on( 'end', async() => {
-
-        console.log( data );
-        listener.close();
-
-        // Wait for the operations after the HTTP requests returns to be completed before testing.
-        setTimeout( async() => {
-          const dbClient = await postgres.connect();
-          const queryAfter = await dbClient.query( tableExistsQuery );
-          expect( queryAfter.rows[0].exists ).toBe( true );
-          done();
-        }, HTTP_RETURN_DELAY );
-
-      });
-    });
-
-    request.write( JSON.stringify( body ) );
-    request.end();
-
-  }); // Listener listening.
-}; // DoFirstRequest.
+  testRunner( '@something++', async( dbClient ) => {
+    const queryAfter = await dbClient.query( tableExistsQuery );
+    expect( queryAfter.rows[0].exists ).toBe( true );
+    done();
+  });
+};
 
 test( 'Database table gets created on first request', doFirstRequest );
 
@@ -268,9 +284,9 @@ test( 'Database case-insensitive extension now exists too', async() => {
 
 test( 'The first test can be repeated without causing errors', doFirstRequest );
 
-/************************************
- * 'Putting it all together' tests.
- ************************************/
+/****************************************************************
+ * End-to-end tests.
+ ****************************************************************/
 
 // TODO: Test ++ works for brand new 'thing' A and then equals 1.
 // TODO: Test -- works for brand new 'thing' B and then equals -1.
