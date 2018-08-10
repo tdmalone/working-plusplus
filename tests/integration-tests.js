@@ -59,13 +59,12 @@ const databaseExistsQuery = 'SELECT EXISTS ( ' +
 console.error = jest.fn();
 console.info = jest.fn();
 console.log = jest.fn();
-console.warn = jest.fn();
+console.warn = jest.fn(); // TODO: This mock doesn't work for some reason. Why?
 
 // Drop the scores table before we start, as our tests rely on that.
-beforeAll( async( done ) => {
+beforeAll( async() => {
   const dbClient = await postgres.connect();
   await dbClient.query( 'DROP TABLE IF EXISTS ' + scoresTableName );
-  done();
 });
 
 // Clear module cache + reset environment variables before each test.

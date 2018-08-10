@@ -3,6 +3,8 @@
  *
  * TODO: Add the ability to customise these messages - probably via JSON objects in environment
  *       variables.
+ *
+ * @author Julian Calaby <julian.calaby@gmail.com>
  */
 
 'use strict';

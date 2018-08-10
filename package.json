@@ -7,7 +7,7 @@
   "author": "Tim Malone <tdmalone@gmail.com>",
   "license": "MIT",
   "scripts": {
-    "lint": "DEBUG=eslint:cli-engine eslint --color --ignore-pattern '/coverage/' --ignore-pattern '/docs/' --ignore-pattern '!.eslintrc.js' \"**/*.js\"",
+    "lint": "DEBUG=eslint:cli-engine eslint --color --ignore-pattern '/coverage/' --ignore-pattern '!.eslintrc.js' \"**/*.js\"",
     "fix": "yarn lint --fix",
     "test": "jest --forceExit",
     "unit-tests": "SKIP_INTEGRATION_TESTS=true jest",
