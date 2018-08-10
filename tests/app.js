@@ -121,3 +121,73 @@ test( 'User trying to ++ themselves is dropped', () => {
     expect( data ).toBe( false );
   });
 });
+
+/********************
+ * HandleGet.
+ ********************/
+
+test( 'GET request handler sends a response', () => {
+
+  let receivedResponse;
+
+  const mockResponse = {
+    send: ( response ) => {
+      receivedResponse = response;
+    }
+  };
+
+  app.handleGet( null, mockResponse );
+  expect( typeof receivedResponse ).toBe( 'string' );
+
+});
+
+/********************
+ * HandlePost.
+ ********************/
+
+const mockRequest = {
+  ip: '123.45.67.89',
+  method: 'method',
+  path: 'path',
+  headers: {
+    'user-agent': 'user-agent'
+  }
+};
+
+const mockResponse = {
+  send: () => {} // eslint-disable-line no-empty-function
+};
+
+test( 'POST request handler logs requests', () => {
+  console.log = jest.fn();
+
+  try {
+    app.handlePost( mockRequest, mockResponse );
+  } catch ( error ) {} // eslint-disable-line no-empty
+
+  expect( console.log ).toBeCalledWith( expect.stringContaining( mockRequest.ip ) );
+
+});
+
+test( 'POST request handler responds with challenge', () => {
+
+  let receivedResponse;
+
+  const mockResponse = {
+    send: ( response ) => {
+      receivedResponse = response;
+    }
+  };
+
+  mockRequest.body = { challenge: Math.random().toString() };
+  const result = app.handlePost( mockRequest, mockResponse );
+  expect( receivedResponse ).toBe( mockRequest.body.challenge );
+  expect( result ).toBe( false );
+
+});
+
+test( 'POST request handler returns false on Slack retries', () => {
+  mockRequest.headers['x-slack-retry-num'] = 1;
+  const result = app.handlePost( mockRequest, mockResponse );
+  expect( result ).toBe( false );
+});
