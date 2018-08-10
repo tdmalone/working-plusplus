@@ -1,8 +1,6 @@
 /**
  * Unit tests on the main app.js file.
  *
- * TODO: Add more unit tests for the Promise flow after the HTTP response is returned.
- *
  * @see https://jestjs.io/docs/en/expect
  * @author Tim Malone <tdmalone@gmail.com>
  */
@@ -129,14 +127,12 @@ test( 'User trying to ++ themselves is dropped', () => {
 test( 'GET request handler sends a response', () => {
 
   let receivedResponse;
-
-  const mockResponse = {
-    send: ( response ) => {
-      receivedResponse = response;
-    }
+  const mockExpress = require( './mocks/express' );
+  mockExpress.response.send = ( response ) => {
+    receivedResponse = response;
   };
 
-  app.handleGet( null, mockResponse );
+  app.handleGet( null, mockExpress.response );
   expect( typeof receivedResponse ).toBe( 'string' );
 
 });
@@ -145,49 +141,30 @@ test( 'GET request handler sends a response', () => {
  * HandlePost.
  ********************/
 
-const mockRequest = {
-  ip: '123.45.67.89',
-  method: 'method',
-  path: 'path',
-  headers: {
-    'user-agent': 'user-agent'
-  }
-};
-
-const mockResponse = {
-  send: () => {} // eslint-disable-line no-empty-function
-};
-
 test( 'POST request handler logs requests', () => {
+  const mockExpress = require( './mocks/express' );
+
   console.log = jest.fn();
 
   try {
-    app.handlePost( mockRequest, mockResponse );
+    app.handlePost( mockExpress.request, mockExpress.response );
   } catch ( error ) {} // eslint-disable-line no-empty
 
-  expect( console.log ).toBeCalledWith( expect.stringContaining( mockRequest.ip ) );
+  expect( console.log ).toBeCalledWith( expect.stringContaining( mockExpress.request.ip ) );
 
 });
 
 test( 'POST request handler responds with challenge', () => {
 
   let receivedResponse;
-
-  const mockResponse = {
-    send: ( response ) => {
-      receivedResponse = response;
-    }
+  const mockExpress = require( './mocks/express' );
+  mockExpress.response.send = ( response ) => {
+    receivedResponse = response;
   };
 
-  mockRequest.body = { challenge: Math.random().toString() };
-  const result = app.handlePost( mockRequest, mockResponse );
-  expect( receivedResponse ).toBe( mockRequest.body.challenge );
+  mockExpress.request.body.challenge = Math.random().toString();
+  const result = app.handlePost( mockExpress.request, mockExpress.response );
+  expect( receivedResponse ).toBe( mockExpress.request.body.challenge );
   expect( result ).toBe( false );
 
-});
-
-test( 'POST request handler returns false on Slack retries', () => {
-  mockRequest.headers['x-slack-retry-num'] = 1;
-  const result = app.handlePost( mockRequest, mockResponse );
-  expect( result ).toBe( false );
 });

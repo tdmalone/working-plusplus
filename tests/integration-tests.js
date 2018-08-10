@@ -1,8 +1,6 @@
 /**
  * Integration tests on the main ./index.js file.
  *
- * TODO: Add a lot more tests to this.
- *
  * @see https://jestjs.io/docs/en/expect
  * @see https://jestjs.io/docs/en/asynchronous.html
  * @see https://jestjs.io/docs/en/mock-functions#mocking-modules
@@ -17,6 +15,7 @@
 
 const http = require( 'http' ),
       pg = require( 'pg' ),
+      app = require( '../src/app' ),
       slackClientMock = require( './mocks/slack' );
 
 /* eslint-disable no-process-env, no-magic-numbers */
@@ -168,6 +167,30 @@ test( 'Server returns HTTP 403 when verification token is incorrect', done => {
   });
 });
 
+test( 'POST request handler responds to Slack on retries, but then drops the event', () => {
+  const mockExpress = require( './mocks/express' );
+
+  // The first time, we expect an error because we haven't put a valid event together yet.
+
+  mockExpress.response.send = jest.fn();
+
+  expect( () => {
+    app.handlePost( mockExpress.request, mockExpress.response );
+  }).toThrow();
+
+  expect( mockExpress.response.send ).toHaveBeenCalledTimes( 1 );
+
+  // The second time, we clear the mocks, and then pretend Slack is retrying a request.
+  // This one should simply return false.
+
+  mockExpress.response.send.mockClear();
+  mockExpress.request.headers['x-slack-retry-num'] = 1;
+  const result = app.handlePost( mockExpress.request, mockExpress.response );
+  expect( result ).toBe( false );
+  expect( mockExpress.response.send ).toHaveBeenCalledTimes( 1 );
+
+});
+
 /********************
  * Postgres Tests.
  ********************/
@@ -220,9 +243,6 @@ test( 'Database table gets created on first request', async( done ) => {
   });
 });
 
-// TODO: Mock Slack.
-
-// TODO: Test server drops Slack retries.
 // TODO: Test CITEXT extension is added if not exists.
 
 // TODO: Test ++ works for brand new 'thing' A and then equals 1.
