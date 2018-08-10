@@ -29,8 +29,12 @@ const PORT = process.env.PORT || 80,
 
 const HTTP_200 = 200,
       HTTP_403 = 403,
-      HTTP_500 = 500,
-      scoresTableName = 'scores',
+      HTTP_500 = 500;
+
+// Time (in ms) that we should wait after HTTP requests return, before testing any of the results.
+const HTTP_RETURN_DELAY = 100;
+
+const scoresTableName = 'scores',
       postgresPoolConfig = {
         connectionString: DATABASE_URL,
         ssl: DATABASE_USE_SSL
@@ -174,13 +178,10 @@ test( 'Database table does not exist yet', async() => {
   expect( query.rows[0].exists ).toBe( false );
 });
 
-// TODO: Need to mock Slack before we can run this.
-test.skip( 'Database table gets created on first request', async( done ) => {
+test( 'Database table gets created on first request', async( done ) => {
 
   expect.assertions( 1 );
-
-  const dbClient = await postgres.connect();
-  const listener = require( '../' ).listener;
+  const listener = require( '../' )({ slack: slackClientMock });
 
   const body = {
     token: SLACK_VERIFICATION_TOKEN,
@@ -193,11 +194,23 @@ test.skip( 'Database table gets created on first request', async( done ) => {
   listener.on( 'listening', () => {
 
     const request = http.request( defaultRequestOptions, response => {
-      response.on( 'end', async() => {
+      let data = '';
+
+      response.on( 'data', chunk => {
+        data += chunk;
+      }).on( 'end', async() => {
+
+        console.log( data );
         listener.close();
-        const queryAfter = await dbClient.query( databaseExistsQuery );
-        expect( queryAfter.rows[0].exists ).toBe( true );
-        done();
+
+        // Wait for the operations after the HTTP requests returns to be completed before testing.
+        setTimeout( async() => {
+          const dbClient = await postgres.connect();
+          const queryAfter = await dbClient.query( databaseExistsQuery );
+          expect( queryAfter.rows[0].exists ).toBe( true );
+          done();
+        }, HTTP_RETURN_DELAY );
+
       });
     });
 

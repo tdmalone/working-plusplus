@@ -10,9 +10,10 @@
 
 module.exports = {
   chat: {
-    postMessage: ( ) => {
-      return new Promise( ( ) => {
-
+    postMessage: ( payload ) => {
+      return new Promise( ( resolve ) => {
+        console.log( payload.text );
+        resolve({ ok: true });
       });
     }
   }
