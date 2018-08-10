@@ -32,19 +32,16 @@ const HTTP_200 = 200,
       scoresTableName = 'scores',
       postgresPoolConfig = {
         connectionString: DATABASE_URL,
-        ssl:              DATABASE_USE_SSL
+        ssl: DATABASE_USE_SSL
       };
 
 const postgres = new pg.Pool( postgresPoolConfig );
 
 const defaultRequestOptions = {
-  host:   'localhost',
+  host: 'localhost',
   method: 'POST',
-  port:   PORT,
-
-  headers: {
-    'Content-Type': 'application/json'
-  }
+  port: PORT,
+  headers: { 'Content-Type': 'application/json' }
 };
 
 const databaseExistsQuery = 'SELECT EXISTS ( ' +
@@ -59,13 +56,12 @@ const databaseExistsQuery = 'SELECT EXISTS ( ' +
 console.error = jest.fn();
 console.info = jest.fn();
 console.log = jest.fn();
-console.warn = jest.fn();
+console.warn = jest.fn(); // TODO: This mock doesn't work for some reason. Why?
 
 // Drop the scores table before we start, as our tests rely on that.
-beforeAll( async( done ) => {
+beforeAll( async() => {
   const dbClient = await postgres.connect();
   await dbClient.query( 'DROP TABLE IF EXISTS ' + scoresTableName );
-  done();
 });
 
 // Clear module cache + reset environment variables before each test.
@@ -92,15 +88,12 @@ test( 'Server returns HTTP 200 for GET operations', done => {
 });
 
 test( 'Server correctly returns the Slack event challenge value', done => {
-  const listener = require( '../' ).listener;
 
-  const requestBody = {
-    challenge: Math.random().toString()
-  };
+  const listener = require( '../' ).listener;
+  const requestBody = { challenge: Math.random().toString() };
 
   listener.on( 'listening', () => {
     const request = http.request( defaultRequestOptions, response => {
-
       let data = '';
 
       response.on( 'data', chunk => {
@@ -154,10 +147,7 @@ test( 'Server returns HTTP 500 when verification token is still set to the defau
 test( 'Server returns HTTP 403 when verification token is incorrect', done => {
 
   const listener = require( '../' ).listener;
-
-  const body = {
-    token: 'something_is_not_right'
-  };
+  const body = { token: 'something_is_not_right' };
 
   listener.on( 'listening', () => {
 

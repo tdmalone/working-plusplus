@@ -5,7 +5,7 @@
 'use strict';
 
 module.exports = {
-  PLUS:  'plus',
+  PLUS: 'plus',
   MINUS: 'minus',
-  SELF:  'selfPlus'
+  SELF: 'selfPlus'
 };

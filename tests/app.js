@@ -25,10 +25,7 @@ test( 'Event with message and text is reported as valid', () => {
 });
 
 test( 'Event with missing type is caught as invalid', () => {
-  const event = {
-    text: 'Hello'
-  };
-
+  const event = { text: 'Hello' };
   expect( app.isValidEvent( event ) ).toBe( false );
 });
 
@@ -43,19 +40,16 @@ test( 'Event with non-message type is caught as invalid', () => {
 
 test( 'Event with a subtype is caught as invalid', () => {
   const event = {
-    type:    'message',
+    type: 'message',
     subtype: 'random',
-    text:    'Hello'
+    text: 'Hello'
   };
 
   expect( app.isValidEvent( event ) ).toBe( false );
 });
 
 test( 'Event without text set is caught as invalid', () => {
-  const event = {
-    type: 'message'
-  };
-
+  const event = { type: 'message' };
   expect( app.isValidEvent( event ) ).toBe( false );
 });
 

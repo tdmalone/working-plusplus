@@ -28,14 +28,14 @@ const HTTP_403 = 403,
       scoresTableName = 'scores',
       postgresPoolConfig = {
         connectionString: DATABASE_URL,
-        ssl:              DATABASE_USE_SSL
+        ssl: DATABASE_USE_SSL
       };
 
 const postgres = new pg.Pool( postgresPoolConfig ),
       slack = new slackClient.WebClient( SLACK_OAUTH_ACCESS_TOKEN );
 
 /** Determines whether or not events sent from Slack can be handled by this app. */
-const isValidEvent = ( event ) =>{
+const isValidEvent = ( event ) => {
 
   // If the event has no type, something has gone wrong.
   if ( 'undefined' === typeof event.type ) {
@@ -106,7 +106,7 @@ const handleEvent = async( event ) => {
 
     slack.chat.postMessage({
       channel: event.channel,
-      text:    message
+      text: message
     }).then( ( data ) => {
       console.log(
         data.ok ?
@@ -151,7 +151,7 @@ const handleEvent = async( event ) => {
 
   slack.chat.postMessage({
     channel: event.channel,
-    text:    message
+    text: message
   }).then( ( data ) => {
     console.log( data.ok ? item + ' now on ' + score : 'Error occurred posting response.' );
   });
@@ -215,7 +215,7 @@ const handlePost = ( request, response ) => {
 
 module.exports = {
   isValidEvent: isValidEvent,
-  handleEvent:  handleEvent,
-  handleGet:    handleGet,
-  handlePost:   handlePost
+  handleEvent: handleEvent,
+  handleGet: handleGet,
+  handlePost: handlePost
 };
