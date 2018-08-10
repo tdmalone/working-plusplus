@@ -1,7 +1,7 @@
 /**
  * Unit tests on the messages.js file.
  *
- * TODO: Expand tests
+ * TODO: Expand tests.
  *
  * @see https://jestjs.io/docs/en/expect
  * @author Tim Malone <tdmalone@gmail.com>

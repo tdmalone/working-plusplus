@@ -12,6 +12,12 @@ const app = require( '../src/app' ),
 
 app.setSlackClient( slackClientMock );
 
+// Catch all console output during tests.
+console.error = jest.fn();
+console.info = jest.fn();
+console.log = jest.fn();
+console.warn = jest.fn();
+
 /********************
  * IsValidEvent.
  ********************/

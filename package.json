@@ -7,11 +7,12 @@
   "author": "Tim Malone <tdmalone@gmail.com>",
   "license": "MIT",
   "scripts": {
-    "lint": "DEBUG=eslint:cli-engine eslint --color --ignore-pattern '/coverage/' --ignore-pattern '!.eslintrc.js' \"**/*.js\"",
+    "lint": "DEBUG=eslint:cli-engine eslint --color --ignore-pattern '/coverage/' --ignore-pattern '!.*.js' \"**/*.js\"",
     "fix": "yarn lint --fix",
-    "test": "jest --forceExit",
-    "unit-tests": "SKIP_INTEGRATION_TESTS=true jest",
-    "integration-tests": "jest --forceExit integration-tests"
+    "test": "jest --forceExit --runInBand",
+    "unit-tests": "SKIP_INTEGRATION_TESTS=true SKIP_E2E_TESTS=true jest",
+    "integration-tests": "SKIP_E2E_TESTS=true jest --forceExit integration-tests",
+    "e2e-tests": "SKIP_INTEGRATION_TESTS=true jest --forceExit e2e-tests"
   },
   "engines": {
     "node": "10.8.0",
