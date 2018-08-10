@@ -41,17 +41,6 @@ const scoresTableName = 'scores',
 
 const postgres = new pg.Pool( postgresPoolConfig );
 
-const defaultRequestOptions = {
-  host: 'localhost',
-  method: 'POST',
-  port: PORT,
-  headers: { 'Content-Type': 'application/json' }
-};
-
-const databaseExistsQuery = 'SELECT EXISTS ( ' +
-  'SELECT 1 FROM information_schema.tables WHERE table_name = \'' + scoresTableName + '\'' +
-')';
-
 /******************************
  * Jest Setup.
  ******************************/
@@ -60,12 +49,13 @@ const databaseExistsQuery = 'SELECT EXISTS ( ' +
 console.error = jest.fn();
 console.info = jest.fn();
 console.log = jest.fn();
-console.warn = jest.fn(); // TODO: This mock doesn't work for some reason. Why?
+console.warn = jest.fn();
 
-// Drop the scores table before we start, as our tests rely on that.
+// Drop the scores table + case insensitive extension before we start, as our tests rely on that.
 beforeAll( async() => {
   const dbClient = await postgres.connect();
   await dbClient.query( 'DROP TABLE IF EXISTS ' + scoresTableName );
+  await dbClient.query( 'DROP EXTENSION IF EXISTS CITEXT' );
 });
 
 // Clear module cache + reset environment variables before each test.
@@ -77,6 +67,13 @@ beforeEach( () => {
 /******************************
  * Express Server Tests.
  ******************************/
+
+const defaultRequestOptions = {
+  host: 'localhost',
+  method: 'POST',
+  port: PORT,
+  headers: { 'Content-Type': 'application/json' }
+};
 
 test( 'Server returns HTTP 200 for GET operations', done => {
   const listener = require( '../' )();
@@ -195,13 +192,31 @@ test( 'POST request handler responds to Slack on retries, but then drops the eve
  * Postgres Tests.
  ********************/
 
+const tableExistsQuery = 'SELECT EXISTS ( ' +
+  'SELECT 1 FROM information_schema.tables WHERE table_name = \'' + scoresTableName + '\'' +
+')';
+
+const extensionExistsQuery = 'SELECT * FROM pg_extension WHERE extname = \'citext\'';
+
 test( 'Database table does not exist yet', async() => {
   const dbClient = await postgres.connect();
-  const query = await dbClient.query( databaseExistsQuery );
+  const query = await dbClient.query( tableExistsQuery );
   expect( query.rows[0].exists ).toBe( false );
 });
 
-test( 'Database table gets created on first request', async( done ) => {
+test( 'Database case-insensitive extension does not exist yet', async() => {
+  const dbClient = await postgres.connect();
+  const query = await dbClient.query( extensionExistsQuery );
+  expect( query.rowCount ).toBe( 0 );
+});
+
+/**
+ * Provides a 'first request' and a test that it successfully creates the database table.
+ *
+ * @param {callable} done A callback to use for alerting Jest that the test is complete.
+ * @return {void}
+ */
+const doFirstRequest = async( done ) => {
 
   expect.assertions( 1 );
   const listener = require( '../' )({ slack: slackClientMock });
@@ -229,7 +244,7 @@ test( 'Database table gets created on first request', async( done ) => {
         // Wait for the operations after the HTTP requests returns to be completed before testing.
         setTimeout( async() => {
           const dbClient = await postgres.connect();
-          const queryAfter = await dbClient.query( databaseExistsQuery );
+          const queryAfter = await dbClient.query( tableExistsQuery );
           expect( queryAfter.rows[0].exists ).toBe( true );
           done();
         }, HTTP_RETURN_DELAY );
@@ -240,10 +255,22 @@ test( 'Database table gets created on first request', async( done ) => {
     request.write( JSON.stringify( body ) );
     request.end();
 
-  });
+  }); // Listener listening.
+}; // DoFirstRequest.
+
+test( 'Database table gets created on first request', doFirstRequest );
+
+test( 'Database case-insensitive extension now exists too', async() => {
+  const dbClient = await postgres.connect();
+  const query = await dbClient.query( extensionExistsQuery );
+  expect( query.rowCount ).toBe( 1 );
 });
 
-// TODO: Test CITEXT extension is added if not exists.
+test( 'The first test can be repeated without causing errors', doFirstRequest );
+
+/************************************
+ * 'Putting it all together' tests.
+ ************************************/
 
 // TODO: Test ++ works for brand new 'thing' A and then equals 1.
 // TODO: Test -- works for brand new 'thing' B and then equals -1.
@@ -256,9 +283,6 @@ test( 'Database table gets created on first request', async( done ) => {
 // TODO: Test -- works for existing user D and then equals -2.
 // TODO: Test self ++ fails for existing user C and then still equals 2.
 // TODO: Test self -- works for existing user D and then equals -3.
-
-// TODO: Test DB table doesn't get recreated/error.
-// TODO: Test CITEXT extension doesn't error if running again.
 
 // TODO: Test ++ works for existing user and then equals 3.
 
