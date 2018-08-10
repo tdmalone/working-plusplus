@@ -1,6 +1,8 @@
 /**
  * Unit tests on the main app.js file.
  *
+ * TODO: Add more unit tests for the Promise flow after the HTTP response is returned.
+ *
  * @see https://jestjs.io/docs/en/expect
  * @author Tim Malone <tdmalone@gmail.com>
  */

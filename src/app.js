@@ -153,11 +153,21 @@ const handleEvent = async( event ) => {
   operation = operation.replace( '+', operations.PLUS ).replace( '-', operations.MINUS );
   const message = getRandomMessage( operation, itemMaybeLinked, score );
 
-  slack.chat.postMessage({
-    channel: event.channel,
-    text: message
-  }).then( ( data ) => {
-    console.log( data.ok ? item + ' now on ' + score : 'Error occurred posting response.' );
+  return new Promise( ( resolve, reject ) => {
+    slack.chat.postMessage({
+      channel: event.channel,
+      text: message
+    }).then( ( data ) => {
+
+      if ( ! data.ok ) {
+        console.error( 'Error occurred posting response.' );
+        return reject();
+      }
+
+      console.log( item + ' now on ' + score );
+      resolve();
+
+    });
   });
 
 }; // HandleEvent.
@@ -212,7 +222,7 @@ const handlePost = ( request, response ) => {
 
   // Handle the event now, if it's valid.
   if ( isValidEvent( request.body.event ) ) {
-    handleEvent( request.body.event );
+    return handleEvent( request.body.event );
   }
 
 }; // HandlePost.
