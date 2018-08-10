@@ -8,9 +8,9 @@
 'use strict';
 
 const app = require( '../src/app' ),
-      slack = require( './mocks/slack' );
+      slackClientMock = require( './mocks/slack' );
 
-app.setSlackClient( slack );
+app.setSlackClient( slackClientMock );
 
 /********************
  * IsValidEvent.

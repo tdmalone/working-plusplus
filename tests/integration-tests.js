@@ -16,7 +16,8 @@
  ******************************/
 
 const http = require( 'http' ),
-      pg = require( 'pg' );
+      pg = require( 'pg' ),
+      slackClientMock = require( './mocks/slack' );
 
 /* eslint-disable no-process-env, no-magic-numbers */
 const originalProcessEnv = process.env;
@@ -75,7 +76,7 @@ beforeEach( () => {
  ******************************/
 
 test( 'Server returns HTTP 200 for GET operations', done => {
-  const listener = require( '../' ).listener;
+  const listener = require( '../' )();
 
   listener.on( 'listening', () => {
     http.get( 'http://localhost:' + PORT, response => {
@@ -89,7 +90,7 @@ test( 'Server returns HTTP 200 for GET operations', done => {
 
 test( 'Server correctly returns the Slack event challenge value', done => {
 
-  const listener = require( '../' ).listener;
+  const listener = require( '../' )();
   const requestBody = { challenge: Math.random().toString() };
 
   listener.on( 'listening', () => {
@@ -116,7 +117,7 @@ test( 'Server returns HTTP 500 when no verification token is set', done => {
 
   // eslint-disable-next-line no-process-env
   delete process.env.SLACK_VERIFICATION_TOKEN;
-  const listener = require( '../' ).listener;
+  const listener = require( '../' )();
 
   listener.on( 'listening', () => {
     http.request( defaultRequestOptions, response => {
@@ -132,7 +133,7 @@ test( 'Server returns HTTP 500 when verification token is still set to the defau
 
   // eslint-disable-next-line no-process-env
   process.env.SLACK_VERIFICATION_TOKEN = 'xxxxxxxxxxxxxxxxxxxxxxxx';
-  const listener = require( '../' ).listener;
+  const listener = require( '../' )();
 
   listener.on( 'listening', () => {
     http.request( defaultRequestOptions, response => {
@@ -146,7 +147,7 @@ test( 'Server returns HTTP 500 when verification token is still set to the defau
 
 test( 'Server returns HTTP 403 when verification token is incorrect', done => {
 
-  const listener = require( '../' ).listener;
+  const listener = require( '../' )();
   const body = { token: 'something_is_not_right' };
 
   listener.on( 'listening', () => {
