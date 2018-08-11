@@ -42,7 +42,7 @@ afterAll( () => {
 });
 
 test( '++ works for brand new thing A and then equals 1', ( done ) => {
-  expect.assertions( 1 );
+  expect.hasAssertions();
   runner( '@ThingA++', 'ThingA', ( result ) => {
     expect( result ).toBe( 1 );
     done();
@@ -50,7 +50,7 @@ test( '++ works for brand new thing A and then equals 1', ( done ) => {
 });
 
 test( '-- works for brand new thing B and then equals -1', ( done ) => {
-  expect.assertions( 1 );
+  expect.hasAssertions();
   runner( '@ThingB--', 'ThingB', ( result ) => {
     expect( result ).toBe( -1 );
     done();
@@ -58,7 +58,7 @@ test( '-- works for brand new thing B and then equals -1', ( done ) => {
 });
 
 test( '++ works for existing thing A and then equals 2', ( done ) => {
-  expect.assertions( 1 );
+  expect.hasAssertions();
   runner( '@ThingA++', 'ThingA', ( result ) => {
     expect( result ).toBe( 2 );
     done();
@@ -66,7 +66,7 @@ test( '++ works for existing thing A and then equals 2', ( done ) => {
 });
 
 test( '-- works for existing thing B and then equals -2', ( done ) => {
-  expect.assertions( 1 );
+  expect.hasAssertions();
   runner( '@ThingB--', 'ThingB', ( result ) => {
     expect( result ).toBe( -2 );
     done();
@@ -74,7 +74,7 @@ test( '-- works for existing thing B and then equals -2', ( done ) => {
 });
 
 test( '++ works for existing thing A with different case and then equals 3', ( done ) => {
-  expect.assertions( 1 );
+  expect.hasAssertions();
   runner( '@tHiNgA++', 'ThInGa', ( result ) => {
     expect( result ).toBe( 3 );
     done();
@@ -82,7 +82,7 @@ test( '++ works for existing thing A with different case and then equals 3', ( d
 });
 
 test( '++ works for brand new user 100 and then equals 1', ( done ) => {
-  expect.assertions( 1 );
+  expect.hasAssertions();
   runner( '<@U00000100>++', 'U00000100', ( result ) => {
     expect( result ).toBe( 1 );
     done();
@@ -90,7 +90,7 @@ test( '++ works for brand new user 100 and then equals 1', ( done ) => {
 });
 
 test( '-- works for brand new user 200 and then equals -1', ( done ) => {
-  expect.assertions( 1 );
+  expect.hasAssertions();
   runner( '<@U00000200>--', 'U00000200', ( result ) => {
     expect( result ).toBe( -1 );
     done();
@@ -98,7 +98,7 @@ test( '-- works for brand new user 200 and then equals -1', ( done ) => {
 });
 
 test( '++ works for existing user 100 and then equals 2', ( done ) => {
-  expect.assertions( 1 );
+  expect.hasAssertions();
   runner( '<@U00000100>++', 'U00000100', ( result ) => {
     expect( result ).toBe( 2 );
     done();

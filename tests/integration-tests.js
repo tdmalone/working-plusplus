@@ -51,7 +51,7 @@ beforeEach( () => {
  ****************************************************************/
 
 test( 'Server returns HTTP 200 for GET operations', done => {
-  expect.assertions( 1 );
+  expect.hasAssertions();
 
   const listener = require( '../' )();
 
@@ -92,7 +92,7 @@ test( 'Server correctly returns the Slack event challenge value', done => {
 });
 
 test( 'Server returns HTTP 500 when no verification token is set', done => {
-  expect.assertions( 1 );
+  expect.hasAssertions();
 
   delete process.env.SLACK_VERIFICATION_TOKEN;
   const listener = require( '../' )();
@@ -108,7 +108,7 @@ test( 'Server returns HTTP 500 when no verification token is set', done => {
 });
 
 test( 'Server returns HTTP 500 when verification token is still set to the default', done => {
-  expect.assertions( 1 );
+  expect.hasAssertions();
 
   process.env.SLACK_VERIFICATION_TOKEN = 'xxxxxxxxxxxxxxxxxxxxxxxx';
   const listener = require( '../' )();
@@ -124,7 +124,7 @@ test( 'Server returns HTTP 500 when verification token is still set to the defau
 });
 
 test( 'Server returns HTTP 403 when verification token is incorrect', done => {
-  expect.assertions( 1 );
+  expect.hasAssertions();
 
   const listener = require( '../' )();
   const body = { token: 'something_is_not_right' };
@@ -180,14 +180,14 @@ const tableExistsQuery = 'SELECT EXISTS ( ' +
 const extensionExistsQuery = 'SELECT * FROM pg_extension WHERE extname = \'citext\'';
 
 test( 'Database table does not exist yet', async() => {
-  expect.assertions( 1 );
+  expect.hasAssertions();
   const dbClient = await postgres.connect();
   const query = await dbClient.query( tableExistsQuery );
   expect( query.rows[0].exists ).toBe( false );
 });
 
 test( 'Database case-insensitive extension does not exist yet', async() => {
-  expect.assertions( 1 );
+  expect.hasAssertions();
   const dbClient = await postgres.connect();
   const query = await dbClient.query( extensionExistsQuery );
   expect( query.rowCount ).toBe( 0 );
@@ -200,7 +200,7 @@ test( 'Database case-insensitive extension does not exist yet', async() => {
  * @return {void}
  */
 const doFirstRequest = ( done ) => {
-  expect.assertions( 1 );
+  expect.hasAssertions();
   const listener = require( '../' )({ slack: slackClientMock });
 
   listener.on( 'listening', () => {
@@ -216,7 +216,7 @@ const doFirstRequest = ( done ) => {
 test( 'Database table gets created on first request', doFirstRequest );
 
 test( 'Database case-insensitive extension now exists too', async() => {
-  expect.assertions( 1 );
+  expect.hasAssertions();
   const dbClient = await postgres.connect();
   const query = await dbClient.query( extensionExistsQuery );
   expect( query.rowCount ).toBe( 1 );

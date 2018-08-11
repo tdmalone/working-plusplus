@@ -79,7 +79,7 @@ test( 'Message without an @ symbol is dropped', () => {
     text: 'Hello++'
   };
 
-  expect.assertions( 1 );
+  expect.hasAssertions();
 
   return app.handleEvent( event ).then( data => {
     expect( data ).toBe( false );
@@ -92,7 +92,7 @@ test( 'Message without a valid operation is dropped', () => {
     text: '@Hello'
   };
 
-  expect.assertions( 1 );
+  expect.hasAssertions();
 
   return app.handleEvent( event ).then( data => {
     expect( data ).toBe( false );
@@ -105,7 +105,7 @@ test( 'Message without a valid user/item is dropped', () => {
     text: '@++'
   };
 
-  expect.assertions( 1 );
+  expect.hasAssertions();
 
   return app.handleEvent( event ).then( data => {
     expect( data ).toBe( false );
@@ -119,7 +119,7 @@ test( 'User trying to ++ themselves is dropped', () => {
     user: 'U12345678'
   };
 
-  expect.assertions( 1 );
+  expect.hasAssertions();
 
   return app.handleEvent( event ).then( data => {
     expect( data ).toBe( false );
