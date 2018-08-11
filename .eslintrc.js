@@ -1,6 +1,7 @@
 /**
  * Custom ESLint configuration.
  *
+ * @see https://eslint.org/docs/user-guide/configuring
  * @see https://eslint.org/docs/rules/
  */
 
@@ -44,8 +45,7 @@ module.exports = {
       }
     ],
 
-    'max-nested-callbacks': [ 'error', { max: 4 } ],
-    'max-statements': [ 'error', { max: 75 } ],
+    'max-statements': [ 'error', { max: 20 } ],
 
     'no-magic-numbers': [
       'error',

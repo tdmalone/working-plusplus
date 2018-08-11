@@ -147,5 +147,6 @@ const getRandomMessage = ( operation, item, score ) => {
 }; // GetRandomMessage.
 
 module.exports = {
-  getRandomMessage: getRandomMessage
+  getRandomMessage: getRandomMessage,
+  messages: messages
 };
