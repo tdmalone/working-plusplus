@@ -1,5 +1,5 @@
 /**
- * Custom test runner.
+ * Custom test runner that makes an HTTP request to the app and facilitates checking the outcome.
  * Primarily used for end-to-end tests but also useful for some integration tests.
  *
  * @author Tim Malone <tdmalone@gmail.com>
@@ -22,21 +22,31 @@ const postgres = new pg.Pool( config.postgresPoolConfig );
 /**
  * Encapsulates all the boilerplate required to run the full request cycle for end-to-end tests.
  *
- * TODO: Convert this to using a config object to make the parameters more flexible.
- *
- * @param {string}          text       Message text to 'send' from a Slack user to the app.
- * @param {callable|string} nextAction Either a string to query the database for as an item, or a
- *                                     function to call to allow the caller to complete the test. If
- *                                     a function, it will be passed `dbClient` as a parameter if it
- *                                     accepts at least one parameter.
- * @param {callable}        callback   When a string is provided for `nextAction`, this parameter
- *                                     becomes the callback, and the callback is provided the result
- *                                     from querying the string for its score in the database.
- * @param {object}          extraBody  Optional. Additional options to merge in to the body of the
- *                                     message sent to Slack.
+ * @param {string}          text     Message text to simulate sending from a Slack user to the app.
+ * @param {callable|object} options  Optionally, an object with one or more properties that control
+ *                                   how the runner works. Alternatively, supply the next parameter,
+ *                                   the callback function, here instead. Valid properties are:
+ *                                     - itemToCheck: The name of an item to query the database for
+ *                                                    after the message has been simulated. The
+ *                                                    score will be sent as the single argument to
+ *                                                    the callback function.
+ *                                     - extraBody:   An object containing additional parameters for
+ *                                                    the event body. Will be deep merged into the
+ *                                                    default body provided by this function.
+ * @param {callable|string} callback Required. A function to call on completion of the run.
+ *                                   Suppliable as the preceding parameter if that parameter is not
+ *                                   needed. If `itemToCheck` is provided in `config`, this function
+ *                                   will receive the result. Otherwise, if this function accepts at
+ *                                   least one parameter, it will be passed an active `dbClient` to
+ *                                   to allow it to make its own checks.
  * @returns {void}
  */
-const runner = async( text, nextAction, callback, extraBody ) => {
+const runner = async( text, options, callback ) => {
+
+  // Allow the callback to be optionally provided as the second parameter.
+  if ( options instanceof Function ) {
+    callback = options; // eslint-disable-line no-param-reassign
+  }
 
   let body = {
     token: SLACK_VERIFICATION_TOKEN,
@@ -46,8 +56,8 @@ const runner = async( text, nextAction, callback, extraBody ) => {
     }
   };
 
-  if ( 'undefined' !== typeof extraBody ) {
-    body = objectAssignDeep( body, extraBody );
+  if ( 'undefined' !== typeof options.extraBody ) {
+    body = objectAssignDeep( body, options.extraBody );
   }
 
   const request = http.request( config.defaultRequestOptions, response => {
@@ -59,19 +69,20 @@ const runner = async( text, nextAction, callback, extraBody ) => {
         // Wait for the operations after the HTTP requests returns to be completed before testing.
         await new Promise( resolve => setTimeout( resolve, HTTP_RETURN_DELAY ) );
 
-        // Allow the next action to be carried out by the caller, passing it an instance of a
-        // dbClient if it accepts one.
-        if ( nextAction instanceof Function ) {
-          return nextAction( nextAction.length ? await postgres.connect() : null );
+        // If we weren't provided with an itemToCheck, return to the callback now, passing it an
+        // instance of a dbClient if it accepts at least one argument.
+        if ( 'undefined' === typeof options.itemToCheck ) {
+          return callback( callback.length ? await postgres.connect() : null );
         }
 
-        // Otherwise, carry out and return the query result ourselves.
+        // Otherwise, carry out the query ourselves and then return the result.
         const dbClient = await postgres.connect();
         const query = await dbClient.query(
-          'SELECT score FROM ' + config.scoresTableName + ' WHERE item = \'' + nextAction + '\''
+          'SELECT score FROM ' + config.scoresTableName + ' ' +
+          'WHERE item = \'' + options.itemToCheck + '\''
         );
 
-        dbClient.release();
+        await dbClient.release();
         callback( query.rows[0].score );
 
       }); // Response end.

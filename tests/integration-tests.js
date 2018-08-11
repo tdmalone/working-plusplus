@@ -38,6 +38,7 @@ beforeAll( async() => {
   const dbClient = await postgres.connect();
   await dbClient.query( 'DROP TABLE IF EXISTS ' + config.scoresTableName );
   await dbClient.query( 'DROP EXTENSION IF EXISTS CITEXT' );
+  await dbClient.release();
 });
 
 // Clear module cache + reset environment variables before each test.
@@ -183,6 +184,7 @@ test( 'Database table does not exist yet', async() => {
   expect.hasAssertions();
   const dbClient = await postgres.connect();
   const query = await dbClient.query( tableExistsQuery );
+  await dbClient.release();
   expect( query.rows[0].exists ).toBe( false );
 });
 
@@ -190,6 +192,7 @@ test( 'Database case-insensitive extension does not exist yet', async() => {
   expect.hasAssertions();
   const dbClient = await postgres.connect();
   const query = await dbClient.query( extensionExistsQuery );
+  await dbClient.release();
   expect( query.rowCount ).toBe( 0 );
 });
 
@@ -207,6 +210,7 @@ const doFirstRequest = ( done ) => {
     runner( '@something++', async( dbClient ) => {
       listener.close();
       const query = await dbClient.query( tableExistsQuery );
+      await dbClient.release();
       expect( query.rows[0].exists ).toBe( true );
       done();
     });
@@ -219,6 +223,7 @@ test( 'Database case-insensitive extension now exists too', async() => {
   expect.hasAssertions();
   const dbClient = await postgres.connect();
   const query = await dbClient.query( extensionExistsQuery );
+  await dbClient.release();
   expect( query.rowCount ).toBe( 1 );
 });
 
