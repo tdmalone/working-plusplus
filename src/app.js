@@ -117,6 +117,7 @@ const handleEvent = async( event ) => {
 
   // Get the user or 'thing' that is being spoken about, and the 'operation' being done on it.
   // We take the operation down to one character, and also support — due to iOS' replacement of --.
+  // TODO: Extract this into a function to make it testable, and test each situation incl. spaces.
   const data = event.text.match( /@([A-Za-z0-9.\-_]*?)>?\s*([-+]{2}|—{1})/ );
   const item = data[1];
   operation = data[2].substring( 0, 1 ).replace( '—', '-' );

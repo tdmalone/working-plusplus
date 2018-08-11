@@ -156,7 +156,9 @@ test( 'POST request handler logs requests', () => {
     app.handlePost( mockExpress.request, mockExpress.response );
   } catch ( error ) {} // eslint-disable-line no-empty
 
-  expect( console.log ).toBeCalledWith( expect.stringContaining( mockExpress.request.ip ) );
+  expect( console.log ).toHaveBeenNthCalledWith(
+    1, expect.stringContaining( mockExpress.request.ip )
+  );
 
 });
 

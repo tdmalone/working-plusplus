@@ -41,6 +41,10 @@ afterAll( () => {
   listener.close();
 });
 
+/****************************************************************
+ * Postgres Tests.
+ ****************************************************************/
+
 test( '++ works for brand new thing A and then equals 1', ( done ) => {
   expect.hasAssertions();
   runner( '@ThingA++', 'ThingA', ( result ) => {
@@ -106,7 +110,7 @@ test( '++ works for existing user 100 and then equals 2', ( done ) => {
 });
 
 test( '-- works for existing user 200 and then equals -2', ( done ) => {
-  expect.assertions( 1 );
+  expect.hasAssertions();
   runner( '<@U00000200>--', 'U00000200', ( result ) => {
     expect( result ).toBe( -2 );
     done();
