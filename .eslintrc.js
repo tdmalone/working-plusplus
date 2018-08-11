@@ -24,6 +24,8 @@ module.exports = {
 
   rules: {
 
+    'arrow-parens': [ 'error', 'always' ],
+    'arrow-spacing': [ 'error' ],
     'array-bracket-newline': [ 'error', 'consistent' ],
     'array-element-newline': [ 'error', 'consistent' ],
 
@@ -62,6 +64,7 @@ module.exports = {
 
     'no-multi-str': [ 'off' ],
     'no-var': [ 'error' ],
+    'object-shorthand': [ 'warn' ],
     'prefer-const': [ 'error' ]
 
   } // Rules.

@@ -7,6 +7,8 @@
  * @author Tim Malone <tdmalone@gmail.com>
  */
 
+/* global jest */
+
 'use strict';
 
 /****************************************************************
@@ -53,13 +55,13 @@ beforeEach( () => {
 
 describe( 'The Express server', () => {
 
-  it( 'returns HTTP 200 for GET operations', done => {
+  it( 'returns HTTP 200 for GET operations', ( done ) => {
     expect.hasAssertions();
 
     const listener = require( '../' )();
 
     listener.on( 'listening', () => {
-      http.get( 'http://localhost:' + config.PORT, response => {
+      http.get( 'http://localhost:' + config.PORT, ( response ) => {
         listener.close();
         expect( response.statusCode ).toBe( 200 );
         done();
@@ -68,17 +70,17 @@ describe( 'The Express server', () => {
 
   });
 
-  it( 'correctly returns the Slack event challenge value', done => {
+  it( 'correctly returns the Slack event challenge value', ( done ) => {
     expect.assertions( 2 );
 
     const listener = require( '../' )();
     const requestBody = { challenge: Math.random().toString() };
 
     listener.on( 'listening', () => {
-      const request = http.request( config.defaultRequestOptions, response => {
+      const request = http.request( config.defaultRequestOptions, ( response ) => {
         let data = '';
 
-        response.on( 'data', chunk => {
+        response.on( 'data', ( chunk ) => {
           data += chunk;
         }).on( 'end', () => {
           listener.close();
@@ -94,14 +96,14 @@ describe( 'The Express server', () => {
     });
   });
 
-  it( 'returns HTTP 500 when no verification token is set', done => {
+  it( 'returns HTTP 500 when no verification token is set', ( done ) => {
     expect.hasAssertions();
 
     delete process.env.SLACK_VERIFICATION_TOKEN;
     const listener = require( '../' )();
 
     listener.on( 'listening', () => {
-      http.request( config.defaultRequestOptions, response => {
+      http.request( config.defaultRequestOptions, ( response ) => {
         listener.close();
         expect( response.statusCode ).toBe( 500 );
         done();
@@ -110,14 +112,14 @@ describe( 'The Express server', () => {
 
   });
 
-  it( 'returns HTTP 500 when verification token is still set to the default', done => {
+  it( 'returns HTTP 500 when verification token is still set to the default', ( done ) => {
     expect.hasAssertions();
 
     process.env.SLACK_VERIFICATION_TOKEN = 'xxxxxxxxxxxxxxxxxxxxxxxx';
     const listener = require( '../' )();
 
     listener.on( 'listening', () => {
-      http.request( config.defaultRequestOptions, response => {
+      http.request( config.defaultRequestOptions, ( response ) => {
         listener.close();
         expect( response.statusCode ).toBe( 500 );
         done();
@@ -126,7 +128,7 @@ describe( 'The Express server', () => {
 
   });
 
-  it( 'returns HTTP 403 when verification token is incorrect', done => {
+  it( 'returns HTTP 403 when verification token is incorrect', ( done ) => {
     expect.hasAssertions();
 
     const listener = require( '../' )();
@@ -134,7 +136,7 @@ describe( 'The Express server', () => {
 
     listener.on( 'listening', () => {
 
-      const request = http.request( config.defaultRequestOptions, response => {
+      const request = http.request( config.defaultRequestOptions, ( response ) => {
         listener.close();
         expect( response.statusCode ).toBe( 403 );
         done();

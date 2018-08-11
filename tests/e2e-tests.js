@@ -5,6 +5,8 @@
  * @author Tim Malone <tdmalone@gmail.com>
  */
 
+/* global jest */
+
 'use strict';
 
 /****************************************************************
@@ -40,7 +42,7 @@ beforeAll( async() => {
   await dbClient.query( 'DROP TABLE IF EXISTS ' + config.scoresTableName );
   await dbClient.release();
 
-  return new Promise( resolve => {
+  return new Promise( ( resolve ) => {
     listener = require( '../' )({ slack: slackClientMock });
     listener.on( 'listening', () => {
       resolve();
@@ -137,7 +139,7 @@ describe( 'The database', () => {
     const user = 'U00000100',
           options = {
             itemToCheck: user,
-            extraBody: { event: { user: user } }
+            extraBody: { event: { user } }
           };
 
     runner( '<@' + user + '>++', options, ( result ) => {
@@ -152,7 +154,7 @@ describe( 'The database', () => {
     const user = 'U00000300',
           options = {
             itemToCheck: user,
-            extraBody: { event: { user: user } }
+            extraBody: { event: { user } }
           };
 
     runner( '<@' + user + '>++', options, ( result ) => {
@@ -167,7 +169,7 @@ describe( 'The database', () => {
     const user = 'U00000200',
           options = {
             itemToCheck: user,
-            extraBody: { event: { user: user } }
+            extraBody: { event: { user } }
           };
 
     runner( '<@' + user + '>--', options, ( result ) => {
@@ -182,7 +184,7 @@ describe( 'The database', () => {
     const user = 'U00000400',
           options = {
             itemToCheck: user,
-            extraBody: { event: { user: user } }
+            extraBody: { event: { user } }
           };
 
     runner( '<@' + user + '>--', options, ( result ) => {
@@ -234,7 +236,7 @@ describe( 'Slack messaging', () => {
     expect.hasAssertions();
     const user = 'U00000100',
           options = {
-            extraBody: { event: { user: user } }
+            extraBody: { event: { user } }
           };
 
     slackClientMock.chat.postMessage.mockClear();
@@ -447,14 +449,14 @@ describe( 'Slack messaging', () => {
     expect.hasAssertions();
 
     const channel = 'C00000000',
-          options = { extraBody: { event: { channel: channel } } };
+          options = { extraBody: { event: { channel } } };
 
     slackClientMock.chat.postMessage.mockClear();
     runner( '@SomeRandom++', options, () => {
 
       expect( slackClientMock.chat.postMessage )
         .toHaveBeenCalledTimes( 1 )
-        .toHaveBeenCalledWith( expect.objectContaining({ channel: channel }) );
+        .toHaveBeenCalledWith( expect.objectContaining({ channel }) );
 
       done();
 

@@ -7,6 +7,8 @@
  * @author Tim Malone <tdmalone@gmail.com>
  */
 
+/* global jest */
+
 'use strict';
 
 const messages = require( '../src/messages' );
