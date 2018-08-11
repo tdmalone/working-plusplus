@@ -2225,6 +2225,10 @@ isurl@^1.0.0-alpha5:
     has-to-string-tag-x "^1.2.0"
     is-object "^1.0.1"
 
+jest-chain@^1.0.3:
+  version "1.0.3"
+  resolved "https://registry.yarnpkg.com/jest-chain/-/jest-chain-1.0.3.tgz#7dc6c98f403a89f928994d88dcd6e52effc016be"
+
 jest-changed-files@^23.4.2:
   version "23.4.2"
   resolved "https://registry.yarnpkg.com/jest-changed-files/-/jest-changed-files-23.4.2.tgz#1eed688370cd5eebafe4ae93d34bb3b64968fe83"

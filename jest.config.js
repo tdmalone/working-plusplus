@@ -8,6 +8,7 @@
 
 const config = {
   collectCoverage: true,
+  'setupTestFrameworkScriptFile': 'jest-chain',
   testEnvironment: 'node',
 
   testMatch: [
