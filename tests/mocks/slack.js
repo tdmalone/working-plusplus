@@ -10,9 +10,8 @@
 
 module.exports = {
   chat: {
-    postMessage: ( payload ) => {
+    postMessage: ( payload ) => { // eslint-disable-line no-unused-vars
       return new Promise( ( resolve ) => {
-        console.log( payload.text );
         resolve({ ok: true });
       });
     }

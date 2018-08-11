@@ -6,6 +6,7 @@ module.exports = {
     {
       files: [ '*.js' ],
       rules: {
+        'no-empty-function': 'off',
         'no-loop-func': 'off',
         'no-magic-numbers': 'off',
         'no-process-env': 'off',

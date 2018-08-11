@@ -17,9 +17,7 @@ const operations = [
   'selfPlus'
 ];
 
-let operation;
-
-for ( operation of operations ) {
+for ( const operation of operations ) {
   test( 'A message is returned for the ' + operation + ' operation', () => {
     expect( typeof messages.getRandomMessage( operation ) ).toBe( 'string' );
   });

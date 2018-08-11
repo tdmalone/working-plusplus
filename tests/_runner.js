@@ -7,7 +7,8 @@
 
 'use strict';
 
-const config = require( './_config' ),
+const objectAssignDeep = require( 'object-assign-deep' ),
+      config = require( './_config' ),
       http = require( 'http' ),
       pg = require( 'pg' );
 
@@ -31,12 +32,13 @@ const postgres = new pg.Pool( config.postgresPoolConfig );
  * @param {callable}        callback   When a string is provided for `nextAction`, this parameter
  *                                     becomes the callback, and the callback is provided the result
  *                                     from querying the string for its score in the database.
- * @param {string}          user       Optional. The Slack user ID that will own the event.
+ * @param {object}          extraBody  Optional. Additional options to merge in to the body of the
+ *                                     message sent to Slack.
  * @returns {void}
  */
-const runner = async( text, nextAction, callback, user ) => {
+const runner = async( text, nextAction, callback, extraBody ) => {
 
-  const body = {
+  let body = {
     token: SLACK_VERIFICATION_TOKEN,
     event: {
       type: 'message',
@@ -44,21 +46,18 @@ const runner = async( text, nextAction, callback, user ) => {
     }
   };
 
-  if ( 'undefined' !== typeof user ) {
-    body.event.user = user;
+  if ( 'undefined' !== typeof extraBody ) {
+    body = objectAssignDeep( body, extraBody );
   }
 
   const request = http.request( config.defaultRequestOptions, response => {
-    let data = '';
 
-    response.on( 'data', chunk => {
-      data += chunk;
-    }).on( 'end', async() => {
+    response
+      .on( 'data', () => {})
+      .on( 'end', async() => {
 
-      console.log( data );
-
-      // Wait for the operations after the HTTP requests returns to be completed before testing.
-      setTimeout( async() => {
+        // Wait for the operations after the HTTP requests returns to be completed before testing.
+        await new Promise( resolve => setTimeout( resolve, HTTP_RETURN_DELAY ) );
 
         // Allow the next action to be carried out by the caller, passing it an instance of a
         // dbClient if it accepts one.
@@ -75,8 +74,7 @@ const runner = async( text, nextAction, callback, user ) => {
         dbClient.release();
         callback( query.rows[0].score );
 
-      }, HTTP_RETURN_DELAY );
-    }); // Response end.
+      }); // Response end.
   }); // Http.request.
 
   request.write( JSON.stringify( body ) );
