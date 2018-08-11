@@ -95,7 +95,7 @@ const isValidEvent = ( event ) => {
  *                   (i.e. + or -).
  */
 const extractEventData = ( text => {
-  const data = text.match( /@([A-Za-z0-9.\-_]+?)>?\s*([-+]{2}|—{1})/ );
+  const data = text.match( /@([A-Za-z0-9]+?)>?\s*([-+]{2}|—{1})/ );
 
   if ( ! data ) {
     return false;
@@ -108,17 +108,17 @@ const extractEventData = ( text => {
 });
 
 /**
-   * Sends a message back to the relevant Slack channel with a response.
-   *
-   * @param {string} item      The Slack user ID (if user) or name (if thing) of the item being
-   *                           operated on.
-   * @param {string} operation The mathematical operation performed on the item's score.
-   * @param {int}    score     The item's score after potentially being updated by the operation.
-   * @param {object} event     A hash of a Slack event. See the documentation at
-   *                           https://api.slack.com/events-api#events_dispatched_as_json and
-   *                           https://api.slack.com/events/message for details.
-   * @return {Promise} A Promise to send a Slack message back to the requesting channel.
-   */
+ * Sends a message back to the relevant Slack channel with a response.
+ *
+ * @param {string} item      The Slack user ID (if user) or name (if thing) of the item being
+ *                           operated on.
+ * @param {string} operation The mathematical operation performed on the item's score.
+ * @param {int}    score     The item's score after potentially being updated by the operation.
+ * @param {object} event     A hash of a Slack event. See the documentation at
+ *                           https://api.slack.com/events-api#events_dispatched_as_json and
+ *                           https://api.slack.com/events/message for details.
+ * @return {Promise} A Promise to send a Slack message back to the requesting channel.
+ */
 const respondToUser = ( item, operation, score, event ) => {
 
   const itemMaybeLinked = item.match( /U[A-Z0-9]{8}/ ) ? '<@' + item + '>' : item;
@@ -341,6 +341,8 @@ module.exports = {
   respondToUser: respondToUser,
   updateScore: updateScore,
   handleEvent: handleEvent,
+  logRequest: logRequest,
+  validateToken: validateToken,
   handleGet: handleGet,
   handlePost: handlePost
 };
