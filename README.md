@@ -98,6 +98,7 @@ Although it works, it's very basic. Potential enhancements include:
 * Record and make accessible how many karma points someone has _given_
 * Enhance messages to support interpolation of variables such as score and name of user or thing **(in progress, see [#1](https://github.com/tdmalone/working-plusplus/pull/1))**
 * Set up a Dockerfile to make local development easier (i.e. to not require Node, Yarn or Postgres)
+* Improve error handling
 
 ## License
 

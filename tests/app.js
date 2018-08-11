@@ -70,47 +70,38 @@ test( 'Event with only a space as text is caught as invalid', () => {
 });
 
 /********************
- * HandleEvent.
+ * ExtractEventData.
  ********************/
 
 test( 'Message without an @ symbol is dropped', () => {
-  const event = {
-    type: 'message',
-    text: 'Hello++'
-  };
-
-  expect.hasAssertions();
-
-  return app.handleEvent( event ).then( data => {
-    expect( data ).toBe( false );
-  });
+  expect( app.extractEventData( 'Hello++' ) ).toBe( false );
 });
 
 test( 'Message without a valid operation is dropped', () => {
-  const event = {
-    type: 'message',
-    text: '@Hello'
-  };
-
-  expect.hasAssertions();
-
-  return app.handleEvent( event ).then( data => {
-    expect( data ).toBe( false );
-  });
+  expect( app.extractEventData( '@Hello' ) ).toBe( false );
 });
 
 test( 'Message without a valid user/item is dropped', () => {
-  const event = {
-    type: 'message',
-    text: '@++'
-  };
-
-  expect.hasAssertions();
-
-  return app.handleEvent( event ).then( data => {
-    expect( data ).toBe( false );
-  });
+  expect( app.extractEventData( '@++' ) ).toBe( false );
 });
+
+// TODO: More tests, including handling spaces and such.
+
+/********************
+ * RespondToUser.
+ ********************/
+
+// TODO:
+
+/********************
+ * UpdateScore.
+ ********************/
+
+// TODO:
+
+/********************
+ * HandleEvent.
+ ********************/
 
 test( 'User trying to ++ themselves is dropped', () => {
   const event = {
@@ -127,6 +118,18 @@ test( 'User trying to ++ themselves is dropped', () => {
 });
 
 /********************
+ * LogRequest.
+ ********************/
+
+// TODO:
+
+/********************
+ * ValidateToken.
+ ********************/
+
+// TODO:
+
+/********************
  * HandleGet.
  ********************/
 
@@ -134,11 +137,14 @@ test( 'GET request handler sends a response', () => {
 
   let receivedResponse;
   const mockExpress = require( './mocks/express' );
+
   mockExpress.response.send = ( response ) => {
     receivedResponse = response;
   };
 
-  app.handleGet( null, mockExpress.response );
+  mockExpress.request.method = 'GET';
+
+  app.handleGet( mockExpress.request, mockExpress.response );
   expect( typeof receivedResponse ).toBe( 'string' );
 
 });

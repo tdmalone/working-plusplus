@@ -44,7 +44,7 @@ module.exports = {
       }
     ],
 
-    'max-statements': [ 'error', { max: 30 } ],
+    'max-statements': [ 'error', { max: 20 } ],
 
     'no-magic-numbers': [
       'error',

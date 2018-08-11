@@ -85,6 +85,106 @@ const isValidEvent = ( event ) => {
 }; // IsValidEvent.
 
 /**
+ * Gets the user or 'thing' that is being spoken about, and the 'operation' being done on it.
+ * We take the operation down to one character, and also support — due to iOS' replacement of --.
+ *
+ * @param {string} text The message text sent through in the event.
+ * @returns {object} An object containing both the 'item' being referred to - either a Slack user
+ *                   ID (eg. 'U12345678') or the name of a 'thing' (eg. 'NameOfThing'); and the
+ *                   'operation' being done on it - expressed as a valid mathematical operation
+ *                   (i.e. + or -).
+ */
+const extractEventData = ( text => {
+  const data = text.match( /@([A-Za-z0-9.\-_]+?)>?\s*([-+]{2}|—{1})/ );
+
+  if ( ! data ) {
+    return false;
+  }
+
+  return {
+    item: data[1],
+    operation: data[2].substring( 0, 1 ).replace( '—', '-' )
+  };
+});
+
+/**
+   * Sends a message back to the relevant Slack channel with a response.
+   *
+   * @param {string} item      The Slack user ID (if user) or name (if thing) of the item being
+   *                           operated on.
+   * @param {string} operation The mathematical operation performed on the item's score.
+   * @param {int}    score     The item's score after potentially being updated by the operation.
+   * @param {object} event     A hash of a Slack event. See the documentation at
+   *                           https://api.slack.com/events-api#events_dispatched_as_json and
+   *                           https://api.slack.com/events/message for details.
+   * @return {Promise} A Promise to send a Slack message back to the requesting channel.
+   */
+const respondToUser = ( item, operation, score, event ) => {
+
+  const itemMaybeLinked = item.match( /U[A-Z0-9]{8}/ ) ? '<@' + item + '>' : item;
+  const operationName = operation.replace( '+', operations.PLUS ).replace( '-', operations.MINUS );
+  const message = getRandomMessage( operationName, itemMaybeLinked, score );
+
+  return new Promise( ( resolve, reject ) => {
+    slack.chat.postMessage({
+      channel: event.channel,
+      text: message
+    }).then( ( data ) => {
+
+      if ( ! data.ok ) {
+        console.error( 'Error occurred posting response.' );
+        return reject();
+      }
+
+      console.log( item + ' now on ' + score );
+      resolve();
+
+    });
+
+  }); // Return new Promise.
+}; // RespondToUser.
+
+/**
+ * Updates the score of an item in the database. If the item doesn't yet exist, it will be inserted
+ * into the database with an assumed initial score of 0.
+ *
+ * This function also sets up the database if it is not already ready, including creating the
+ * scores table and activating the Postgres case-insensitive extension.
+ *
+ * @param {string} item      The Slack user ID (if user) or name (if thing) of the item being
+ *                           operated on.
+ * @param {string} operation The mathematical operation performed on the item's score.
+ * @return {int} The item's new score after the update has been applied.
+ */
+const updateScore = async( item, operation ) => {
+
+  // Connect to the DB, and create a table if it's not yet there.
+  // We also set up the citext extension, so that we can easily be case insensitive.
+  const dbClient = await postgres.connect();
+  await dbClient.query( '\
+    CREATE EXTENSION IF NOT EXISTS citext; \
+    CREATE TABLE IF NOT EXISTS ' + scoresTableName + ' (item CITEXT PRIMARY KEY, score INTEGER); \
+  ' );
+
+  // Atomically record the action.
+  // TODO: Fix potential SQL injection issues here, even though we know the input should be safe.
+  await dbClient.query( '\
+    INSERT INTO ' + scoresTableName + ' VALUES (\'' + item + '\', ' + operation + '1) \
+    ON CONFLICT (item) DO UPDATE SET score = ' + scoresTableName + '.score ' + operation + ' 1; \
+  ' );
+
+  // Get the new value.
+  // TODO: Fix potential SQL injection issues here, even though we know the input should be safe.
+  const dbSelect = await dbClient.query( '\
+    SELECT score FROM ' + scoresTableName + ' WHERE item = \'' + item + '\'; \
+  ' );
+
+  dbClient.release();
+  return dbSelect.rows[0].score;
+
+}; // UpdateScore.
+
+/**
  * Handles events sent from Slack.
  *
  * @param {object} event A hash of a Slack event. See the documentation at
@@ -94,36 +194,10 @@ const isValidEvent = ( event ) => {
  *                        Slack message back to the requesting channel.
  */
 const handleEvent = async( event ) => {
-  let operation;
 
-  // Drop events where the text that doesn't mention anybody/anything.
-  if ( -1 === event.text.indexOf( '@' ) ) {
-    return false;
-  }
+  const { item, operation } = extractEventData( event.text );
 
-  // Drop events where the text doesn't include a valid operation.
-
-  const validOperations = [
-    '++',
-    '--',
-    '—' // Supports iOS' automatic replacement of --.
-  ];
-
-  if ( ! validOperations.some( element => -1 !== event.text.indexOf( element ) ) ) {
-    return false;
-  }
-
-  // If we're still here, it's a message to deal with!
-
-  // Get the user or 'thing' that is being spoken about, and the 'operation' being done on it.
-  // We take the operation down to one character, and also support — due to iOS' replacement of --.
-  // TODO: Extract this into a function to make it testable, and test each situation incl. spaces.
-  const data = event.text.match( /@([A-Za-z0-9.\-_]*?)>?\s*([-+]{2}|—{1})/ );
-  const item = data[1];
-  operation = data[2].substring( 0, 1 ).replace( '—', '-' );
-
-  // If we somehow didn't get anything, drop it. This can happen when eg. @++ is typed.
-  if ( ! item.trim() ) {
+  if ( ! item || ! operation ) {
     return false;
   }
 
@@ -147,54 +221,61 @@ const handleEvent = async( event ) => {
 
   } // If self ++.
 
-  // Connect to the DB, and create a table if it's not yet there.
-  // We also set up the citext extension, so that we can easily be case insensitive.
-  const dbClient = await postgres.connect();
-  await dbClient.query( '\
-    CREATE EXTENSION IF NOT EXISTS citext; \
-    CREATE TABLE IF NOT EXISTS ' + scoresTableName + ' (item CITEXT PRIMARY KEY, score INTEGER); \
-  ' );
-
-  // Atomically record the action.
-  // TODO: Fix potential SQL injection issues here, even though we know the input should be safe.
-  await dbClient.query( '\
-    INSERT INTO ' + scoresTableName + ' VALUES (\'' + item + '\', ' + operation + '1) \
-    ON CONFLICT (item) DO UPDATE SET score = ' + scoresTableName + '.score ' + operation + ' 1; \
-  ' );
-
-  // Get the new value.
-  // TODO: Fix potential SQL injection issues here, even though we know the input should be safe.
-  const dbSelect = await dbClient.query( '\
-    SELECT score FROM ' + scoresTableName + ' WHERE item = \'' + item + '\'; \
-  ' );
-  const score = dbSelect.rows[0].score;
-
-  dbClient.release();
-
-  // Respond.
-
-  const itemMaybeLinked = item.match( /U[A-Z0-9]{8}/ ) ? '<@' + item + '>' : item;
-  operation = operation.replace( '+', operations.PLUS ).replace( '-', operations.MINUS );
-  const message = getRandomMessage( operation, itemMaybeLinked, score );
-
-  return new Promise( ( resolve, reject ) => {
-    slack.chat.postMessage({
-      channel: event.channel,
-      text: message
-    }).then( ( data ) => {
-
-      if ( ! data.ok ) {
-        console.error( 'Error occurred posting response.' );
-        return reject();
-      }
-
-      console.log( item + ' now on ' + score );
-      resolve();
-
-    });
-  });
+  const score = await updateScore( item, operation );
+  return respondToUser( item, operation, score, event );
 
 }; // HandleEvent.
+
+/**
+ * Simple logging of requests.
+ *
+ * @param {express.req} request An Express request. See https://expressjs.com/en/4x/api.html#req.
+ * @return {void}
+ */
+const logRequest = request => {
+  console.log(
+    request.ip + ' ' + request.method + ' ' + request.path + ' ' + request.headers['user-agent']
+  );
+};
+
+/**
+ * Checks if the token supplied with an incoming event is valid. This ensures that events are not
+ * processed from random requests not originating from Slack.
+ *
+ * WARNING: When checking the return value of this function, ensure you use strict equality so that
+ *          an error response is not misinterpreted as truthy.
+ *
+ * TODO: Move to calculating the signature instead (newer, more secure method).
+ *
+ * @param {string} suppliedToken The token supplied in the request.
+ * @param {string} serverToken   The token to validate against.
+ * @return {object|bool} If invalid, an error object containing an 'error' with HTTP status code
+ *                       and a 'message' to return to the user; otherwise, if valid, returns true.
+ */
+const validateToken = ( suppliedToken, serverToken ) =>{
+
+  // Sanity check for bad values on the server side - either empty, or still set to the default.
+  if ( ! serverToken.trim() || 'xxxxxxxxxxxxxxxxxxxxxxxx' === serverToken ) {
+    console.error( '500 Internal server error - bad verification value' );
+    return {
+      error: HTTP_500,
+      message: 'Internal server error.'
+    };
+  }
+
+  // Check that this is Slack making the request.
+  if ( suppliedToken !== serverToken ) {
+    console.error( '403 Access denied - incorrect verification token' );
+    return {
+      error: HTTP_403,
+      message: 'Access denied.'
+    };
+  }
+
+  // If we get here, we're good to go!
+  return true;
+
+}; // ValidateToken.
 
 /**
  * Handles GET requests to the app.
@@ -204,6 +285,7 @@ const handleEvent = async( event ) => {
  * @return {void}
  */
 const handleGet = ( request, response ) => {
+  logRequest( request );
   response.send( 'It works! However, this app only accepts POST requests for now.' );
 };
 
@@ -216,11 +298,7 @@ const handleGet = ( request, response ) => {
  *                        by `handleEvent()`.
  */
 const handlePost = ( request, response ) => {
-
-  // Simple logging of requests.
-  console.log(
-    request.ip + ' ' + request.method + ' ' + request.path + ' ' + request.headers['user-agent']
-  );
+  logRequest( request );
 
   // Respond to challenge sent by Slack during event subscription set up.
   if ( request.body.challenge ) {
@@ -229,18 +307,10 @@ const handlePost = ( request, response ) => {
     return false;
   }
 
-  // Sanity check for bad verification values - empty, or still set to the default.
-  if ( ! SLACK_VERIFICATION_TOKEN || 'xxxxxxxxxxxxxxxxxxxxxxxx' === SLACK_VERIFICATION_TOKEN ) {
-    response.status( HTTP_500 ).send( 'Internal server error.' );
-    console.error( '500 Internal server error - bad verification value' );
-    return false;
-  }
-
-  // Check that this is Slack making the request.
-  // TODO: Move to calculating the signature instead (newer, more secure method).
-  if ( SLACK_VERIFICATION_TOKEN !== request.body.token ) {
-    response.status( HTTP_403 ).send( 'Access denied.' );
-    console.error( '403 Access denied - incorrect verification token' );
+  // Ensure the verification token in the incoming request is valid.
+  const validation = validateToken( request.body.token, SLACK_VERIFICATION_TOKEN );
+  if ( true !== validation ) {
+    response.status( validation.error ).send( validation.message );
     return false;
   }
 
@@ -267,6 +337,9 @@ const handlePost = ( request, response ) => {
 module.exports = {
   setSlackClient: setSlackClient,
   isValidEvent: isValidEvent,
+  extractEventData: extractEventData,
+  respondToUser: respondToUser,
+  updateScore: updateScore,
   handleEvent: handleEvent,
   handleGet: handleGet,
   handlePost: handlePost
