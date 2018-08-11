@@ -30,7 +30,7 @@ before_install:
   - export PATH="$HOME/.yarn/bin:$PATH"
 
   # Upgrade to PostgreSQL 10.
-  - ./install-postgres-10.sh
+  - ./.travis-postgres10.sh
 
 install:
   - yarn --frozen-lockfile
