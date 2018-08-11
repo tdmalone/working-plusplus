@@ -15,3 +15,6 @@ sudo cp /etc/postgresql/{9.6,10}/main/pg_hba.conf
 
 echo "Restarting Postgres 10..."
 sudo service postgresql restart
+
+echo "Adding Travis role..."
+sudo psql --command='CREATE ROLE travis SUPERUSER LOGIN CREATEDB;' --username=postgres
