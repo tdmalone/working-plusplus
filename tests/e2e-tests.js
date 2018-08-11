@@ -21,6 +21,9 @@ console.info = jest.fn();
 console.log = jest.fn();
 console.warn = jest.fn();
 
+// Mock the Slack mock, so we can use Jest expects on it.
+slackClientMock.chat.postMessage = jest.fn( slackClientMock.chat.postMessage );
+
 // Clear the DB table + start the Express server before we begin.
 beforeAll( async() => {
 
@@ -117,45 +120,206 @@ test( '-- works for existing user 200 and then equals -2', ( done ) => {
   });
 });
 
-// TODO: Enable this test after implementing self user actions in the test runner.
-test.skip( 'self ++ fails for existing user 100 and then still equals 2', ( done ) => {
-  expect.assertions( 1 );
-  runner( '<@U00000100>++', 'U00000100', ( result ) => {
+test( 'self ++ fails for existing user 100 and then still equals 2', ( done ) => {
+  expect.hasAssertions();
+  const user = 'U00000100';
+
+  runner( '<@' + user + '>++', user, ( result ) => {
     expect( result ).toBe( 2 );
     done();
-  });
+  }, user );
 });
 
-// TODO: Enable this test after implementing self user actions in the test runner.
-test.skip( 'self -- works for existing user 200 and then equals -3', ( done ) => {
-  expect.assertions( 1 );
-  runner( '<@U00000200>--', 'U00000200', ( result ) => {
+test( 'self -- works for existing user 200 and then equals -3', ( done ) => {
+  expect.hasAssertions();
+  const user = 'U00000200';
+
+  runner( '<@' + user + '>--', user, ( result ) => {
     expect( result ).toBe( -3 );
     done();
-  });
+  }, user );
 });
 
 test( '++ works for existing user 100 and then equals 3', ( done ) => {
-  expect.assertions( 1 );
-  runner( '<@U00000100>++', 'U00000100', ( result ) => {
+  expect.hasAssertions();
+  const user = 'U00000100';
+
+  runner( '<@' + user + '>++', user, ( result ) => {
     expect( result ).toBe( 3 );
     done();
   });
 });
 
-// TODO: Test Slack message is sent containing user C link after self++.
-// TODO: Test Slack message is sent containing user C link and score 3 after ++.
-// TODO: Test Slack message is sent containing user D link and score -4 after --.
+/****************************************************************
+ * Slack Tests.
+ ****************************************************************/
 
-// TODO: Test Slack message is sent containing singular 'point' after 'thing' E ++.
-// TODO: Test Slack message is sent containing plural 'points' after 'thing' E ++.
-// TODO: Test Slack message is sent containing singular 'point' after 'thing' F --.
-// TODO: Test Slack message is sent containing plural 'points' after 'thing' F --.
-// TODO: Test Slack message is sent containing plural 'points' after 'thing' G ++ and then --.
+test( 'Message contains user 100 link after self++', ( done ) => {
+  expect.assertions( 2 );
+  const user = 'U00000100';
 
-// TODO: Test Slack message contains <@ and > after user H ++.
-// TODO: Test Slack message does not contain <@ and > after 'thing' I ++.
+  slackClientMock.chat.postMessage.mockClear();
+  runner( '<@' + user + '>++', () => {
 
-// TODO: Test Slack message can be found in 'plus' messages after user H ++.
-// TODO: Test Slack message can be found in 'minus' messages after user H --.
+    expect( slackClientMock.chat.postMessage )
+      .toHaveBeenCalledTimes( 1 )
+      .toHaveBeenCalledWith(
+        expect.objectContaining({ text: expect.stringContaining( '<@' + user + '>' ) })
+      );
+
+    done();
+
+  }, null, user );
+});
+
+test( 'Message contains user 100 link and score 4 after ++', ( done ) => {
+  expect.assertions( 3 );
+  const user = 'U00000100';
+
+  slackClientMock.chat.postMessage.mockClear();
+  runner( '<@' + user + '>++', () => {
+
+    expect( slackClientMock.chat.postMessage )
+      .toHaveBeenCalledTimes( 1 )
+      .toHaveBeenCalledWith(
+        expect.objectContaining({ text: expect.stringContaining( '<@' + user + '>' ) })
+      )
+      .toHaveBeenCalledWith(
+        expect.objectContaining({ text: expect.stringMatching( /\s4\b/ ) })
+      );
+
+    done();
+
+  });
+});
+
+test( 'Message contains user 200 link and score -4 after --', ( done ) => {
+  expect.assertions( 3 );
+  const user = 'U00000200';
+
+  slackClientMock.chat.postMessage.mockClear();
+  runner( '<@' + user + '>--', () => {
+
+    expect( slackClientMock.chat.postMessage )
+      .toHaveBeenCalledTimes( 1 )
+      .toHaveBeenCalledWith(
+        expect.objectContaining({ text: expect.stringContaining( '<@' + user + '>' ) })
+      )
+      .toHaveBeenCalledWith(
+        expect.objectContaining({ text: expect.stringMatching( /\s-4\b/ ) })
+      );
+
+    done();
+
+  });
+});
+
+test( 'Message contains singular \'point\' after thing E++ (i.e. score 1)', ( done ) => {
+  expect.assertions( 2 );
+  const thing = 'ThingE';
+
+  slackClientMock.chat.postMessage.mockClear();
+  runner( '@' + thing + '++', () => {
+
+    expect( slackClientMock.chat.postMessage )
+      .toHaveBeenCalledTimes( 1 )
+      .toHaveBeenCalledWith(
+        expect.objectContaining({ text: expect.stringMatching( /\spoint\b/ ) })
+      );
+
+    done();
+
+  });
+});
+
+test( 'Message contains plural \'points\' after thing E++ (i.e. score 2)', ( done ) => {
+  expect.assertions( 2 );
+  const thing = 'ThingE';
+
+  slackClientMock.chat.postMessage.mockClear();
+  runner( '@' + thing + '++', () => {
+
+    expect( slackClientMock.chat.postMessage )
+      .toHaveBeenCalledTimes( 1 )
+      .toHaveBeenCalledWith(
+        expect.objectContaining({
+          text: expect.stringMatching( /\spoints\b/ )
+        })
+      );
+
+    done();
+
+  });
+});
+
+test( 'Message contains singular \'point\' after thing F-- (i.e. score -1)', ( done ) => {
+  expect.hasAssertions();
+  const thing = 'ThingF';
+
+  slackClientMock.chat.postMessage.mockClear();
+  runner( '@' + thing + '--', () => {
+
+    expect( slackClientMock.chat.postMessage )
+      .toHaveBeenCalledTimes( 1 )
+      .toHaveBeenCalledWith(
+        expect.objectContaining({
+          text: expect.stringMatching( /\spoint\b/ )
+        })
+      );
+
+    done();
+
+  });
+});
+
+test( 'Message contains plural \'points\' after thing F-- (i.e. score -2)', ( done ) => {
+  expect.hasAssertions();
+  const thing = 'ThingF';
+
+  slackClientMock.chat.postMessage.mockClear();
+  runner( '@' + thing + '--', () => {
+
+    expect( slackClientMock.chat.postMessage )
+      .toHaveBeenCalledTimes( 1 )
+      .toHaveBeenCalledWith(
+        expect.objectContaining({
+          text: expect.stringMatching( /\spoints\b/ )
+        })
+      );
+
+    done();
+
+  });
+});
+
+test( 'Message contains plural \'points\' after thing G ++ then -- (i.e. score 0)', ( done ) => {
+  expect.hasAssertions();
+  const thing = 'ThingG';
+
+  slackClientMock.chat.postMessage.mockClear();
+  runner( '@' + thing + '++', () => {
+    runner( '@' + thing + '--', () => {
+      expect( slackClientMock.chat.postMessage )
+        .toHaveBeenCalledTimes( 2 )
+        .toHaveBeenNthCalledWith(
+          2,
+          expect.objectContaining({
+            text: expect.stringMatching( /\spoints\b/ )
+          })
+        );
+
+      done();
+    });
+  });
+});
+
+// TODO: Test Message contains <@ and > after user 300 ++.
+// TODO: Test Slack message does not contain <@ and > after 'thing' 400 ++.
+
+// TODO: Test Slack message can be found in 'plus' messages after user 300 ++.
+// TODO: Test Slack message can be found in 'minus' messages after user 300 --.
 // TODO: Test Slack message can be found in 'selfPlus' messages after self++.
+
+// TODO: Test Slack messages go back to the channel they were sent from.
+// TODO: Test that user messages still work with a space before the ++.
+// TODO: Test that thing messages still work with a space before the ++.
