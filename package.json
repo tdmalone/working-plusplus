@@ -1,6 +1,6 @@
 {
   "name": "working-plusplus",
-  "version": "0.0.1",
+  "version": "0.0.3",
   "description": "Like plusplus.chat, but one that actually works, because you can host it yourself 😉",
   "main": "index.js",
   "repository": "git@github.com:tdmalone/working-plusplus.git",
