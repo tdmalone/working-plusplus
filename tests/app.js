@@ -5,6 +5,8 @@
  * @author Tim Malone <tdmalone@gmail.com>
  */
 
+/* global jest */
+
 'use strict';
 
 const app = require( '../src/app' ),
@@ -196,7 +198,7 @@ describe( 'handleEvent', () => {
 
     expect.hasAssertions();
 
-    return app.handleEvent( event ).then( data => {
+    return app.handleEvent( event ).then( ( data ) => {
       expect( data ).toBe( false );
     });
   });

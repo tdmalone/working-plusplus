@@ -5,6 +5,8 @@
  * @author Tim Malone <tdmalone@gmail.com>
  */
 
+/* global jest */
+
 'use strict';
 
 const objectAssignDeep = require( 'object-assign-deep' ),
@@ -53,7 +55,7 @@ const runner = async( text, options, callback ) => {
     token: SLACK_VERIFICATION_TOKEN,
     event: {
       type: 'message',
-      text: text
+      text
     }
   };
 
@@ -61,14 +63,14 @@ const runner = async( text, options, callback ) => {
     body = objectAssignDeep( body, options.extraBody );
   }
 
-  const request = http.request( config.defaultRequestOptions, response => {
+  const request = http.request( config.defaultRequestOptions, ( response ) => {
 
     response
       .on( 'data', () => {})
       .on( 'end', async() => {
 
         // Wait for the operations after the HTTP requests returns to be completed before testing.
-        await new Promise( resolve => setTimeout( resolve, HTTP_RETURN_DELAY ) );
+        await new Promise( ( resolve ) => setTimeout( resolve, HTTP_RETURN_DELAY ) );
 
         // If we weren't provided with an itemToCheck, return to the callback now, passing it an
         // instance of a dbClient if it accepts at least one argument.

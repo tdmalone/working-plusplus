@@ -8,6 +8,8 @@
  * @author Tim Malone <tdmalone@gmail.com>
  */
 
+/* global jest */
+
 'use strict';
 
 const pg = require( 'pg' ),
@@ -94,7 +96,7 @@ const isValidEvent = ( event ) => {
  *                   'operation' being done on it - expressed as a valid mathematical operation
  *                   (i.e. + or -).
  */
-const extractEventData = ( text => {
+const extractEventData = ( ( text ) => {
   const data = text.match( /@([A-Za-z0-9]+?)>?\s*([-+]{2}|—{1})/ );
 
   if ( ! data ) {
@@ -232,7 +234,7 @@ const handleEvent = async( event ) => {
  * @param {express.req} request An Express request. See https://expressjs.com/en/4x/api.html#req.
  * @return {void}
  */
-const logRequest = request => {
+const logRequest = ( request ) => {
   console.log(
     request.ip + ' ' + request.method + ' ' + request.path + ' ' + request.headers['user-agent']
   );
@@ -252,7 +254,7 @@ const logRequest = request => {
  * @return {object|bool} If invalid, an error object containing an 'error' with HTTP status code
  *                       and a 'message' to return to the user; otherwise, if valid, returns true.
  */
-const validateToken = ( suppliedToken, serverToken ) =>{
+const validateToken = ( suppliedToken, serverToken ) => {
 
   // Sanity check for bad values on the server side - either empty, or still set to the default.
   if ( ! serverToken.trim() || 'xxxxxxxxxxxxxxxxxxxxxxxx' === serverToken ) {
@@ -335,14 +337,14 @@ const handlePost = ( request, response ) => {
 }; // HandlePost.
 
 module.exports = {
-  setSlackClient: setSlackClient,
-  isValidEvent: isValidEvent,
-  extractEventData: extractEventData,
-  respondToUser: respondToUser,
-  updateScore: updateScore,
-  handleEvent: handleEvent,
-  logRequest: logRequest,
-  validateToken: validateToken,
-  handleGet: handleGet,
-  handlePost: handlePost
+  setSlackClient,
+  isValidEvent,
+  extractEventData,
+  respondToUser,
+  updateScore,
+  handleEvent,
+  logRequest,
+  validateToken,
+  handleGet,
+  handlePost
 };
