@@ -1,117 +1,239 @@
 /**
- * Integration tests on the main ./index.js file.
- *
- * TODO: Add a lot more tests to this.
+ * Integration tests.
  *
  * @see https://jestjs.io/docs/en/expect
+ * @see https://jestjs.io/docs/en/asynchronous.html
+ * @see https://jestjs.io/docs/en/mock-functions#mocking-modules
  * @author Tim Malone <tdmalone@gmail.com>
  */
 
 'use strict';
 
-// Start the Express server.
-require( '../' );
+/****************************************************************
+ * Environment Configuration.
+ ****************************************************************/
 
-const http = require( 'http' );
+const http = require( 'http' ),
+      pg = require( 'pg' ),
+      app = require( '../src/app' ),
+      config = require( './_config' ),
+      runner = require( './_runner' ),
+      slackClientMock = require( './mocks/slack' );
 
-/* eslint-disable no-process-env, no-magic-numbers */
-const PORT = process.env.PORT || 80;
-/* eslint-enable no-process-env, no-magic-numbers */
+const originalProcessEnv = process.env;
+const postgres = new pg.Pool( config.postgresPoolConfig );
 
-const HTTP_200 = 200,
-      HTTP_500 = 500;
+/****************************************************************
+ * Jest Setup.
+ ****************************************************************/
 
-test( 'Server returns HTTP 200 for GET operations', done => {
-  http.get( 'http://localhost:' + PORT, response => {
-    expect( response.statusCode ).toBe( HTTP_200 );
-    done();
-  });
+// Catch all console output during tests.
+console.error = jest.fn();
+console.info = jest.fn();
+console.log = jest.fn();
+console.warn = jest.fn();
+
+// Drop the scores table + case insensitive extension before we start, as our tests rely on that.
+beforeAll( async() => {
+  const dbClient = await postgres.connect();
+  await dbClient.query( 'DROP TABLE IF EXISTS ' + config.scoresTableName );
+  await dbClient.query( 'DROP EXTENSION IF EXISTS CITEXT' );
+  await dbClient.release();
 });
 
-test( 'Server correctly returns the Slack event challenge value', done => {
+// Clear module cache + reset environment variables before each test.
+beforeEach( () => {
+  jest.resetModules();
+  process.env = { ...originalProcessEnv };
+});
 
-  const requestOptions = {
-    host:   'localhost',
-    method: 'POST',
-    port:   PORT,
+/****************************************************************
+ * Express Server tests.
+ ****************************************************************/
 
-    headers: {
-      'Content-Type': 'application/json'
-    }
-  };
+describe( 'The Express server', () => {
 
-  const requestBody = {
-    challenge: Math.random().toString()
-  };
+  it( 'returns HTTP 200 for GET operations', done => {
+    expect.hasAssertions();
 
-  const request = http.request( requestOptions, response => {
-    let data = '';
-    response.on( 'data', chunk => {
-      data += chunk;
-    }).on( 'end', () => {
-      expect( response.statusCode ).toBe( HTTP_200 );
-      expect( data ).toBe( requestBody.challenge );
-      done();
+    const listener = require( '../' )();
+
+    listener.on( 'listening', () => {
+      http.get( 'http://localhost:' + config.PORT, response => {
+        listener.close();
+        expect( response.statusCode ).toBe( 200 );
+        done();
+      });
+    });
+
+  });
+
+  it( 'correctly returns the Slack event challenge value', done => {
+    expect.assertions( 2 );
+
+    const listener = require( '../' )();
+    const requestBody = { challenge: Math.random().toString() };
+
+    listener.on( 'listening', () => {
+      const request = http.request( config.defaultRequestOptions, response => {
+        let data = '';
+
+        response.on( 'data', chunk => {
+          data += chunk;
+        }).on( 'end', () => {
+          listener.close();
+          expect( response.statusCode ).toBe( 200 );
+          expect( data ).toBe( requestBody.challenge );
+          done();
+        });
+      });
+
+      request.write( JSON.stringify( requestBody ) );
+      request.end();
+
     });
   });
 
-  request.write( JSON.stringify( requestBody ) );
-  request.end();
-});
+  it( 'returns HTTP 500 when no verification token is set', done => {
+    expect.hasAssertions();
 
-test( 'Server returns HTTP 500 when no verification token is set', done => {
+    delete process.env.SLACK_VERIFICATION_TOKEN;
+    const listener = require( '../' )();
 
-  const requestOptions = {
-    host:   'localhost',
-    method: 'POST',
-    port:   PORT
+    listener.on( 'listening', () => {
+      http.request( config.defaultRequestOptions, response => {
+        listener.close();
+        expect( response.statusCode ).toBe( 500 );
+        done();
+      }).end();
+    });
+
+  });
+
+  it( 'returns HTTP 500 when verification token is still set to the default', done => {
+    expect.hasAssertions();
+
+    process.env.SLACK_VERIFICATION_TOKEN = 'xxxxxxxxxxxxxxxxxxxxxxxx';
+    const listener = require( '../' )();
+
+    listener.on( 'listening', () => {
+      http.request( config.defaultRequestOptions, response => {
+        listener.close();
+        expect( response.statusCode ).toBe( 500 );
+        done();
+      }).end();
+    });
+
+  });
+
+  it( 'returns HTTP 403 when verification token is incorrect', done => {
+    expect.hasAssertions();
+
+    const listener = require( '../' )();
+    const body = { token: 'something_is_not_right' };
+
+    listener.on( 'listening', () => {
+
+      const request = http.request( config.defaultRequestOptions, response => {
+        listener.close();
+        expect( response.statusCode ).toBe( 403 );
+        done();
+      });
+
+      request.write( JSON.stringify( body ) );
+      request.end();
+
+    });
+  });
+
+  it( 'responds to Slack on retries and then drops the event', () => {
+    expect.assertions( 4 );
+
+    const mockExpress = require( './mocks/express' );
+
+    // The first time, we expect an error because we haven't put a valid event together yet.
+
+    mockExpress.response.send = jest.fn();
+
+    expect( () => {
+      app.handlePost( mockExpress.request, mockExpress.response );
+    }).toThrow();
+
+    expect( mockExpress.response.send ).toHaveBeenCalledTimes( 1 );
+
+    // The second time, we clear the mocks, and then pretend Slack is retrying a request.
+    // This one should simply return false.
+
+    mockExpress.response.send.mockClear();
+    mockExpress.request.headers['x-slack-retry-num'] = 1;
+    const result = app.handlePost( mockExpress.request, mockExpress.response );
+    expect( result ).toBe( false );
+    expect( mockExpress.response.send ).toHaveBeenCalledTimes( 1 );
+
+  });
+
+}); // Express Server tests.
+
+/****************************************************************
+ * Postgres tests.
+ ****************************************************************/
+
+describe( 'The database', () => {
+
+  const tableExistsQuery = 'SELECT EXISTS ( ' +
+    'SELECT 1 FROM information_schema.tables ' +
+    'WHERE table_name = \'' + config.scoresTableName + '\'' +
+  ')';
+
+  const extensionExistsQuery = 'SELECT * FROM pg_extension WHERE extname = \'citext\'';
+
+  it( 'does not yet have the ' + config.scoresTableName + ' table', async() => {
+    expect.hasAssertions();
+    const dbClient = await postgres.connect();
+    const query = await dbClient.query( tableExistsQuery );
+    await dbClient.release();
+    expect( query.rows[0].exists ).toBe( false );
+  });
+
+  it( 'does not yet have the case-insensitive extension', async() => {
+    expect.hasAssertions();
+    const dbClient = await postgres.connect();
+    const query = await dbClient.query( extensionExistsQuery );
+    await dbClient.release();
+    expect( query.rowCount ).toBe( 0 );
+  });
+
+  /**
+   * Provides a 'first request' and a test that it successfully creates the database table.
+   *
+   * @param {callable} done A callback to use for alerting Jest that the test is complete.
+   * @return {void}
+   */
+  const doFirstRequest = ( done ) => {
+    expect.hasAssertions();
+    const listener = require( '../' )({ slack: slackClientMock });
+
+    listener.on( 'listening', () => {
+      runner( '@something++', async( dbClient ) => {
+        listener.close();
+        const query = await dbClient.query( tableExistsQuery );
+        await dbClient.release();
+        expect( query.rows[0].exists ).toBe( true );
+        done();
+      });
+    });
   };
 
-  http.request( requestOptions, response => {
-    expect( response.statusCode ).toBe( HTTP_500 );
-    done();
-  }).end();
-});
+  it( 'creates the ' + config.scoresTableName + ' table on the first request', doFirstRequest );
 
-// TODO: Mock Slack.
-// TODO: Mock Postgres (or use a local server).
+  it( 'also creates the case-insensitive extension on the first request', async() => {
+    expect.hasAssertions();
+    const dbClient = await postgres.connect();
+    const query = await dbClient.query( extensionExistsQuery );
+    await dbClient.release();
+    expect( query.rowCount ).toBe( 1 );
+  });
 
-// TODO: Test server returns HTTP 403 when incorrect verification token is supplied.
-// TODO: Test server drops Slack retries.
+  it( 'does not cause errors on subsequent requests', doFirstRequest );
 
-// TODO: Test DB table gets created.
-// TODO: Test CITEXT extension is added if not exists.
-
-// TODO: Test ++ works for brand new 'thing' A and then equals 1.
-// TODO: Test -- works for brand new 'thing' B and then equals -1.
-// TODO: Test ++ works for existing 'thing' A and then equals 2.
-// TODO: Test -- works for existing 'thing' B and then equals -2.
-// TODO: Test ++ works for existing 'thing' A with different case and then equals 3.
-// TODO: Test ++ works for brand new user C and then equals 1.
-// TODO: Test -- works for brand new user D and then equals -1.
-// TODO: Test ++ works for existing user C and then equals 2.
-// TODO: Test -- works for existing user D and then equals -2.
-// TODO: Test self ++ fails for existing user C and then still equals 2.
-// TODO: Test self -- works for existing user D and then equals -3.
-
-// TODO: Test DB table doesn't get recreated/error.
-// TODO: Test CITEXT extension doesn't error if running again.
-
-// TODO: Test ++ works for existing user and then equals 3.
-
-// TODO: Test Slack message is sent containing user C link after self++.
-// TODO: Test Slack message is sent containing user C link and score 3 after ++.
-// TODO: Test Slack message is sent containing user D link and score -4 after --.
-
-// TODO: Test Slack message is sent containing singular 'point' after 'thing' E ++.
-// TODO: Test Slack message is sent containing plural 'points' after 'thing' E ++.
-// TODO: Test Slack message is sent containing singular 'point' after 'thing' F --.
-// TODO: Test Slack message is sent containing plural 'points' after 'thing' F --.
-// TODO: Test Slack message is sent containing plural 'points' after 'thing' G ++ and then --.
-
-// TODO: Test Slack message contains <@ and > after user H ++.
-// TODO: Test Slack message does not contain <@ and > after 'thing' I ++.
-
-// TODO: Test Slack message can be found in 'plus' messages after user H ++.
-// TODO: Test Slack message can be found in 'minus' messages after user H --.
-// TODO: Test Slack message can be found in 'selfPlus' messages after self++.
+}); // Postgres tests.

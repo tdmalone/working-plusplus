@@ -1,17 +1,42 @@
+
+# Travis CI configuration for Working PlusPlus++
+#
+# @see https://docs.travis-ci.com/user/languages/javascript-with-nodejs/
+# @see https://docs.travis-ci.com/user/database-setup/#postgresql
+# @author Tim Malone <tdmalone@gmail.com>
+
 language: node_js
 node_js: 10.8.0
+
+services:
+  - postgresql
+
+# Support upgrading to PostgreSQL 10, as the default build images don't support it yet.
+# (We run the install script in before_install below)
+# @see https://github.com/travis-ci/travis-ci/issues/8537#issuecomment-354020356
+sudo: required
+addons:
+  postgresql: 9.6
 
 cache:
   yarn: true
   directories:
     - node_modules
 
-# Upgrade Yarn to the version specified in package.json.
 before_install:
+
+  # Upgrade Yarn to the version specified in package.json.
   - curl --location https://yarnpkg.com/install.sh | bash -s -- --version "$( node -e "console.log(require('./package.json').engines.yarn)" )"
   - export PATH="$HOME/.yarn/bin:$PATH"
 
-install: yarn
+  # Upgrade to PostgreSQL 10.
+  - ./.travis-postgres10.sh
+
+install:
+  - yarn --frozen-lockfile
+
+before_script:
+  - psql --command="CREATE DATABASE plusplus_tests;" --username="postgres"
 
 script:
   - yarn lint
@@ -24,4 +49,4 @@ notifications:
   slack:
     on_start: always
     rooms:
-      - secure: UbCK1YGnopRxELn0sxl1Ra7/c4GjAHYb77FRS3mzgOdIzg+C3VyAilIL1SpAS3ue7IGyG+DeTtVa1azC4Xwo9abpk5/wJQxYBFlBoYV2VO9JWgz74L4i/rW00cbFZDozCv1Df3mwq9OUe6S5eXDY4KSR36hod48aZ/PRwHL8uj/VyYku5JA1BI3nyIQx7N7Tn26jzQkC2M74aO4tN3FSwrYyV0805In43+rUKGnb65glJ+nxrW6A6lBsTH9MiIt2xk9FFBuF9ZQUjG0Fu4asOGROqJp4w5b1p7Hf2PVWB773oFQuNIi4H2jEiHO/QUAtmn8i5lCuzLpB1PuGmcQGIpw4GdZE5R0gZ7au0sgqmiNM20v+5L355M0+bK+BfyEKLz+rBIl0mmmWd1rXipErlhsmQRsp1bvMk7pjoeQGgJ4Qrt9NZYqkmBR/629fGsf68maSNR+AFbYzXeOcSq/6VK445QMdw8XygYiQVswS7Kyu3/s2VeaDJOPUORpJ2jehGsj5a1B0jTpPMYXGVMwYRfA5CqT8BqM0BvwvzHtyz/sGHodMr3UIodBWBIyDigP7Pk8gYN0hTsg6rVZ7SkjWgOKxcuwOnRwA36T9KfVfyEcDfbcyROl3fSTn5wNABBrUxaFU12paTlIQlZ4Gveh9W80xN5y9fHXWJb+B80bHbnA=
+      - secure: efl6ZdfE6OTOK5L2z5m993uultsT5WanZ5sn8EmHPa0ENd2+SKXIIigQ1EqbLm1zExWLMKA3Pq5pbHwndsnWywGkZDXWy2eHoSHk7IEVLLvAceyLUr5h2pBL8wztqWGZDMBo1tHGYddQsyBlCs52AQM04i+XBX4tYiUhub7AAbMQ9cqBIz09fRZ9JBNxM6HzMvj+PmeezXzFxvzgvmVQawGQUvJPaZuf9qcwJN1ZWw0FNkIwg3Aafe809mnQnzYIwmiC9kF+ZJ14BX4qqW7uzbo7Zsf647a8LSm9OI3fWzGdNnScWXv+hkWyfHAj8cz4yI2y5l+F3Muhwylp2wHGzjARJTLQq3HTFWaAnZtpyd82FB8v82qKPaPpKTeLcVkdib/E9XjYsdFdsC33jr5vc0j/oM/bLi9pA0faWwN4kq6Q9k3Ei2u+WnP4G7Fzb1WR7zZoLmT9k4BVOJFLYF++OirE9GPaKTvRMnOaR/RO/rQkOx2FlrtzfoG//NBULycMbEMmrv4/GJ64SHQ7YtnedaEb1NwXi/qTwdDtjXkmAeNRoNayHvLLZKG3GKsUze3VIrieN8qMCTRdXRttQd3hacPYNtoCqcB7ogIMN/Jg7v1g2l2szs/v2waNMJW18Hoj3PD8dDSrH/VXlDjaqCNFxo5/sBeHC6eJtW6EkCgzCY4=

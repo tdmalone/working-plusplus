@@ -1,6 +1,8 @@
 /**
  * Unit tests on the messages.js file.
  *
+ * TODO: Expand tests.
+ *
  * @see https://jestjs.io/docs/en/expect
  * @author Tim Malone <tdmalone@gmail.com>
  */
@@ -9,27 +11,19 @@
 
 const messages = require( '../src/messages' );
 
-test( 'A message is returned for the plus operation', () => {
-  expect( typeof messages.getRandomMessage( 'plus' ) ).toBe( 'string' );
-});
+const operations = [
+  'plus',
+  'minus',
+  'selfPlus'
+];
 
-test( 'A message is returned for the plus shorthand (+) operation', () => {
-  expect( typeof messages.getRandomMessage( '+' ) ).toBe( 'string' );
-});
+for ( const operation of operations ) {
+  it( 'returns a message for the ' + operation + ' operation', () => {
+    expect( typeof messages.getRandomMessage( operation ) ).toBe( 'string' );
+  });
+}
 
-test( 'A message is returned for the minus operation', () => {
-  expect( typeof messages.getRandomMessage( 'minus' ) ).toBe( 'string' );
-});
-
-test( 'A message is returned for the minus shorthand (-) operation', () => {
-  expect( typeof messages.getRandomMessage( '-' ) ).toBe( 'string' );
-});
-
-test( 'A message is returned for the selfPlus operation', () => {
-  expect( typeof messages.getRandomMessage( 'selfPlus' ) ).toBe( 'string' );
-});
-
-test( 'An error occurs for an invalid operation', () => {
+it( 'throws an error for an invalid operation', () => {
   expect( () => {
     messages.getRandomMessage( 'INVALID_OPERATION' );
   }).toThrow();
