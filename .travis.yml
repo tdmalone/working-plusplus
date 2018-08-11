@@ -42,6 +42,9 @@ script:
   - yarn lint
   - yarn test
 
+after_script:
+  - yarn report-coverage
+
 # On success, deployments are automatically handled by Heroku.
 
 notifications:
@@ -50,3 +53,9 @@ notifications:
     on_start: always
     rooms:
       - secure: efl6ZdfE6OTOK5L2z5m993uultsT5WanZ5sn8EmHPa0ENd2+SKXIIigQ1EqbLm1zExWLMKA3Pq5pbHwndsnWywGkZDXWy2eHoSHk7IEVLLvAceyLUr5h2pBL8wztqWGZDMBo1tHGYddQsyBlCs52AQM04i+XBX4tYiUhub7AAbMQ9cqBIz09fRZ9JBNxM6HzMvj+PmeezXzFxvzgvmVQawGQUvJPaZuf9qcwJN1ZWw0FNkIwg3Aafe809mnQnzYIwmiC9kF+ZJ14BX4qqW7uzbo7Zsf647a8LSm9OI3fWzGdNnScWXv+hkWyfHAj8cz4yI2y5l+F3Muhwylp2wHGzjARJTLQq3HTFWaAnZtpyd82FB8v82qKPaPpKTeLcVkdib/E9XjYsdFdsC33jr5vc0j/oM/bLi9pA0faWwN4kq6Q9k3Ei2u+WnP4G7Fzb1WR7zZoLmT9k4BVOJFLYF++OirE9GPaKTvRMnOaR/RO/rQkOx2FlrtzfoG//NBULycMbEMmrv4/GJ64SHQ7YtnedaEb1NwXi/qTwdDtjXkmAeNRoNayHvLLZKG3GKsUze3VIrieN8qMCTRdXRttQd3hacPYNtoCqcB7ogIMN/Jg7v1g2l2szs/v2waNMJW18Hoj3PD8dDSrH/VXlDjaqCNFxo5/sBeHC6eJtW6EkCgzCY4=
+
+env:
+  global:
+
+    # CODACY_PROJECT_TOKEN
+    - secure: eNUv/1Yl3xUsLqmww7Ic/h30fpnqCP2w5CHDLTFvFnrAxgUhwTaNx/9i0YUJ9454Kxkub3Cdrlz/nOR4h1xQy2zPUemtJou+549gHE/76/DhFY+KG1+LAobwPtFwXYK1tYctQ3pNtDkX7cKkoeI+uipty7zCJaSZaL9BhBbY4UKYatnmGebF6wbEFAuiYdm5fTr4fupRVPyAEefr1cR7Js7kyQnWRLFpM2iXOp4lVJ8qUdWVJ9iN86PEfK/kZb9tmEsIIz6r9mSOW6KAKPtava1BBJGyCDysNji0bkMMN14YT2rhnCqtJJ3bh/8dT+LKTk903yVL5p47U9UW/2OZZLyjuAZcH48Vkp6rHQTJXYHgxU1OzwCcutVhRxJVOX/JLRIqt1C07FuddfVPX0fgMqKjuq8b+4leQehc9TYrFHs8uBnYg7byLdxAMR60NYoF15Ke/e+xF4xBJEpSVmOQT00mdAcy5s5fddWQFcEz+ILUhaTh14dcYB52GIP3EiWqe8dUzhtI4ZY2cUFZTH8cn7qJkHv77fK5swLkFaF7d16nO+VTc0+8wW/vPUcILdTmvqrEfpt+sr8t6m51tj1oQXCAEw819h3CnylG6ho0Xog7kcYd2OxxgRdcxg67UhC6RX5I59310rA6smXuvL2h0fQBRB3rHtVCTcs/5jK7X4c=

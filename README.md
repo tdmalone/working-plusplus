@@ -1,5 +1,9 @@
 # Working PlusPlus++
 
+[![Build Status](https://travis-ci.com/tdmalone/working-plusplus.svg?branch=master)](https://travis-ci.com/tdmalone/working-plusplus)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/d0d9b6c1d1c4430e9fad61bb60b5dc4e)](https://www.codacy.com/project/tdmalone/working-plusplus/dashboard)
+[![Codacy Badge](https://api.codacy.com/project/badge/Coverage/d0d9b6c1d1c4430e9fad61bb60b5dc4e)](https://www.codacy.com/project/tdmalone/working-plusplus/files)
+
 Like [plusplus.chat](https://plusplus.chat/), except this one actually works - because you can host it yourself! 😉
 
 As PlusPlus++ says:
@@ -84,7 +88,6 @@ For full details on contributing, including getting a local environment set up, 
 
 Although it works, it's very basic. Potential enhancements include:
 
-* Improve tests for much better coverage **(in progress on [#dev](https://github.com/tdmalone/working-plusplus/tree/dev))**
 * A way to retrieve the current version/git hash from Slack, for sanity-checking of deployments
 * Leaderboard functionality (either, or both, via a full leaderboard on the web - with some sort of token or oauth - and a shorter leaderboard via a command in Slack)
 * The ability to customise the messages the bot sends back at runtime (eg. via environment variables)
@@ -96,7 +99,6 @@ Although it works, it's very basic. Potential enhancements include:
 * Option to deduct karma instead of adding karma when someone tries to give themselves karma
 * Option to deduct karma automatically for swearing (with customisable word list?)
 * Record and make accessible how many karma points someone has _given_
-* Enhance messages to support interpolation of variables such as score and name of user or thing **(in progress, see [#1](https://github.com/tdmalone/working-plusplus/pull/1))**
 * Set up a Dockerfile to make local development easier (i.e. to not require Node, Yarn or Postgres)
 * Improve error handling
 
