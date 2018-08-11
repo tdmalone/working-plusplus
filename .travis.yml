@@ -8,24 +8,29 @@
 language: node_js
 node_js: 10.8.0
 
-env:
-  global:
-    - DATABASE_USER: postgres # Default user as per Travis docs.
-    - DATABASE_NAME: plusplus_tests
-    - DATABASE_URL: postgres://$DATABASE_USER@localhost:5432/$DATABASE_NAME
-
 services:
   - postgresql
+
+# Support upgrading to PostgreSQL 10, as the default build images don't support it yet.
+# (We run the install script in before_install below)
+# @see https://github.com/travis-ci/travis-ci/issues/8537#issuecomment-354020356
+sudo: required
+addons:
+  postgresql: 9.6
 
 cache:
   yarn: true
   directories:
     - node_modules
 
-# Upgrade Yarn to the version specified in package.json.
 before_install:
+
+  # Upgrade Yarn to the version specified in package.json.
   - curl --location https://yarnpkg.com/install.sh | bash -s -- --version "$( node -e "console.log(require('./package.json').engines.yarn)" )"
   - export PATH="$HOME/.yarn/bin:$PATH"
+
+  # Upgrade to PostgreSQL 10.
+  - ./install-postgres-10.sh
 
 install:
   - yarn --frozen-lockfile

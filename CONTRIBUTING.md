@@ -2,8 +2,6 @@
 
 Contributions are welcome! [Create an issue](https://github.com/tdmalone/working-plusplus/issues/new) if there's something you'd like to see or [send a pull request](https://github.com/tdmalone/working-plusplus/compare) if you can implement it yourself.
 
-
-
 ## Installing Locally
 
 To develop locally against a real, working instance, follow most of the *Installation* instructions in the [README](README.md), except **instead of step 5** (deploying to Heroku), clone this repo locally and then install dependencies:
@@ -14,7 +12,7 @@ To develop locally against a real, working instance, follow most of the *Install
 
 You'll need [Node.js](https://nodejs.org/) already installed on your system. In addition, if you don't have [Yarn](https://yarnpkg.com/en/) and don't want it, you can use `npm install` instead of `yarn` above (but you might not get _exactly_ the same dependency versions).
 
-You'll also need a local installation of PostgreSQL (or a server you can utilise) and a clean database you can use. [Here's an easy-to-use Postgres app for Macs](https://postgresapp.com/).
+You'll also need a local installation of PostgreSQL (or a server you can utilise) and a clean database you can use. [Here's an easy-to-use Postgres app for Macs](https://postgresapp.com/). Working PlusPlus++ requires at least PostgreSQL 9.5, but 10+ is recommended.
 
 Make the following environment variables accessible to the app:
 
