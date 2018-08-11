@@ -7,6 +7,10 @@
 
 'use strict';
 
+/****************************************************************
+ * Environment Configuration.
+ ****************************************************************/
+
 const pg = require( 'pg' ),
       config = require( './_config' ),
       runner = require( './_runner' ),
@@ -15,6 +19,10 @@ const pg = require( 'pg' ),
 
 let listener;
 const postgres = new pg.Pool( config.postgresPoolConfig );
+
+/****************************************************************
+ * Jest Setup.
+ ****************************************************************/
 
 // Catch all console output during tests.
 console.error = jest.fn();
@@ -46,374 +54,411 @@ afterAll( () => {
 });
 
 /****************************************************************
- * Postgres Tests.
+ * Database tests.
  ****************************************************************/
 
-test( '++ works for brand new thing A and then equals 1', ( done ) => {
-  expect.hasAssertions();
-  runner( '@ThingA++', { itemToCheck: 'ThingA' }, ( result ) => {
-    expect( result ).toBe( 1 );
-    done();
+describe( 'The database', () => {
+
+  it( 'stores a ++ for a new \'thing\' (ThingA) and returns a score of 1', ( done ) => {
+    expect.hasAssertions();
+    runner( '@ThingA++', { itemToCheck: 'ThingA' }, ( result ) => {
+      expect( result ).toBe( 1 );
+      done();
+    });
   });
-});
 
-test( '-- works for brand new thing B and then equals -1', ( done ) => {
-  expect.hasAssertions();
-  runner( '@ThingB--', { itemToCheck: 'ThingB' }, ( result ) => {
-    expect( result ).toBe( -1 );
-    done();
+  it( 'stores a -- for a new \'thing\' (ThingB) and returns a score of -1', ( done ) => {
+    expect.hasAssertions();
+    runner( '@ThingB--', { itemToCheck: 'ThingB' }, ( result ) => {
+      expect( result ).toBe( -1 );
+      done();
+    });
   });
-});
 
-test( '++ works for existing thing A and then equals 2', ( done ) => {
-  expect.hasAssertions();
-  runner( '@ThingA++', { itemToCheck: 'ThingA' }, ( result ) => {
-    expect( result ).toBe( 2 );
-    done();
+  it( 'stores a ++ for an existing \'thing\' (ThingA) and returns a score of 2', ( done ) => {
+    expect.hasAssertions();
+    runner( '@ThingA++', { itemToCheck: 'ThingA' }, ( result ) => {
+      expect( result ).toBe( 2 );
+      done();
+    });
   });
-});
 
-test( '-- works for existing thing B and then equals -2', ( done ) => {
-  expect.hasAssertions();
-  runner( '@ThingB--', { itemToCheck: 'ThingB' }, ( result ) => {
-    expect( result ).toBe( -2 );
-    done();
+  it( 'stores a -- for an existing \'thing\' (ThingB) and returns a score of -2', ( done ) => {
+    expect.hasAssertions();
+    runner( '@ThingB--', { itemToCheck: 'ThingB' }, ( result ) => {
+      expect( result ).toBe( -2 );
+      done();
+    });
   });
-});
 
-test( '++ works for existing thing A with different case and then equals 3', ( done ) => {
-  expect.hasAssertions();
-  runner( '@tHiNgA++', { itemToCheck: 'ThInGa' }, ( result ) => {
-    expect( result ).toBe( 3 );
-    done();
+  it( 'stores a ++ for ThInGa in a different case and returns a score of 3', ( done ) => {
+    expect.hasAssertions();
+    runner( '@tHiNgA++', { itemToCheck: 'ThInGa' }, ( result ) => {
+      expect( result ).toBe( 3 );
+      done();
+    });
   });
-});
 
-test( '++ works for brand new user 100 and then equals 1', ( done ) => {
-  expect.hasAssertions();
-  runner( '<@U00000100>++', { itemToCheck: 'U00000100' }, ( result ) => {
-    expect( result ).toBe( 1 );
-    done();
+  it( 'stores a ++ for a new user (100) and returns a score of 1', ( done ) => {
+    expect.hasAssertions();
+    runner( '<@U00000100>++', { itemToCheck: 'U00000100' }, ( result ) => {
+      expect( result ).toBe( 1 );
+      done();
+    });
   });
-});
 
-test( '-- works for brand new user 200 and then equals -1', ( done ) => {
-  expect.hasAssertions();
-  runner( '<@U00000200>--', { itemToCheck: 'U00000200' }, ( result ) => {
-    expect( result ).toBe( -1 );
-    done();
+  it( 'stores a -- for a new user (200) and returns a score of -1', ( done ) => {
+    expect.hasAssertions();
+    runner( '<@U00000200>--', { itemToCheck: 'U00000200' }, ( result ) => {
+      expect( result ).toBe( -1 );
+      done();
+    });
   });
-});
 
-test( '++ works for existing user 100 and then equals 2', ( done ) => {
-  expect.hasAssertions();
-  runner( '<@U00000100>++', { itemToCheck: 'U00000100' }, ( result ) => {
-    expect( result ).toBe( 2 );
-    done();
+  it( 'stores a ++ for an existing user (100) and returns a score of 2', ( done ) => {
+    expect.hasAssertions();
+    runner( '<@U00000100>++', { itemToCheck: 'U00000100' }, ( result ) => {
+      expect( result ).toBe( 2 );
+      done();
+    });
   });
-});
 
-test( '-- works for existing user 200 and then equals -2', ( done ) => {
-  expect.hasAssertions();
-  runner( '<@U00000200>--', { itemToCheck: 'U00000200' }, ( result ) => {
-    expect( result ).toBe( -2 );
-    done();
+  it( 'stores a -- for an existing user (200) and returns a score of -2', ( done ) => {
+    expect.hasAssertions();
+    runner( '<@U00000200>--', { itemToCheck: 'U00000200' }, ( result ) => {
+      expect( result ).toBe( -2 );
+      done();
+    });
   });
-});
 
-test( 'self ++ fails for existing user 100 and then still equals 2', ( done ) => {
-  expect.hasAssertions();
+  it( 'refuses a self ++ for an existing user (100) and still returns a score of 2', ( done ) => {
+    expect.hasAssertions();
 
-  const user = 'U00000100',
-        options = {
-          itemToCheck: user,
-          extraBody: { event: { user: user } }
-        };
+    const user = 'U00000100',
+          options = {
+            itemToCheck: user,
+            extraBody: { event: { user: user } }
+          };
 
-  runner( '<@' + user + '>++', options, ( result ) => {
-    expect( result ).toBe( 2 );
-    done();
+    runner( '<@' + user + '>++', options, ( result ) => {
+      expect( result ).toBe( 2 );
+      done();
+    });
   });
-});
 
-test( 'self -- works for existing user 200 and then equals -3', ( done ) => {
-  expect.hasAssertions();
+  it( 'refuses a self ++ for a new user (300) and has no score to retrieve', ( done ) => {
+    expect.hasAssertions();
 
-  const user = 'U00000200',
-        options = {
-          itemToCheck: user,
-          extraBody: { event: { user: user } }
-        };
+    const user = 'U00000300',
+          options = {
+            itemToCheck: user,
+            extraBody: { event: { user: user } }
+          };
 
-  runner( '<@' + user + '>--', options, ( result ) => {
-    expect( result ).toBe( -3 );
-    done();
+    runner( '<@' + user + '>++', options, ( result ) => {
+      expect( result ).toBe( false );
+      done();
+    });
   });
-});
 
-test( '++ works for existing user 100 and then equals 3', ( done ) => {
-  expect.hasAssertions();
-  const user = 'U00000100';
+  it( 'allows a self -- for an existing user (200) and returns a score of -3', ( done ) => {
+    expect.hasAssertions();
 
-  runner( '<@' + user + '>++', { itemToCheck: user }, ( result ) => {
-    expect( result ).toBe( 3 );
-    done();
+    const user = 'U00000200',
+          options = {
+            itemToCheck: user,
+            extraBody: { event: { user: user } }
+          };
+
+    runner( '<@' + user + '>--', options, ( result ) => {
+      expect( result ).toBe( -3 );
+      done();
+    });
   });
-});
+
+  it( 'allows a self -- for a new user (400) and returns a score of -1', ( done ) => {
+    expect.hasAssertions();
+
+    const user = 'U00000400',
+          options = {
+            itemToCheck: user,
+            extraBody: { event: { user: user } }
+          };
+
+    runner( '<@' + user + '>--', options, ( result ) => {
+      expect( result ).toBe( -1 );
+      done();
+    });
+  });
+
+  it( 'stores another ++ for an existing user (100) and then equals 3', ( done ) => {
+    expect.hasAssertions();
+    const user = 'U00000100';
+
+    runner( '<@' + user + '>++', { itemToCheck: user }, ( result ) => {
+      expect( result ).toBe( 3 );
+      done();
+    });
+  });
+
+}); // Database tests.
 
 /****************************************************************
- * Slack Tests.
+ * Slack message tests.
  ****************************************************************/
 
-test( 'Message contains user 100 link after self++', ( done ) => {
-  expect.hasAssertions();
-  const user = 'U00000100',
-        options = {
-          extraBody: { event: { user: user } }
-        };
+describe( 'Slack messaging', () => {
 
-  slackClientMock.chat.postMessage.mockClear();
-  runner( '<@' + user + '>++', options, () => {
+  it( 'does not link to a \'thing\'', ( done ) => {
+    expect.hasAssertions();
+    const thing = 'SomeRandomThing';
 
-    expect( slackClientMock.chat.postMessage )
-      .toHaveBeenCalledTimes( 1 )
-      .toHaveBeenCalledWith(
-        expect.objectContaining({ text: expect.stringContaining( '<@' + user + '>' ) })
-      );
+    slackClientMock.chat.postMessage.mockClear();
+    runner( '@' + thing + '++', () => {
 
-    done();
-
-  });
-});
-
-test( 'Message contains user 100 link and score 4 after ++', ( done ) => {
-  expect.hasAssertions();
-  const user = 'U00000100';
-
-  slackClientMock.chat.postMessage.mockClear();
-  runner( '<@' + user + '>++', () => {
-
-    expect( slackClientMock.chat.postMessage )
-      .toHaveBeenCalledTimes( 1 )
-      .toHaveBeenCalledWith(
-        expect.objectContaining({ text: expect.stringContaining( '<@' + user + '>' ) })
-      )
-      .toHaveBeenCalledWith(
-        expect.objectContaining({ text: expect.stringMatching( /\s4\b/ ) })
-      );
-
-    done();
-
-  });
-});
-
-test( 'Message contains user 200 link and score -4 after --', ( done ) => {
-  expect.hasAssertions();
-  const user = 'U00000200';
-
-  slackClientMock.chat.postMessage.mockClear();
-  runner( '<@' + user + '>--', () => {
-
-    expect( slackClientMock.chat.postMessage )
-      .toHaveBeenCalledTimes( 1 )
-      .toHaveBeenCalledWith(
-        expect.objectContaining({ text: expect.stringContaining( '<@' + user + '>' ) })
-      )
-      .toHaveBeenCalledWith(
-        expect.objectContaining({ text: expect.stringMatching( /\s-4\b/ ) })
-      );
-
-    done();
-
-  });
-});
-
-test( 'Message contains singular \'point\' after thing C++ (i.e. score 1)', ( done ) => {
-  expect.hasAssertions();
-  const thing = 'ThingC';
-
-  slackClientMock.chat.postMessage.mockClear();
-  runner( '@' + thing + '++', () => {
-
-    expect( slackClientMock.chat.postMessage )
-      .toHaveBeenCalledTimes( 1 )
-      .toHaveBeenCalledWith(
-        expect.objectContaining({ text: expect.stringMatching( /\spoint\b/ ) })
-      );
-
-    done();
-
-  });
-});
-
-test( 'Message contains plural \'points\' after thing C++ (i.e. score 2)', ( done ) => {
-  expect.hasAssertions();
-  const thing = 'ThingC';
-
-  slackClientMock.chat.postMessage.mockClear();
-  runner( '@' + thing + '++', () => {
-
-    expect( slackClientMock.chat.postMessage )
-      .toHaveBeenCalledTimes( 1 )
-      .toHaveBeenCalledWith(
-        expect.objectContaining({ text: expect.stringMatching( /\spoints\b/ ) })
-      );
-
-    done();
-
-  });
-});
-
-test( 'Message contains singular \'point\' after thing D-- (i.e. score -1)', ( done ) => {
-  expect.hasAssertions();
-  const thing = 'ThingD';
-
-  slackClientMock.chat.postMessage.mockClear();
-  runner( '@' + thing + '--', () => {
-
-    expect( slackClientMock.chat.postMessage )
-      .toHaveBeenCalledTimes( 1 )
-      .toHaveBeenCalledWith(
-        expect.objectContaining({ text: expect.stringMatching( /\spoint\b/ ) })
-      );
-
-    done();
-
-  });
-});
-
-test( 'Message contains plural \'points\' after thing D-- (i.e. score -2)', ( done ) => {
-  expect.hasAssertions();
-  const thing = 'ThingD';
-
-  slackClientMock.chat.postMessage.mockClear();
-  runner( '@' + thing + '--', () => {
-
-    expect( slackClientMock.chat.postMessage )
-      .toHaveBeenCalledTimes( 1 )
-      .toHaveBeenCalledWith(
-        expect.objectContaining({ text: expect.stringMatching( /\spoints\b/ ) })
-      );
-
-    done();
-
-  });
-});
-
-test( 'Message contains plural \'points\' after thing E++ then -- (i.e. score 0)', ( done ) => {
-  expect.hasAssertions();
-  const thing = 'ThingE';
-
-  slackClientMock.chat.postMessage.mockClear();
-  runner( '@' + thing + '++', () => {
-    runner( '@' + thing + '--', () => {
       expect( slackClientMock.chat.postMessage )
-        .toHaveBeenCalledTimes( 2 )
-        .toHaveBeenNthCalledWith(
-          2,
+        .toHaveBeenCalledTimes( 1 )
+        .toHaveBeenCalledWith(
+          expect.objectContaining({ text: expect.stringContaining( thing ) })
+        )
+        .toHaveBeenCalledWith(
+          expect.objectContaining({ text: expect.not.stringContaining( '<@' + thing + '>' ) })
+        );
+
+      done();
+
+    });
+  });
+
+  it( 'contains a user\'s link (user 100) after a self ++', ( done ) => {
+    expect.hasAssertions();
+    const user = 'U00000100',
+          options = {
+            extraBody: { event: { user: user } }
+          };
+
+    slackClientMock.chat.postMessage.mockClear();
+    runner( '<@' + user + '>++', options, () => {
+
+      expect( slackClientMock.chat.postMessage )
+        .toHaveBeenCalledTimes( 1 )
+        .toHaveBeenCalledWith(
+          expect.objectContaining({ text: expect.stringContaining( '<@' + user + '>' ) })
+        );
+
+      done();
+
+    });
+  });
+
+  it( 'contains a user\'s link (user 100) and a score of 4 after another ++', ( done ) => {
+    expect.hasAssertions();
+    const user = 'U00000100';
+
+    slackClientMock.chat.postMessage.mockClear();
+    runner( '<@' + user + '>++', () => {
+
+      expect( slackClientMock.chat.postMessage )
+        .toHaveBeenCalledTimes( 1 )
+        .toHaveBeenCalledWith(
+          expect.objectContaining({ text: expect.stringContaining( '<@' + user + '>' ) })
+        )
+        .toHaveBeenCalledWith(
+          expect.objectContaining({ text: expect.stringMatching( /\s4\b/ ) })
+        );
+
+      done();
+
+    });
+  });
+
+  it( 'contains a user\'s link (user 200) and a score of -4 after another --', ( done ) => {
+    expect.hasAssertions();
+    const user = 'U00000200';
+
+    slackClientMock.chat.postMessage.mockClear();
+    runner( '<@' + user + '>--', () => {
+
+      expect( slackClientMock.chat.postMessage )
+        .toHaveBeenCalledTimes( 1 )
+        .toHaveBeenCalledWith(
+          expect.objectContaining({ text: expect.stringContaining( '<@' + user + '>' ) })
+        )
+        .toHaveBeenCalledWith(
+          expect.objectContaining({ text: expect.stringMatching( /\s-4\b/ ) })
+        );
+
+      done();
+
+    });
+  });
+
+  it( 'contains the singular \'point\' after a ++ for new ThingC (i.e. score 1)', ( done ) => {
+    expect.hasAssertions();
+    const thing = 'ThingC';
+
+    slackClientMock.chat.postMessage.mockClear();
+    runner( '@' + thing + '++', () => {
+
+      expect( slackClientMock.chat.postMessage )
+        .toHaveBeenCalledTimes( 1 )
+        .toHaveBeenCalledWith(
+          expect.objectContaining({ text: expect.stringMatching( /\spoint\b/ ) })
+        );
+
+      done();
+
+    });
+  });
+
+  it( 'contains the plural \'points\' after another ++ for ThingC (i.e. score 2)', ( done ) => {
+    expect.hasAssertions();
+    const thing = 'ThingC';
+
+    slackClientMock.chat.postMessage.mockClear();
+    runner( '@' + thing + '++', () => {
+
+      expect( slackClientMock.chat.postMessage )
+        .toHaveBeenCalledTimes( 1 )
+        .toHaveBeenCalledWith(
           expect.objectContaining({ text: expect.stringMatching( /\spoints\b/ ) })
         );
 
       done();
+
     });
   });
-});
 
-test( 'Slack message does not link to a thing', ( done ) => {
-  expect.hasAssertions();
-  const thing = 'SomeRandomThing';
-
-  slackClientMock.chat.postMessage.mockClear();
-  runner( '@' + thing + '++', () => {
-
-    expect( slackClientMock.chat.postMessage )
-      .toHaveBeenCalledTimes( 1 )
-      .toHaveBeenCalledWith(
-        expect.objectContaining({ text: expect.stringContaining( thing ) })
-      )
-      .toHaveBeenCalledWith(
-        expect.objectContaining({ text: expect.not.stringContaining( '<@' + thing + '>' ) })
-      );
-
-    done();
-
-  });
-});
-
-const operations = [
-  {
-    name: 'plus',
-    operation: '++',
-    extraData: {}
-  },
-  {
-    name: 'minus',
-    operation: '--',
-    extraData: {}
-  },
-  {
-    name: 'selfPlus',
-    operation: '++',
-    extraData: { event: { user: 'U12345678' } }
-  }
-];
-
-for ( const operation of operations ) {
-
-  const testName = (
-    operation.operation + ' message can be found in ' +
-    operation.name + ' collection'
-  );
-
-  test( testName, ( done ) => {
+  it( 'contains the singular \'point\' after a -- for new ThingD (i.e. score -1)', ( done ) => {
     expect.hasAssertions();
+    const thing = 'ThingD';
+
     slackClientMock.chat.postMessage.mockClear();
+    runner( '@' + thing + '--', () => {
 
-    const messageText = '<@U12345678>' + operation.operation,
-          options = { extraBody: operation.extraData };
-
-    runner( messageText, options, async() => {
-
-      const postMessageCall = slackClientMock.chat.postMessage.mock.calls[0],
-            payload = postMessageCall[0],
-            collection = messages.messages[ operation.name ];
-
-      let messageFoundInCollection = false;
-
-      outerLoop:
-      for ( const set of collection ) {
-        for ( const message of set.set ) {
-          if ( -1 !== payload.text.indexOf( message ) ) {
-            messageFoundInCollection = true;
-            break outerLoop;
-          }
-        }
-      }
-
-      expect( slackClientMock.chat.postMessage ).toHaveBeenCalledTimes( 1 );
-      expect( messageFoundInCollection ).toBe( true );
+      expect( slackClientMock.chat.postMessage )
+        .toHaveBeenCalledTimes( 1 )
+        .toHaveBeenCalledWith(
+          expect.objectContaining({ text: expect.stringMatching( /\spoint\b/ ) })
+        );
 
       done();
 
     });
   });
 
-} // For operation.
+  it( 'contains the plural \'points\' after another -- for ThingD (i.e. score -2)', ( done ) => {
+    expect.hasAssertions();
+    const thing = 'ThingD';
 
-test( 'Slack messages go back to the channel they were sent from', ( done ) => {
-  expect.hasAssertions();
+    slackClientMock.chat.postMessage.mockClear();
+    runner( '@' + thing + '--', () => {
 
-  const channel = 'C00000000',
-        options = { extraBody: { event: { channel: channel } } };
+      expect( slackClientMock.chat.postMessage )
+        .toHaveBeenCalledTimes( 1 )
+        .toHaveBeenCalledWith(
+          expect.objectContaining({ text: expect.stringMatching( /\spoints\b/ ) })
+        );
 
-  slackClientMock.chat.postMessage.mockClear();
-  runner( '@SomeRandom++', options, () => {
+      done();
 
-    expect( slackClientMock.chat.postMessage )
-      .toHaveBeenCalledTimes( 1 )
-      .toHaveBeenCalledWith( expect.objectContaining({ channel: channel }) );
-
-    done();
-
+    });
   });
-});
+
+  it( 'contains the plural \'points\' for a score of 0 (ThingE++ then --)', ( done ) => {
+    expect.hasAssertions();
+    const thing = 'ThingE';
+
+    slackClientMock.chat.postMessage.mockClear();
+    runner( '@' + thing + '++', () => {
+      runner( '@' + thing + '--', () => {
+        expect( slackClientMock.chat.postMessage )
+          .toHaveBeenCalledTimes( 2 )
+          .toHaveBeenNthCalledWith(
+            2,
+            expect.objectContaining({ text: expect.stringMatching( /\spoints\b/ ) })
+          );
+
+        done();
+      });
+    });
+  });
+
+  const operations = [
+    {
+      name: 'plus',
+      operation: '++',
+      extraData: {}
+    },
+    {
+      name: 'minus',
+      operation: '--',
+      extraData: {}
+    },
+    {
+      name: 'selfPlus',
+      operation: '++',
+      extraData: { event: { user: 'U12345678' } }
+    }
+  ];
+
+  for ( const operation of operations ) {
+
+    const testName = (
+      'sends a message from the ' + operation.name + ' collection for a ' + operation.operation
+    );
+
+    it( testName, ( done ) => {
+      expect.hasAssertions();
+      slackClientMock.chat.postMessage.mockClear();
+
+      const messageText = '<@U12345678>' + operation.operation,
+            options = { extraBody: operation.extraData };
+
+      runner( messageText, options, async() => {
+
+        const postMessageCall = slackClientMock.chat.postMessage.mock.calls[0],
+              payload = postMessageCall[0],
+              collection = messages.messages[ operation.name ];
+
+        let messageFoundInCollection = false;
+
+        outerLoop:
+        for ( const set of collection ) {
+          for ( const message of set.set ) {
+            if ( -1 !== payload.text.indexOf( message ) ) {
+              messageFoundInCollection = true;
+              break outerLoop;
+            }
+          }
+        }
+
+        expect( slackClientMock.chat.postMessage ).toHaveBeenCalledTimes( 1 );
+        expect( messageFoundInCollection ).toBe( true );
+
+        done();
+
+      });
+    });
+
+  } // For operation.
+
+  it( 'sends messages back to the channel they were sent from', ( done ) => {
+    expect.hasAssertions();
+
+    const channel = 'C00000000',
+          options = { extraBody: { event: { channel: channel } } };
+
+    slackClientMock.chat.postMessage.mockClear();
+    runner( '@SomeRandom++', options, () => {
+
+      expect( slackClientMock.chat.postMessage )
+        .toHaveBeenCalledTimes( 1 )
+        .toHaveBeenCalledWith( expect.objectContaining({ channel: channel }) );
+
+      done();
+
+    });
+  });
+
+}); // Slack message tests.

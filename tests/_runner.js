@@ -29,7 +29,8 @@ const postgres = new pg.Pool( config.postgresPoolConfig );
  *                                     - itemToCheck: The name of an item to query the database for
  *                                                    after the message has been simulated. The
  *                                                    score will be sent as the single argument to
- *                                                    the callback function.
+ *                                                    the callback function. If no entry exists,
+ *                                                    `false` is sent instead.
  *                                     - extraBody:   An object containing additional parameters for
  *                                                    the event body. Will be deep merged into the
  *                                                    default body provided by this function.
@@ -83,7 +84,7 @@ const runner = async( text, options, callback ) => {
         );
 
         await dbClient.release();
-        callback( query.rows[0].score );
+        callback( query.rows.length ? query.rows[0].score : false );
 
       }); // Response end.
   }); // Http.request.

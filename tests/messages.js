@@ -18,12 +18,12 @@ const operations = [
 ];
 
 for ( const operation of operations ) {
-  test( 'A message is returned for the ' + operation + ' operation', () => {
+  it( 'returns a message for the ' + operation + ' operation', () => {
     expect( typeof messages.getRandomMessage( operation ) ).toBe( 'string' );
   });
 }
 
-test( 'An error occurs for an invalid operation', () => {
+it( 'throws an error for an invalid operation', () => {
   expect( () => {
     messages.getRandomMessage( 'INVALID_OPERATION' );
   }).toThrow();
