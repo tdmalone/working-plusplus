@@ -20,16 +20,21 @@ const postgres = new pg.Pool( config.postgresPoolConfig );
 
 /**
  * Encapsulates all the boilerplate required to run the full request cycle for end-to-end tests.
+ *
+ * TODO: Convert this to using a config object to make the parameters more flexible.
+ *
  * @param {string}          text       Message text to 'send' from a Slack user to the app.
  * @param {callable|string} nextAction Either a string to query the database for as an item, or a
  *                                     function to call to allow the caller to complete the test. If
- *                                     a function, it will be passed `dbClient` as a parameter.
+ *                                     a function, it will be passed `dbClient` as a parameter if it
+ *                                     accepts at least one parameter.
  * @param {callable}        callback   When a string is provided for `nextAction`, this parameter
  *                                     becomes the callback, and the callback is provided the result
  *                                     from querying the string for its score in the database.
+ * @param {string}          user       Optional. The Slack user ID that will own the event.
  * @returns {void}
  */
-const runner = async( text, nextAction, callback ) => {
+const runner = async( text, nextAction, callback, user ) => {
 
   const body = {
     token: SLACK_VERIFICATION_TOKEN,
@@ -38,6 +43,10 @@ const runner = async( text, nextAction, callback ) => {
       text: text
     }
   };
+
+  if ( 'undefined' !== typeof user ) {
+    body.event.user = user;
+  }
 
   const request = http.request( config.defaultRequestOptions, response => {
     let data = '';
@@ -50,14 +59,15 @@ const runner = async( text, nextAction, callback ) => {
 
       // Wait for the operations after the HTTP requests returns to be completed before testing.
       setTimeout( async() => {
-        const dbClient = await postgres.connect();
 
-        // Return for the next action to be carried out by the caller.
+        // Allow the next action to be carried out by the caller, passing it an instance of a
+        // dbClient if it accepts one.
         if ( nextAction instanceof Function ) {
-          return nextAction( dbClient );
+          return nextAction( nextAction.length ? await postgres.connect() : null );
         }
 
         // Otherwise, carry out and return the query result ourselves.
+        const dbClient = await postgres.connect();
         const query = await dbClient.query(
           'SELECT score FROM ' + config.scoresTableName + ' WHERE item = \'' + nextAction + '\''
         );
