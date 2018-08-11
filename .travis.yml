@@ -36,7 +36,7 @@ install:
   - yarn --frozen-lockfile
 
 before_script:
-  - psql --command="CREATE DATABASE $DATABASE_NAME;" --username="$DATABASE_USER"
+  - psql --command="CREATE DATABASE plusplus_tests;" --username="postgres"
 
 script:
   - yarn lint

@@ -17,4 +17,4 @@ echo "Restarting Postgres 10..."
 sudo service postgresql restart
 
 echo "Adding Travis role..."
-sudo psql --command='CREATE ROLE travis SUPERUSER LOGIN CREATEDB;' --username=postgres
+sudo psql --command="CREATE ROLE travis SUPERUSER LOGIN CREATEDB;" --username="postgres"
