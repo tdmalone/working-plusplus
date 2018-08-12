@@ -21,6 +21,16 @@ it( 'exports constants for operations', () => {
 
 describe( 'getOperationName', () => {
 
-  // TODO:
+  it( 'returns \'plus\' when given +', () => {
+    expect( operations.getOperationName( '+' ) ).toBe( 'plus' );
+  });
+
+  it( 'returns \'minus\' when given -', () => {
+    expect( operations.getOperationName( '-' ) ).toBe( 'minus' );
+  });
+
+  it( 'returns false when given an invalid operation', () => {
+    expect( operations.getOperationName( 'some invalid operation' ) ).toBeFalse();
+  });
 
 });
