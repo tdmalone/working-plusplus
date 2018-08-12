@@ -2,6 +2,7 @@
  * Unit tests on the code in send.js.
  *
  * @see https://jestjs.io/docs/en/expect
+ * @see https://github.com/jest-community/jest-extended#api
  * @author Tim Malone <tdmalone@gmail.com>
  */
 

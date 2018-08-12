@@ -2,6 +2,7 @@
  * Integration tests.
  *
  * @see https://jestjs.io/docs/en/expect
+ * @see https://github.com/jest-community/jest-extended#api
  * @see https://jestjs.io/docs/en/asynchronous.html
  * @see https://jestjs.io/docs/en/mock-functions#mocking-modules
  * @author Tim Malone <tdmalone@gmail.com>
