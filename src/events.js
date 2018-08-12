@@ -68,9 +68,6 @@ const handlers = {
     // Extract the relevant data from the message text.
     const { item, operation } = helpers.extractEventData( event.text );
 
-    console.log( item );
-    console.log( operation );
-
     if ( ! item || ! operation ) {
       return false;
     }
