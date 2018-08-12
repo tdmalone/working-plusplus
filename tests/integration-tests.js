@@ -15,15 +15,18 @@
  * Environment Configuration.
  ****************************************************************/
 
-const http = require( 'http' ),
-      pg = require( 'pg' ),
-      app = require( '../src/app' ),
-      config = require( './_config' ),
+const app = require( '../src/app' );
+const pathToListener = '../';
+
+const pg = require( 'pg' ),
+      http = require( 'http' );
+
+const config = require( './_config' ),
       runner = require( './_runner' ),
       slackClientMock = require( './mocks/slack' );
 
-const originalProcessEnv = process.env;
-const postgres = new pg.Pool( config.postgresPoolConfig );
+const originalProcessEnv = process.env,
+      postgres = new pg.Pool( config.postgresPoolConfig );
 
 /****************************************************************
  * Jest Setup.
@@ -58,7 +61,7 @@ describe( 'The Express server', () => {
   it( 'returns HTTP 200 for GET operations', ( done ) => {
     expect.hasAssertions();
 
-    const listener = require( '../' )();
+    const listener = require( pathToListener )();
 
     listener.on( 'listening', () => {
       http.get( 'http://localhost:' + config.PORT, ( response ) => {
@@ -73,7 +76,7 @@ describe( 'The Express server', () => {
   it( 'correctly returns the Slack event challenge value', ( done ) => {
     expect.assertions( 2 );
 
-    const listener = require( '../' )();
+    const listener = require( pathToListener )();
     const requestBody = { challenge: Math.random().toString() };
 
     listener.on( 'listening', () => {
@@ -100,7 +103,7 @@ describe( 'The Express server', () => {
     expect.hasAssertions();
 
     delete process.env.SLACK_VERIFICATION_TOKEN;
-    const listener = require( '../' )();
+    const listener = require( pathToListener )();
 
     listener.on( 'listening', () => {
       http.request( config.defaultRequestOptions, ( response ) => {
@@ -116,7 +119,7 @@ describe( 'The Express server', () => {
     expect.hasAssertions();
 
     process.env.SLACK_VERIFICATION_TOKEN = 'xxxxxxxxxxxxxxxxxxxxxxxx';
-    const listener = require( '../' )();
+    const listener = require( pathToListener )();
 
     listener.on( 'listening', () => {
       http.request( config.defaultRequestOptions, ( response ) => {
@@ -131,7 +134,7 @@ describe( 'The Express server', () => {
   it( 'returns HTTP 403 when verification token is incorrect', ( done ) => {
     expect.hasAssertions();
 
-    const listener = require( '../' )();
+    const listener = require( pathToListener )();
     const body = { token: 'something_is_not_right' };
 
     listener.on( 'listening', () => {
@@ -213,7 +216,7 @@ describe( 'The database', () => {
    */
   const doFirstRequest = ( done ) => {
     expect.hasAssertions();
-    const listener = require( '../' )({ slack: slackClientMock });
+    const listener = require( pathToListener )({ slack: slackClientMock });
 
     listener.on( 'listening', () => {
       runner( '@something++', async( dbClient ) => {

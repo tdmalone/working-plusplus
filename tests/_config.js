@@ -23,7 +23,10 @@ module.exports = {
     host: 'localhost',
     method: 'POST',
     port: PORT,
-    headers: { 'Content-Type': 'application/json' }
+    headers: {
+      'Content-Type': 'application/json',
+      'User-Agent': 'Test Runner'
+    }
   }
 
 };

@@ -9,10 +9,12 @@
 
 'use strict';
 
-const express = require( 'express' ),
-      slack = require( '@slack/client' ),
-      bodyParser = require( 'body-parser' ),
-      app = require( './src/app' );
+const app = require( './src/app' ),
+      send = require( './src/send' );
+
+const slack = require( '@slack/client' ),
+      express = require( 'express' ),
+      bodyParser = require( 'body-parser' );
 
 /* eslint-disable no-process-env, no-magic-numbers */
 const PORT = process.env.PORT || 80; // Let Heroku set the port.
@@ -33,7 +35,7 @@ const bootstrap = ( options = {}) => {
 
   // Allow alternative implementations of both Express and Slack to be passed in.
   const server = options.express || express();
-  app.setSlackClient( options.slack || new slack.WebClient( SLACK_OAUTH_ACCESS_TOKEN ) );
+  send.setSlackClient( options.slack || new slack.WebClient( SLACK_OAUTH_ACCESS_TOKEN ) );
 
   server.use( bodyParser.json() );
   server.enable( 'trust proxy' );

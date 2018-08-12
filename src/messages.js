@@ -9,7 +9,7 @@
 
 'use strict';
 
-const operations = require( './operations' );
+const operations = require( './operations' ).operations;
 const messages = {};
 
 messages[ operations.PLUS ] = [
@@ -147,6 +147,6 @@ const getRandomMessage = ( operation, item, score ) => {
 }; // GetRandomMessage.
 
 module.exports = {
-  getRandomMessage,
-  messages
+  messages,
+  getRandomMessage
 };
