@@ -21,12 +21,12 @@ const operations = [
 
 for ( const operation of operations ) {
   it( 'returns a message for the ' + operation + ' operation', () => {
-    expect( typeof messages.getRandomMessage( operation ) ).toBe( 'string' );
+    expect( typeof messages.getRandomMessage( operation, 'RandomThing' ) ).toBe( 'string' );
   });
 }
 
 it( 'throws an error for an invalid operation', () => {
   expect( () => {
-    messages.getRandomMessage( 'INVALID_OPERATION' );
+    messages.getRandomMessage( 'INVALID_OPERATION', 'RandomThing' );
   }).toThrow();
 });
