@@ -158,7 +158,7 @@ describe( 'The database', () => {
           };
 
     runner( '<@' + user + '>++', options, ( result ) => {
-      expect( result ).toBe( false );
+      expect( result ).toBeFalse();
       done();
     });
   });
@@ -436,7 +436,7 @@ describe( 'Slack messaging', () => {
         }
 
         expect( slackClientMock.chat.postMessage ).toHaveBeenCalledTimes( 1 );
-        expect( messageFoundInCollection ).toBe( true );
+        expect( messageFoundInCollection ).toBeTrue();
 
         done();
 

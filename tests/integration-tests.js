@@ -169,7 +169,7 @@ describe( 'The Express server', () => {
     mockExpress.response.send.mockClear();
     mockExpress.request.headers['x-slack-retry-num'] = 1;
     const result = app.handlePost( mockExpress.request, mockExpress.response );
-    expect( result ).toBe( false );
+    expect( result ).toBeFalse();
     expect( mockExpress.response.send ).toHaveBeenCalledTimes( 1 );
 
   });
@@ -194,7 +194,7 @@ describe( 'The database', () => {
     const dbClient = await postgres.connect();
     const query = await dbClient.query( tableExistsQuery );
     await dbClient.release();
-    expect( query.rows[0].exists ).toBe( false );
+    expect( query.rows[0].exists ).toBeFalse();
   });
 
   it( 'does not yet have the case-insensitive extension', async() => {
@@ -220,7 +220,7 @@ describe( 'The database', () => {
         listener.close();
         const query = await dbClient.query( tableExistsQuery );
         await dbClient.release();
-        expect( query.rows[0].exists ).toBe( true );
+        expect( query.rows[0].exists ).toBeTrue();
         done();
       });
     });

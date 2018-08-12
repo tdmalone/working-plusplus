@@ -259,7 +259,7 @@ describe( 'validateToken', () => {
   });
 
   it( 'returns true for a token that DOES match', () => {
-    expect( app.validateToken( 'something', 'something' ) ).toBe( true );
+    expect( app.validateToken( 'something', 'something' ) ).toBeTrue();
   });
 
 }); // ValidateToken.
@@ -321,7 +321,7 @@ describe( 'handlePost', () => {
     mockExpress.request.body.challenge = Math.random().toString();
     const result = app.handlePost( mockExpress.request, mockExpress.response );
     expect( receivedResponse ).toBe( mockExpress.request.body.challenge );
-    expect( result ).toBe( false );
+    expect( result ).toBeFalse();
 
   });
 

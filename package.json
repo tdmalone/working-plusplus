@@ -39,6 +39,7 @@
     "eslint-plugin-jest": "^21.18.0",
     "jest": "^23.4.2",
     "jest-chain": "^1.0.3",
+    "jest-extended": "^0.8.1",
     "object-assign-deep": "^0.4.0"
   }
 }
