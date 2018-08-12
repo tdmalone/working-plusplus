@@ -122,6 +122,14 @@ describe( 'extractEventData', () => {
 
 describe( 'maybeLinkItem', () => {
 
-  // TODO:
+  it( 'returns an item as-is if it is not a Slack user ID', () => {
+    const item = 'something';
+    expect( helpers.maybeLinkItem( item ) ).toBe( item );
+  });
+
+  it( 'returns an item linked with Slack mrkdown if it looks like a Slack user ID', () => {
+    const item = 'U12345678';
+    expect( helpers.maybeLinkItem( item ) ).toBe( '<@' + item + '>' );
+  });
 
 }); // MaybeLinkItem.
