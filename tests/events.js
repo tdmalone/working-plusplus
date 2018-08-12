@@ -141,9 +141,29 @@ describe( 'handlePlusMinus', () => {
 
 describe( 'handlers.message', () => {
 
-  it( 'drops a user trying to ++ themselves', () => {
+  const eventType = 'message';
+
+  it( 'returns false if a valid item cannot be extracted', () => {
     const event = {
-      type: 'message',
+      type: eventType,
+      text: '@Invalid#Item++'
+    };
+
+    expect( handlers.message( event ) ).toBeFalse();
+  });
+
+  it( 'returns false if a valid operation cannot be extracted', () => {
+    const event = {
+      type: eventType,
+      text: '<@U12345678>+-+' // Invalid operation.
+    };
+
+    expect( handlers.message( event ) ).toBeFalse();
+  });
+
+  it( 'returns false if a user trying to ++ themselves', () => {
+    const event = {
+      type: eventType,
       text: '<@U12345678>++',
       user: 'U12345678'
     };
