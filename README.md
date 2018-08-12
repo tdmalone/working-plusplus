@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.com/tdmalone/working-plusplus.svg?branch=master)](https://travis-ci.com/tdmalone/working-plusplus)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/d0d9b6c1d1c4430e9fad61bb60b5dc4e)](https://www.codacy.com/project/tdmalone/working-plusplus/dashboard)
-[![Codacy Badge](https://api.codacy.com/project/badge/Coverage/d0d9b6c1d1c4430e9fad61bb60b5dc4e)](https://www.codacy.com/project/tdmalone/working-plusplus/files)
+[![Codacy Badge](https://api.codacy.com/project/badge/Coverage/d0d9b6c1d1c4430e9fad61bb60b5dc4e)](https://www.codacy.com/app/tdmalone/working-plusplus/files)
 
 Like [plusplus.chat](https://plusplus.chat/), except this one actually works - because you can host it yourself! 😉
 
