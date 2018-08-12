@@ -12,6 +12,51 @@
 
 const helpers = require( '../src/helpers' );
 
+describe( 'extractCommand', () => {
+
+  const commands = [
+    'test-command',
+    'something-else',
+    'another-command'
+  ];
+
+  it( 'returns a valid command from a message containing only that command', () => {
+    const message = '<@U12345678> test-command';
+    expect( helpers.extractCommand( message, commands ) ).toEqual( 'test-command' );
+  });
+
+  it( 'returns a valid command from the start of a message', () => {
+    const message = '<@U12345678> test-command would be great';
+    expect( helpers.extractCommand( message, commands ) ).toEqual( 'test-command' );
+  });
+
+  it( 'returns a valid command from the middle of a message', () => {
+    const message = '<@U12345678> can I have a test-command please';
+    expect( helpers.extractCommand( message, commands ) ).toEqual( 'test-command' );
+  });
+
+  it( 'returns a valid command from the end of a message', () => {
+    const message = '<@U12345678> I would love to see a test-command';
+    expect( helpers.extractCommand( message, commands ) ).toEqual( 'test-command' );
+  });
+
+  it( 'returns the first valid command in a message with multiple', () => {
+    const message = '<@U12345678> looking for something-else rather than a test-command';
+    expect( helpers.extractCommand( message, commands ) ).toEqual( 'something-else' );
+  });
+
+  it( 'returns the first valid command in a message with multiple (with order switched)', () => {
+    const message = '<@U12345678> looking for a test-command rather than something-else';
+    expect( helpers.extractCommand( message, commands ) ).toEqual( 'test-command' );
+  });
+
+  it( 'returns false if it cannot find a valid command in a message', () => {
+    const message = '<@U12345678> there is nothing actionable here';
+    expect( helpers.extractCommand( message, commands ) ).toBeFalse();
+  });
+
+});
+
 describe( 'extractPlusMinusEventData', () => {
 
   it( 'drops message without an @ symbol', () => {

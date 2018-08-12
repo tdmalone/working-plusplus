@@ -11,7 +11,8 @@ const send = require( './send' ),
       points = require( './points' ),
       helpers = require( './helpers' ),
       messages = require( './messages' ),
-      operations = require( './operations' );
+      operations = require( './operations' ),
+      leaderboard = require( './leaderboard' );
 
 const camelCase = require( 'lodash.camelcase' );
 
@@ -83,21 +84,32 @@ const handlers = {
   }, // Message event.
 
   /**
-   * Handles 'app_mention' events sent from Slack.
+   * Handles 'app_mention' events sent from Slack, primarily by looking for known app commands, and
+   * then handing the command off for processing.
    *
    * @param {object} event  A hash of a validated Slack 'app_mention' event. See the docs at
    *                        https://api.slack.com/events-api#events_dispatched_as_json and
    *                        https://api.slack.com/events/app_mention for details.
-   * @return {bool|Promise} Either `false` if the event cannot be handled, or a Promise to send a
-   *                        Slack message back to the requesting channel.
+   * @return {bool|Promise} Either `false` if the event cannot be handled, or a Promise - usually
+   *                        to send a Slack message back to the requesting channel - which will be
+   *                        handled by the command's own handler.
    */
-  appMention: async( event ) => {
+  appMention: ( event ) => {
 
-    // TODO: Handle this event.
-    console.log( event );
+    const appCommandHandlers = {
+      leaderboard: leaderboard.handler
+    };
+
+    const validCommands = Object.keys( appCommandHandlers ),
+          appCommand = helpers.extractCommand( event.text, validCommands );
+
+    if ( appCommand ) {
+      return appCommandHandlers[appCommand]( event );
+    }
+
+    return false;
 
   } // AppMention event.
-
 }; // Handlers.
 
 /**

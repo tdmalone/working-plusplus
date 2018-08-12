@@ -175,43 +175,66 @@ describe( 'handlers.message', () => {
 
 describe( 'handlers.appMention', () => {
 
-  // TODO:
+  const eventType = 'app_mention';
 
-});
+  const appCommandTable = [
+    [ 'leaderboard', 'leaderboard.js' ]
+  ];
+
+  it.each( appCommandTable )( 'calls the app command handler for %s', ( command, handlerFile ) => {
+    const event = {
+      type: eventType,
+      text: '<@U00000000> ' + command
+    };
+
+    const events = require( '../src/events' ),
+          commandHandler = require( '../src/' + handlerFile );
+
+    commandHandler.handler = jest.fn();
+    events.handlers.appMention( event );
+    expect( commandHandler.handler ).toHaveBeenCalledTimes( 1 );
+  });
+
+  it( 'returns false if a supported command cannot be found', () => {
+    const event = {
+      type: eventType,
+      text: '<@U00000000> some_command_that_should_not_exist'
+    };
+
+    expect( handlers.appMention( event ) ).toBeFalse();
+  });
+
+}); // Handlers.appMention.
 
 describe( 'handleEvent', () => {
 
   const validEvents = [
-    'message',
-    'app_mention'
+    [ 'message', '@Hello++' ],
+    [ 'app_mention', '<@U12345678> can haz leaderboard' ]
   ];
 
-  for ( const eventName of validEvents ) {
+  it.each( validEvents )( 'returns a Promise for a \'%s\' event with text', ( type, text ) => {
+    const event = {
+      type,
+      text
+    };
 
-    it( 'returns a Promise for a \'' + eventName + '\' event with text', () => {
-      const event = {
-        type: eventName,
-        text: '@Hello++'
-      };
+    expect( events.handleEvent( event ) instanceof Promise ).toBeTrue();
+  });
 
-      expect( events.handleEvent( event ) instanceof Promise ).toBeTrue();
-    });
+  it.each( validEvents )( 'reports a \'%s\' event without text as invalid', ( type ) => {
+    const event = { type };
+    expect( events.handleEvent( event ) ).toBeFalse();
+  });
 
-    it( 'reports a \'' + eventName + '\' event without text as invalid', () => {
-      const event = { type: eventName };
-      expect( events.handleEvent( event ) ).toBeFalse();
-    });
+  it.each( validEvents )( 'reports a \'%s\' event with a space for text as invalid', ( type ) => {
+    const event = {
+      type,
+      text: ' '
+    };
 
-    it( 'reports a \'' + eventName + '\' event with only a space for text as invalid', () => {
-      const event = {
-        type: eventName,
-        text: ' '
-      };
-
-      expect( events.handleEvent( event ) ).toBeFalse();
-    });
-
-  } // For validEvents.
+    expect( events.handleEvent( event ) ).toBeFalse();
+  });
 
   it( 'reports an event with missing type as invalid', () => {
     const event = { text: 'Hello' };
