@@ -12,43 +12,43 @@
 
 const helpers = require( '../src/helpers' );
 
-describe( 'extractEventData', () => {
+describe( 'extractPlusMinusEventData', () => {
 
   it( 'drops message without an @ symbol', () => {
-    expect( helpers.extractEventData( 'Hello++' ) ).toBeFalse();
+    expect( helpers.extractPlusMinusEventData( 'Hello++' ) ).toBeFalse();
   });
 
   it( 'drops messages without a valid operation', () => {
-    expect( helpers.extractEventData( '@Hello' ) ).toBeFalse();
+    expect( helpers.extractPlusMinusEventData( '@Hello' ) ).toBeFalse();
   });
 
   it( 'drops messages without a valid user/item', () => {
-    expect( helpers.extractEventData( '@++' ) ).toBeFalse();
+    expect( helpers.extractPlusMinusEventData( '@++' ) ).toBeFalse();
   });
 
   it( 'extracts a \'thing\' and operation from the start of a message', () => {
-    expect( helpers.extractEventData( '@SomethingRandom++ that was awesome' ) ).toEqual({
+    expect( helpers.extractPlusMinusEventData( '@SomethingRandom++ that was awesome' ) ).toEqual({
       item: 'SomethingRandom',
       operation: '+'
     });
   });
 
   it( 'extracts a user and operation from the start of a message', () => {
-    expect( helpers.extractEventData( '<@U87654321>++ that was awesome' ) ).toEqual({
+    expect( helpers.extractPlusMinusEventData( '<@U87654321>++ that was awesome' ) ).toEqual({
       item: 'U87654321',
       operation: '+'
     });
   });
 
   it( 'extracts data in the middle of a message', () => {
-    expect( helpers.extractEventData( 'Hey @SomethingRandom++ that was awesome' ) ).toEqual({
+    expect( helpers.extractPlusMinusEventData( 'Hey @SomethingRandom++ that was awesome' ) ).toEqual({
       item: 'SomethingRandom',
       operation: '+'
     });
   });
 
   it( 'extracts data at the end of a message', () => {
-    expect( helpers.extractEventData( 'Awesome work @SomethingRandom++' ) ).toEqual({
+    expect( helpers.extractPlusMinusEventData( 'Awesome work @SomethingRandom++' ) ).toEqual({
       item: 'SomethingRandom',
       operation: '+'
     });
@@ -101,7 +101,7 @@ describe( 'extractEventData', () => {
               );
 
         it( testName, () => {
-          const result = helpers.extractEventData( messageText );
+          const result = helpers.extractPlusMinusEventData( messageText );
           expect( result ).toEqual({
             item: item.expected,
             operation: operation.expected
@@ -114,12 +114,12 @@ describe( 'extractEventData', () => {
     for ( const operation of operationsNotToMatch ) {
       const messageText = item.supplied + operation;
       it( 'does NOT match ' + messageText, () => {
-        expect( helpers.extractEventData( messageText ) ).toBeFalse();
+        expect( helpers.extractPlusMinusEventData( messageText ) ).toBeFalse();
       });
     }
 
   } // For itemsToMatch.
-}); // ExtractEventData.
+}); // ExtractPlusMinusEventData.
 
 describe( 'maybeLinkItem', () => {
 

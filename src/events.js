@@ -65,7 +65,7 @@ const handlers = {
   message: ( event ) => {
 
     // Extract the relevant data from the message text.
-    const { item, operation } = helpers.extractEventData( event.text );
+    const { item, operation } = helpers.extractPlusMinusEventData( event.text );
 
     if ( ! item || ! operation ) {
       return false;

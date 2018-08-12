@@ -14,7 +14,7 @@
  *                   'operation' being done on it - expressed as a valid mathematical operation
  *                   (i.e. + or -).
  */
-const extractEventData = ( ( text ) => {
+const extractPlusMinusEventData = ( ( text ) => {
   const data = text.match( /@([A-Za-z0-9]+?)>?\s*(\+{2}|-{2}|—{1})/ );
 
   if ( ! data ) {
@@ -41,6 +41,6 @@ const maybeLinkItem = ( item ) => {
 };
 
 module.exports = {
-  extractEventData,
+  extractPlusMinusEventData,
   maybeLinkItem
 };
