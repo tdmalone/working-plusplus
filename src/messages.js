@@ -91,12 +91,7 @@ messages[ operations.SELF ] = [
 const getRandomMessage = ( operation, item, score = 0 ) => {
 
   const messageSets = messages[ operation ];
-
-  let setRandom,
-      set,
-      totalProbability = 0,
-      chosenSet = null,
-      format = '';
+  let format = '';
 
   switch ( operation ) {
     case operations.MINUS:
@@ -112,32 +107,33 @@ const getRandomMessage = ( operation, item, score = 0 ) => {
       throw 'Invalid operation: ' + operation;
   }
 
-  for ( set of messageSets ) {
+  let totalProbability = 0;
+  for ( const set of messageSets ) {
     totalProbability += set.probability;
   }
 
-  setRandom = Math.floor( Math.random() * totalProbability );
+  let chosenSet = null,
+      setRandom = Math.floor( Math.random() * totalProbability );
 
-  for ( set of messageSets ) {
+  for ( const set of messageSets ) {
     setRandom -= set.probability;
 
     if ( 0 > setRandom ) {
       chosenSet = set.set;
-
       break;
     }
   }
 
   if ( null === chosenSet ) {
     throw (
-      'Could not find set for ' + operation + ' ran out of sets with ' + setRandom + ' remaining'
+      'Could not find set for ' + operation + ' (ran out of sets with ' + setRandom + ' remaining)'
     );
   }
 
-  const plural = 1 === Math.abs( score ) ? '' : 's';
-  const max = chosenSet.length - 1;
-  const random = Math.floor( Math.random() * max );
-  const message = chosenSet[ random ];
+  const plural = 1 === Math.abs( score ) ? '' : 's',
+        max = chosenSet.length - 1,
+        random = Math.floor( Math.random() * max ),
+        message = chosenSet[ random ];
 
   const formattedMessage = format.replace( '<item>', helpers.maybeLinkItem( item ) )
     .replace( '<score>', score )
