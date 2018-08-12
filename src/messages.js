@@ -9,7 +9,9 @@
 
 'use strict';
 
-const operations = require( './operations' ).operations;
+const helpers = require( './helpers' ),
+      operations = require( './operations' ).operations;
+
 const messages = {};
 
 messages[ operations.PLUS ] = [
@@ -81,12 +83,12 @@ messages[ operations.SELF ] = [
  *
  * @param {string}  operation The name of the operation to retrieve potential messages for.
  *                            See operations.js.
- * @param {string}  item      The subject of the message, either "<@user>" or "object".
- * @param {integer} score     The item's current score.
+ * @param {string}  item      The subject of the message, eg. 'U12345678' or 'SomeRandomThing'.
+ * @param {integer} score     The item's current score. Defaults to 0 if not supplied.
  *
  * @returns {string} A random message from the chosen pool.
  */
-const getRandomMessage = ( operation, item, score ) => {
+const getRandomMessage = ( operation, item, score = 0 ) => {
 
   const messageSets = messages[ operation ];
 
@@ -137,7 +139,7 @@ const getRandomMessage = ( operation, item, score ) => {
   const random = Math.floor( Math.random() * max );
   const message = chosenSet[ random ];
 
-  const formattedMessage = format.replace( '<item>', item )
+  const formattedMessage = format.replace( '<item>', helpers.maybeLinkItem( item ) )
     .replace( '<score>', score )
     .replace( '<plural>', plural )
     .replace( '<message>', message );

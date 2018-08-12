@@ -26,7 +26,7 @@ const camelCase = require( 'lodash.camelcase' );
  */
 const handleSelfPlus = ( user, channel ) => {
   console.log( user + ' tried to alter their own score.' );
-  const message = messages.getRandomMessage( operations.operations.SELF, '<@' + user + '>', 0 );
+  const message = messages.getRandomMessage( operations.operations.SELF, user );
   return send.sendMessage( message, channel );
 };
 
@@ -43,9 +43,8 @@ const handleSelfPlus = ( user, channel ) => {
  */
 const handlePlusMinus = async( item, operation, channel ) => {
   const score = await points.updateScore( item, operation ),
-        itemMaybeLinked = helpers.maybeLinkItem( item ),
         operationName = operations.getOperationName( operation ),
-        message = messages.getRandomMessage( operationName, itemMaybeLinked, score );
+        message = messages.getRandomMessage( operationName, item, score );
 
   return send.sendMessage( message, channel );
 };
