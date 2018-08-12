@@ -130,7 +130,7 @@ const getRandomMessage = ( operation, item, score = 0 ) => {
     );
   }
 
-  const plural = 1 === Math.abs( score ) ? '' : 's',
+  const plural = helpers.isPlural( score ) ? 's' : '',
         max = chosenSet.length - 1,
         random = Math.floor( Math.random() * max ),
         message = chosenSet[ random ];

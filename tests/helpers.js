@@ -86,7 +86,7 @@ describe( 'extractPlusMinusEventData', () => {
   });
 
   it( 'extracts data in the middle of a message', () => {
-    expect( helpers.extractPlusMinusEventData( 'Hey @SomethingRandom++ that was awesome' ) ).toEqual({
+    expect( helpers.extractPlusMinusEventData( 'Hey @SomethingRandom++ you\'re great' ) ).toEqual({
       item: 'SomethingRandom',
       operation: '+'
     });
@@ -165,6 +165,36 @@ describe( 'extractPlusMinusEventData', () => {
 
   } // For itemsToMatch.
 }); // ExtractPlusMinusEventData.
+
+describe( 'isPlural', () => {
+
+  const table = [
+    [ true, -11 ],
+    [ true, -2 ],
+    [ false, -1 ],
+    [ true, 0 ],
+    [ false, 1 ],
+    [ true, 2 ],
+    [ true, 11 ]
+  ];
+
+  it.each( table )( 'returns %p for %d', ( result, number ) => {
+    expect( helpers.isPlural( number ) ).toBe( result );
+  });
+
+});
+
+describe( 'isUser', () => {
+
+  it( 'returns true for a Slack user ID', () => {
+    expect( helpers.isUser( 'U00000000' ) ).toBeTrue();
+  });
+
+  it( 'returns false for something other than a Slack user ID', () => {
+    expect( helpers.isUser( 'SomethingRandom' ) ).toBeFalse();
+  });
+
+});
 
 describe( 'maybeLinkItem', () => {
 

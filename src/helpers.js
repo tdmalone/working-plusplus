@@ -58,6 +58,26 @@ const extractPlusMinusEventData = ( text ) => {
 };
 
 /**
+ * Determines whether or not a number should be referred to as a plural - eg. anything but 1 or -1.
+ *
+ * @param {integer} number The number in question.
+ * @returns {Boolean} Whether or not the number is a plural.
+ */
+const isPlural = ( number ) => {
+  return 1 !== Math.abs( number );
+};
+
+/**
+ * Determines whether or not a string represents a Slack user ID - eg. U12345678.
+ *
+ * @param {string} item The string in question.
+ * @returns {Boolean} Whether or not the string is a Slack user ID.
+ */
+const isUser = ( item ) => {
+  return item.match( /U[A-Z0-9]{8}/ ) ? true : false;
+};
+
+/**
  * Takes an item and returns it maybe linked using Slack's 'mrkdwn' format (their own custom
  * version of markdown).
  *
@@ -66,11 +86,13 @@ const extractPlusMinusEventData = ( text ) => {
  * @see https://api.slack.com/docs/message-formatting#linking_to_channels_and_users
  */
 const maybeLinkItem = ( item ) => {
-  return item.match( /U[A-Z0-9]{8}/ ) ? '<@' + item + '>' : item;
+  return isUser( item ) ? '<@' + item + '>' : item;
 };
 
 module.exports = {
   extractCommand,
   extractPlusMinusEventData,
+  isPlural,
+  isUser,
   maybeLinkItem
 };
