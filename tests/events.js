@@ -96,43 +96,27 @@ describe( 'handlePlusMinus', () => {
       .toHaveBeenCalledWith( item, '+' );
   });
 
-  it( 'gets a message from the \'plus\' collection', () => {
-    expect.hasAssertions();
+  it.each([ [ 'plus', '+' ], [ 'minus', '-' ] ])(
+    'gets a message from the \'%s\' collection',
+    ( operationName, operation ) => {
+      expect.hasAssertions();
 
-    const send = require( '../src/send' ),
-          points = require( '../src/points' ),
-          events = require( '../src/events' ),
-          messages = require( '../src/messages' );
+      const send = require( '../src/send' ),
+            points = require( '../src/points' ),
+            events = require( '../src/events' ),
+            messages = require( '../src/messages' );
 
-    send.setSlackClient( slackClientMock );
-    points.updateScore = jest.fn( updateScoreMock );
-    messages.getRandomMessage = jest.fn();
+      send.setSlackClient( slackClientMock );
+      points.updateScore = jest.fn( updateScoreMock );
+      messages.getRandomMessage = jest.fn();
 
-    return events.handlePlusMinus( item, '+', channel ).then( () => {
-      expect( messages.getRandomMessage )
-        .toHaveBeenCalledTimes( 1 )
-        .toHaveBeenCalledWith( 'plus', item, score );
-    });
-  });
-
-  it( 'gets a message from the \'minus\' collection', () => {
-    expect.hasAssertions();
-
-    const send = require( '../src/send' ),
-          points = require( '../src/points' ),
-          events = require( '../src/events' ),
-          messages = require( '../src/messages' );
-
-    send.setSlackClient( slackClientMock );
-    points.updateScore = jest.fn( updateScoreMock );
-    messages.getRandomMessage = jest.fn();
-
-    return events.handlePlusMinus( item, '-', channel ).then( () => {
-      expect( messages.getRandomMessage )
-        .toHaveBeenCalledTimes( 1 )
-        .toHaveBeenCalledWith( 'minus', item, score );
-    });
-  });
+      return events.handlePlusMinus( item, operation, channel ).then( () => {
+        expect( messages.getRandomMessage )
+          .toHaveBeenCalledTimes( 1 )
+          .toHaveBeenCalledWith( operationName, item, score );
+      });
+    }
+  );
 
   it( 'sends a message back to the channel that called it', () => {
     expect.hasAssertions();

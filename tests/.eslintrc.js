@@ -12,6 +12,7 @@ module.exports = {
     'no-loop-func': 'off',
     'no-magic-numbers': 'off',
     'no-process-env': 'off',
-    'max-nested-callbacks': [ 'error', { max: 5 } ]
+    'max-nested-callbacks': [ 'error', { max: 5 } ],
+    'max-params': [ 'error', { max: 5 } ]
   }
 };

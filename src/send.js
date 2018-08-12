@@ -25,7 +25,7 @@ const setSlackClient = ( client ) => {
 /**
  * Sends a message to a Slack channel.
  *
- * @param {string} message The message text to send.
+ * @param {string} text    The message text to send.
  * @param {string} channel The ID of the channel to send the message to.
  * @return {Promise} A Promise to send the message to Slack.
  */
