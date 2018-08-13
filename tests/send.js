@@ -39,7 +39,7 @@ describe( 'sendMessage', () => {
     channel: 'C12345678'
   };
 
-  it( 'sends the provided message text to the provided channel via the Slack Web API', () => {
+  it( 'sends message text to a channel when provided as two arguments', () => {
     expect.assertions( 1 );
     const slackClientMock = require( pathToMock );
     send.setSlackClient( slackClientMock );
@@ -47,7 +47,54 @@ describe( 'sendMessage', () => {
     // Re-mock the client so we can listen to it.
     slackClientMock.chat.postMessage = jest.fn();
 
-    send.sendMessage( payload.text, payload.channel ).catch( () => {
+    return send.sendMessage( payload.text, payload.channel ).catch( () => {
+      expect( slackClientMock.chat.postMessage ).toHaveBeenCalledWith( payload );
+    });
+  });
+
+  it( 'sends a message to a channel with a full payload as one argument', () => {
+    expect.assertions( 1 );
+    const slackClientMock = require( pathToMock );
+    send.setSlackClient( slackClientMock );
+
+    // Re-mock the client so we can listen to it.
+    slackClientMock.chat.postMessage = jest.fn();
+
+    const payload = {
+      text: 'Hello there',
+      channel: 'C12345678',
+      attachments: [
+        {
+          'text': 'Attachment text'
+        }
+      ]
+    };
+
+    return send.sendMessage( payload ).catch( () => {
+      expect( slackClientMock.chat.postMessage ).toHaveBeenCalledWith( payload );
+    });
+  });
+
+  it( 'sends a message to a channel when payload and channel are passed separately', () => {
+    expect.assertions( 1 );
+    const slackClientMock = require( pathToMock );
+    send.setSlackClient( slackClientMock );
+
+    // Re-mock the client so we can listen to it.
+    slackClientMock.chat.postMessage = jest.fn();
+
+    const channel = 'C12345678';
+    const payload = {
+      text: 'Hello there',
+      attachments: [
+        {
+          'text': 'Attachment text'
+        }
+      ]
+    };
+
+    return send.sendMessage( payload, channel ).catch( () => {
+      payload.channel = channel;
       expect( slackClientMock.chat.postMessage ).toHaveBeenCalledWith( payload );
     });
   });
