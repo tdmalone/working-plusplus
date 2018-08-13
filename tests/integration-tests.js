@@ -24,9 +24,7 @@ const pathToListener = '../';
 const pg = require( 'pg' ),
       http = require( 'http' );
 
-const config = require( './_config' ),
-      runner = require( './_runner' ),
-      slackClientMock = require( './mocks/slack' );
+const config = require( './_config' );
 
 const originalProcessEnv = process.env,
       postgres = new pg.Pool( config.postgresPoolConfig );
@@ -189,9 +187,7 @@ describe( 'The Express server', () => {
 describe( 'The database', () => {
 
   const defaultUser = 'U00000000',
-        defaultItem = 'something',
-        defaultUserPlus = '<@' + defaultUser + '>++',
-        defaultItemPlus = '@' + defaultItem + '++';
+        defaultItem = 'something';
 
   const tableExistsQuery = 'SELECT EXISTS ( ' +
     'SELECT 1 FROM information_schema.tables ' +
@@ -216,30 +212,14 @@ describe( 'The database', () => {
     expect( query.rowCount ).toBe( 0 );
   });
 
-  /**
-   * Provides a 'first request' and a test that it successfully creates the database table.
-   *
-   * @param {callable} done    A callback to use for alerting Jest that the test is complete.
-   * @param {string}   message Optionally the message to use for the request, if you need to differ
-   *                           from the default.
-   * @return {void}
-   */
-  const doRequest = ( done, message = defaultItemPlus ) => {
+  it( 'creates the ' + config.scoresTableName + ' table on the first request', async() => {
     expect.hasAssertions();
-    const listener = require( pathToListener )({ slack: slackClientMock });
-
-    listener.on( 'listening', () => {
-      runner( message, async( dbClient ) => {
-        listener.close();
-        const query = await dbClient.query( tableExistsQuery );
-        await dbClient.release();
-        expect( query.rows[0].exists ).toBeTrue();
-        done();
-      });
-    });
-  };
-
-  it( 'creates the ' + config.scoresTableName + ' table on the first request', doRequest );
+    await points.updateScore( defaultItem, '++' );
+    const dbClient = await postgres.connect();
+    const query = await dbClient.query( tableExistsQuery );
+    await dbClient.release();
+    expect( query.rows[0].exists ).toBeTrue();
+  });
 
   it( 'also creates the case-insensitive extension on the first request', async() => {
     expect.hasAssertions();
@@ -249,9 +229,16 @@ describe( 'The database', () => {
     expect( query.rowCount ).toBe( 1 );
   });
 
-  it( 'does not cause errors on subsequent requests', doRequest );
+  /* eslint-disable jest/expect-expect */
+  // TODO: This test really should have an assertion, but I can't figure out how to catch the error
+  //       properly... it's possible that updateScore needs rewriting to catch properly. In the
+  //       meantime, this test *does* actually work like expected.
+  it( 'does not cause any errors on a second request when everything already exists', async() => {
+    await points.updateScore( defaultItem, '++' );
+  });
+  /* eslint-enable jest/expect-expect */
 
-  it( 'returns a list of top scores in the correct order', ( done ) => {
+  it( 'returns a list of top scores in the correct order', async() => {
     expect.hasAssertions();
 
     const expectedScores = [
@@ -265,17 +252,13 @@ describe( 'The database', () => {
       }
     ];
 
-    // Give us a few additional scores so we can check it works.
-    // TODO: This is messy. Should rewrite this to not use callbacks.
-    doRequest( () => {
-      doRequest( () => {
-        doRequest( async() => {
-          const topScores = await points.retrieveTopScores();
-          expect( topScores ).toEqual( expectedScores );
-          done();
-        }, defaultUserPlus );
-      }, defaultUserPlus );
-    }, defaultUserPlus );
+    // Give us a few additional scores so we can check the order works.
+    await points.updateScore( defaultUser, '++' );
+    await points.updateScore( defaultUser, '++' );
+    await points.updateScore( defaultUser, '++' );
+
+    const topScores = await points.retrieveTopScores();
+    expect( topScores ).toEqual( expectedScores );
 
   });
 
