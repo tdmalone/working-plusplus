@@ -94,7 +94,7 @@ const handlers = {
    *                        to send a Slack message back to the requesting channel - which will be
    *                        handled by the command's own handler.
    */
-  appMention: ( event ) => {
+  appMention: ( event, request ) => {
 
     const appCommandHandlers = {
       leaderboard: leaderboard.handler
@@ -104,7 +104,7 @@ const handlers = {
           appCommand = helpers.extractCommand( event.text, validCommands );
 
     if ( appCommand ) {
-      return appCommandHandlers[appCommand]( event );
+      return appCommandHandlers[appCommand]( event, request );
     }
 
     return false;
@@ -122,7 +122,7 @@ const handlers = {
  * @return {bool|Promise} Either `false` if the event cannot be handled, or a Promise as returned
  *                        by the event's handler function.
  */
-const handleEvent = ( event ) => {
+const handleEvent = ( event, request ) => {
 
   // If the event has no type, something has gone wrong.
   if ( 'undefined' === typeof event.type ) {
@@ -145,7 +145,7 @@ const handleEvent = ( event ) => {
   // Providing we have a handler for the event, let's handle it!
   const eventName = camelCase( event.type );
   if ( handlers[ eventName ] instanceof Function ) {
-    return handlers[ eventName ] ( event );
+    return handlers[ eventName ] ( event, request );
   }
 
   console.warn( 'Invalid event received: ' + event.type );

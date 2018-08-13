@@ -80,7 +80,19 @@ const validateToken = ( suppliedToken, serverToken ) => {
  */
 const handleGet = ( request, response ) => {
   logRequest( request );
-  response.send( 'It works! However, this app only accepts POST requests for now.' );
+
+  switch ( request.path.replace( /\/$/, '' ) ) {
+
+    case '/leaderboard':
+      response.send( 'Full leaderboard coming soon.' );
+      break;
+
+    default:
+      response.send( 'It works! However, this app only accepts POST requests for now.' );
+      break;
+
+  }
+
 };
 
 /**
@@ -122,7 +134,7 @@ const handlePost = ( request, response ) => {
   }
 
   // Handle the event now. If the event is invalid, this will return false.
-  return events.handleEvent( request.body.event );
+  return events.handleEvent( request.body.event, request );
 
 }; // HandlePost.
 
