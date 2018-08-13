@@ -8,6 +8,8 @@
 
 module.exports = {
   rules: {
+    'jest/expect-expect': [ 'error' ],
+    'jest/valid-expect-in-promise': [ 'error' ],
     'no-empty-function': 'off',
     'no-loop-func': 'off',
     'no-magic-numbers': 'off',

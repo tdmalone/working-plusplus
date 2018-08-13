@@ -44,7 +44,7 @@ const retrieveTopScores = async() => {
         result = await dbClient.query( query ),
         scores = result.rows;
 
-  dbClient.release();
+  await dbClient.release();
 
   return scores;
 
@@ -85,7 +85,7 @@ const updateScore = async( item, operation ) => {
     SELECT score FROM ' + scoresTableName + ' WHERE item = \'' + item + '\'; \
   ' );
 
-  dbClient.release();
+  await dbClient.release();
   const score = dbSelect.rows[0].score;
 
   console.log( item + ' now on ' + score );
