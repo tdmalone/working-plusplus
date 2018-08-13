@@ -1,5 +1,12 @@
 /**
  * All the stuff that handles the giving, taking away, or otherwise querying of points.
+ *
+ * NOTE: As the functions here pretty much deal exclusively with the database, they generally
+ *       aren't unit tested, as that would require anyone who runs the tests to also have a Postgres
+ *       server. Instead, the functions in this file are well covered via the integration and
+ *       end-to-end tests.
+ *
+ * @author Tim Malone <tdmalone@gmail.com>
  */
 
 'use strict';
@@ -18,6 +25,30 @@ const scoresTableName = 'scores',
       };
 
 const postgres = new pg.Pool( postgresPoolConfig );
+
+/**
+ * Retrieves all scores from the database, ordered from highest to lowest.
+ *
+ * TODO: Add further smarts to retrieve only a limited number of scores, to avoid having to query
+ *       everything. Note that this isn't just LIMIT, because we'll need to apply the limit
+ *       separately to both users (/U[A-Z0-9]{8}/) and things (everything else) & return both sets.
+ *
+ * @return {array} An array of entries, each an object containing 'item' (string) and 'score'
+ *                (integer) properties.
+ */
+const retrieveTopScores = async() => {
+
+  const query = 'SELECT * FROM ' + scoresTableName + ' ORDER BY score DESC';
+
+  const dbClient = await postgres.connect(),
+        result = await dbClient.query( query ),
+        scores = result.rows;
+
+  dbClient.release();
+
+  return scores;
+
+};
 
 /**
  * Updates the score of an item in the database. If the item doesn't yet exist, it will be inserted
@@ -63,5 +94,6 @@ const updateScore = async( item, operation ) => {
 }; // UpdateScore.
 
 module.exports = {
+  retrieveTopScores,
   updateScore
 };

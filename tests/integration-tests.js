@@ -16,7 +16,9 @@
  * Environment Configuration.
  ****************************************************************/
 
-const app = require( '../src/app' );
+const app = require( '../src/app' ),
+      points = require( '../src/points' );
+
 const pathToListener = '../';
 
 const pg = require( 'pg' ),
@@ -186,6 +188,11 @@ describe( 'The Express server', () => {
 
 describe( 'The database', () => {
 
+  const defaultUser = 'U00000000',
+        defaultItem = 'something',
+        defaultUserPlus = '<@' + defaultUser + '>++',
+        defaultItemPlus = '@' + defaultItem + '++';
+
   const tableExistsQuery = 'SELECT EXISTS ( ' +
     'SELECT 1 FROM information_schema.tables ' +
     'WHERE table_name = \'' + config.scoresTableName + '\'' +
@@ -212,15 +219,17 @@ describe( 'The database', () => {
   /**
    * Provides a 'first request' and a test that it successfully creates the database table.
    *
-   * @param {callable} done A callback to use for alerting Jest that the test is complete.
+   * @param {callable} done    A callback to use for alerting Jest that the test is complete.
+   * @param {string}   message Optionally the message to use for the request, if you need to differ
+   *                           from the default.
    * @return {void}
    */
-  const doFirstRequest = ( done ) => {
+  const doRequest = ( done, message = defaultItemPlus ) => {
     expect.hasAssertions();
     const listener = require( pathToListener )({ slack: slackClientMock });
 
     listener.on( 'listening', () => {
-      runner( '@something++', async( dbClient ) => {
+      runner( message, async( dbClient ) => {
         listener.close();
         const query = await dbClient.query( tableExistsQuery );
         await dbClient.release();
@@ -230,7 +239,7 @@ describe( 'The database', () => {
     });
   };
 
-  it( 'creates the ' + config.scoresTableName + ' table on the first request', doFirstRequest );
+  it( 'creates the ' + config.scoresTableName + ' table on the first request', doRequest );
 
   it( 'also creates the case-insensitive extension on the first request', async() => {
     expect.hasAssertions();
@@ -240,6 +249,34 @@ describe( 'The database', () => {
     expect( query.rowCount ).toBe( 1 );
   });
 
-  it( 'does not cause errors on subsequent requests', doFirstRequest );
+  it( 'does not cause errors on subsequent requests', doRequest );
+
+  it( 'returns a list of top scores in the correct order', ( done ) => {
+    expect.hasAssertions();
+
+    const expectedScores = [
+      {
+        item: defaultUser,
+        score: 3
+      },
+      {
+        item: defaultItem,
+        score: 2
+      }
+    ];
+
+    // Give us a few additional scores so we can check it works.
+    // TODO: This is messy. Should rewrite this to not use callbacks.
+    doRequest( () => {
+      doRequest( () => {
+        doRequest( async() => {
+          const topScores = await points.retrieveTopScores();
+          expect( topScores ).toEqual( expectedScores );
+          done();
+        }, defaultUserPlus );
+      }, defaultUserPlus );
+    }, defaultUserPlus );
+
+  });
 
 }); // Postgres tests.
