@@ -12,6 +12,8 @@
 
 const helpers = require( '../src/helpers' );
 
+const MILLISECONDS_TO_SECONDS = 1000;
+
 describe( 'extractCommand', () => {
 
   const commands = [
@@ -166,6 +168,41 @@ describe( 'extractPlusMinusEventData', () => {
   } // For itemsToMatch.
 }); // ExtractPlusMinusEventData.
 
+describe( 'getTimeBasedToken', () => {
+
+  it( 'returns a string', () => {
+    expect( helpers.getTimeBasedToken( helpers.getTimestamp() ) ).toBeString();
+  });
+
+  it( 'throws if a timestamp is not provided', () => {
+    expect( () => {
+      helpers.getTimeBasedToken();
+    }).toThrow();
+  });
+
+  it( 'provides a different token if called with a different timestamp', () => {
+    const token1 = helpers.getTimeBasedToken( 123456789 );
+    const token2 = helpers.getTimeBasedToken( 123123123 );
+    expect( token1 ).not.toEqual( token2 );
+  });
+
+});
+
+describe( 'getTimestamp', () => {
+
+  it( 'returns an integer', () => {
+    expect( helpers.getTimestamp() )
+      .toBeNumber()
+      .not.toBeString();
+  });
+
+  it( 'returns the current unix epoch', () => {
+    const now = Math.floor( Date.now() / MILLISECONDS_TO_SECONDS );
+    expect( helpers.getTimestamp() ).toBeWithin( now - 5, now + 1 );
+  });
+
+});
+
 describe( 'isPlural', () => {
 
   const table = [
@@ -180,6 +217,48 @@ describe( 'isPlural', () => {
 
   it.each( table )( 'returns %p for %d', ( result, number ) => {
     expect( helpers.isPlural( number ) ).toBe( result );
+  });
+
+});
+
+describe( 'isTimeBasedTokenStillValid', () => {
+
+  it( 'returns true for a token created just now', () => {
+    const now = helpers.getTimestamp(),
+          token = helpers.getTimeBasedToken( now );
+
+    expect( helpers.isTimeBasedTokenStillValid( token, now ) ).toBeTrue();
+  });
+
+  it( 'returns true for a token created an hour ago', () => {
+    const now = helpers.getTimestamp(),
+          oneHourAgo = now - 60 * 60,
+          token = helpers.getTimeBasedToken( oneHourAgo );
+
+    expect( helpers.isTimeBasedTokenStillValid( token, oneHourAgo ) ).toBeTrue();
+  });
+
+  it( 'returns false for a token created with a different timestamp', () => {
+    const now = helpers.getTimestamp(),
+          token = helpers.getTimeBasedToken( now - 1 );
+
+    expect( helpers.isTimeBasedTokenStillValid( token, now ) ).toBeFalse();
+  });
+
+  it( 'returns false for a token created in the future', () => {
+    const now = helpers.getTimestamp(),
+          theFuture = now + 10,
+          token = helpers.getTimeBasedToken( theFuture );
+
+    expect( helpers.isTimeBasedTokenStillValid( token, theFuture ) ).toBeFalse();
+  });
+
+  it( 'returns false for a token created two days ago', () => {
+    const now = helpers.getTimestamp(),
+          twoDaysAgo = now - 60 * 60 * 24 * 2,
+          token = helpers.getTimeBasedToken( twoDaysAgo );
+
+    expect( helpers.isTimeBasedTokenStillValid( token, twoDaysAgo ) ).toBeFalse();
   });
 
 });

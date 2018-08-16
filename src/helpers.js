@@ -6,6 +6,17 @@
 
 'use strict';
 
+const crypto = require( 'crypto' );
+
+/* eslint-disable no-process-env */
+const envSecret1 = process.env.SLACK_VERIFICATION_TOKEN,
+      envSecret2 = process.env.DATABASE_URL;
+/* eslint-enable no-process-env */
+
+const ONE_DAY = 60 * 60 * 24, // eslint-disable-line no-magic-numbers
+      TOKEN_TTL = ONE_DAY,
+      MILLISECONDS_TO_SECONDS = 1000;
+
 /**
  * Given a message and a list of commands, extracts the first command mentioned in the message.
  *
@@ -58,6 +69,33 @@ const extractPlusMinusEventData = ( text ) => {
 };
 
 /**
+ * Generates a time-based token based on secrets from the environment.
+ *
+ * @param {string} ts A timestamp to hash into the token.
+ * @returns {string} A token, that can be re-checked later using the same timestamp.
+ */
+const getTimeBasedToken = ( ts ) => {
+
+  if ( ! ts ) {
+    throw Error( 'Timestamp not provided when getting time-based token.' );
+  }
+
+  return crypto
+    .createHmac( 'sha256', envSecret1 )
+    .update( ts + envSecret2 )
+    .digest( 'hex' );
+};
+
+/**
+ * Returns the current time as a standard Unix epoch timestamp.
+ *
+ * @returns {integer} The current Unix timestamp.
+ */
+const getTimestamp = () => {
+  return Math.floor( Date.now() / MILLISECONDS_TO_SECONDS );
+};
+
+/**
  * Determines whether or not a number should be referred to as a plural - eg. anything but 1 or -1.
  *
  * @param {integer} number The number in question.
@@ -65,6 +103,36 @@ const extractPlusMinusEventData = ( text ) => {
  */
 const isPlural = ( number ) => {
   return 1 !== Math.abs( number );
+};
+
+/**
+ * Validates a time-based token to ensure it is both still valid, and that it can be successfully
+ * re-hashed using the expected secrets.
+ *
+ * @param {string}  token The token to validate.
+ * @param {integer} ts    The timestamp the token was supplied with.
+ * @returns {boolean} Whether or not the token is valid.
+ */
+const isTimeBasedTokenStillValid = ( token, ts ) => {
+  const now = getTimestamp();
+
+  // Don't support tokens too far from the past.
+  if ( now > ts + TOKEN_TTL ) {
+    return false;
+  }
+
+  // Don't support tokens from the future.
+  if ( now < ts ) {
+    return false;
+  }
+
+  const hash = getTimeBasedToken( ts );
+
+  if ( hash !== token ) {
+    return false;
+  }
+
+  return true;
 };
 
 /**
@@ -92,7 +160,10 @@ const maybeLinkItem = ( item ) => {
 module.exports = {
   extractCommand,
   extractPlusMinusEventData,
+  getTimeBasedToken,
+  getTimestamp,
   isPlural,
+  isTimeBasedTokenStillValid,
   isUser,
   maybeLinkItem
 };

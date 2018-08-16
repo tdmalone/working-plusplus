@@ -87,9 +87,10 @@ const handlers = {
    * Handles 'app_mention' events sent from Slack, primarily by looking for known app commands, and
    * then handing the command off for processing.
    *
-   * @param {object} event  A hash of a validated Slack 'app_mention' event. See the docs at
-   *                        https://api.slack.com/events-api#events_dispatched_as_json and
-   *                        https://api.slack.com/events/app_mention for details.
+   * @param {object} event   A hash of a validated Slack 'app_mention' event. See the docs at
+   *                         https://api.slack.com/events-api#events_dispatched_as_json and
+   *                         https://api.slack.com/events/app_mention for details.
+   * @param {object} request The incoming Express request object for this event.
    * @return {bool|Promise} Either `false` if the event cannot be handled, or a Promise - usually
    *                        to send a Slack message back to the requesting channel - which will be
    *                        handled by the command's own handler.
@@ -116,9 +117,10 @@ const handlers = {
  * Determines whether or not incoming events from Slack can be handled by this app, and if so,
  * passes the event off to its handler function.
  *
- * @param {object} event  A hash of a Slack event. See the documentation at
- *                        https://api.slack.com/events-api#events_dispatched_as_json and
- *                        https://api.slack.com/events/message for details.
+ * @param {object} event   A hash of a Slack event. See the documentation at
+ *                         https://api.slack.com/events-api#events_dispatched_as_json and
+ *                         https://api.slack.com/events/message for details.
+ * @param {object} request The incoming Express request object for this event.
  * @return {bool|Promise} Either `false` if the event cannot be handled, or a Promise as returned
  *                        by the event's handler function.
  */
