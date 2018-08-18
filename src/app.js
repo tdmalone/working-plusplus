@@ -12,7 +12,9 @@
 
 'use strict';
 
-const events = require( './events' );
+const events = require( './events' ),
+      helpers = require( './helpers' ),
+      leaderboard = require( './leaderboard' );
 
 // eslint-disable-next-line no-process-env
 const SLACK_VERIFICATION_TOKEN = process.env.SLACK_VERIFICATION_TOKEN;
@@ -72,28 +74,39 @@ const validateToken = ( suppliedToken, serverToken ) => {
 }; // ValidateToken.
 
 /**
- * Handles GET requests to the app.
+ * Handles GET requests to the app. At the moment this only really consists of an authenticated
+ * view of the full leaderboard.
  *
  * @param {express.req} request An Express request. See https://expressjs.com/en/4x/api.html#req.
  * @param {express.res} response An Express response. See https://expressjs.com/en/4x/api.html#res.
  * @return {void}
  */
-const handleGet = ( request, response ) => {
+const handleGet = async( request, response ) => {
   logRequest( request );
 
   switch ( request.path.replace( /\/$/, '' ) ) {
 
+    // Full leaderboard. This will only work when a valid, non-expired token and timestamp are
+    // provided - the full link can be retrieved by requesting the leaderboard within Slack.
+    // TODO: This should probably be split out into a separate function of sorts, like handlePost.
     case '/leaderboard':
-      response.send( 'Full leaderboard coming soon.' );
+      if ( helpers.isTimeBasedTokenStillValid( request.query.token, request.query.ts ) ) {
+        response.send( await leaderboard.getFull() );
+      } else {
+        response
+          .status( HTTP_403 )
+          .send( 'Sorry, this link is no longer valid. Please request a new link in Slack.' );
+      }
       break;
 
+    // A simple default GET response is sometimes useful for troubleshooting.
     default:
       response.send( 'It works! However, this app only accepts POST requests for now.' );
       break;
 
   }
 
-};
+}; // HandleGet.
 
 /**
  * Handles POST requests to the app.

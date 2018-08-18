@@ -6,7 +6,11 @@
 
 'use strict';
 
-const crypto = require( 'crypto' );
+const fs = require( 'fs' ),
+      crypto = require( 'crypto' ),
+      handlebars = require( 'handlebars' );
+
+let header, footer, stylesheet;
 
 /* eslint-disable no-process-env */
 const envSecret1 = process.env.SLACK_VERIFICATION_TOKEN,
@@ -157,6 +161,36 @@ const maybeLinkItem = ( item ) => {
   return isUser( item ) ? '<@' + item + '>' : item;
 };
 
+/**
+ * Renders HTML for the browser, using Handlebars. Includes a standard header and footer.
+ *
+ * @param {string} template The Handlebars-compatible template to render; that is, valid HTML with
+ *                          variable interpolations as required.
+ * @param {object} context  The Handlebars-compatible context to render; that is, an object with
+ *                          values for the variables referenced in the template. Also include
+ *                          standard variables referenced in the header and footer, such as
+ *                         'title'. See the contents of ./html/ for more details.
+ * @returns {string} HTML ready to be rendered in the browser.
+ * @see https://handlebarsjs.com/
+ */
+const render = ( template = '', context = {}) => {
+
+  if ( ! header || ! footer || ! stylesheet ) {
+    header = fs.readFileSync( 'src/html/header.html', 'utf8' );
+    footer = fs.readFileSync( 'src/html/footer.html', 'utf8' );
+    stylesheet = fs.readFileSync( 'src/assets/main.css', 'utf8' );
+  }
+
+  const defaults = {
+    site_title: 'PlusPlus++ That Works',
+    stylesheet
+  };
+
+  const output = header + template + footer;
+  return handlebars.compile( output )( Object.assign( defaults, context ) );
+
+}; // Render.
+
 module.exports = {
   extractCommand,
   extractPlusMinusEventData,
@@ -165,5 +199,6 @@ module.exports = {
   isPlural,
   isTimeBasedTokenStillValid,
   isUser,
-  maybeLinkItem
+  maybeLinkItem,
+  render
 };

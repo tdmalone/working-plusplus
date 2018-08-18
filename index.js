@@ -12,7 +12,9 @@
 const app = require( './src/app' ),
       send = require( './src/send' );
 
-const slack = require( '@slack/client' ),
+const fs = require( 'fs' ),
+      mime = require( 'mime' ),
+      slack = require( '@slack/client' ),
       express = require( 'express' ),
       bodyParser = require( 'body-parser' );
 
@@ -42,6 +44,15 @@ const bootstrap = ( options = {}) => {
   server.get( '/', app.handleGet );
   server.post( '/', app.handlePost );
 
+  // Static assets.
+  server.get( '/assets/*', ( request, response ) => {
+    const path = 'src/' + request._parsedUrl.path,
+          type = mime.getType( path );
+
+    response.setHeader( 'Content-Type', type );
+    response.send( fs.readFileSync( path ) );
+  });
+
   // Additional routes.
   server.get( '/leaderboard', app.handleGet );
 
@@ -49,7 +60,7 @@ const bootstrap = ( options = {}) => {
     console.log( 'Listening on port ' + PORT + '.' );
   });
 
-};
+}; // Bootstrap.
 
 // If module was called directly, bootstrap now.
 if ( require.main === module ) {

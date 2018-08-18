@@ -1,5 +1,7 @@
 /**
  * Contains logic for returning the leaderboard.
+ *
+ * @author Tim Malone <tdmalone@gmail.com>
  */
 
 'use strict';
@@ -109,6 +111,31 @@ const getLeaderboardUrl = ( hostname ) => {
 };
 
 /**
+ * Returns HTML for the full leaderboard.
+ *
+ * TODO: This should be split out into separate frontend generating functions for the boilerplate
+ *       structure and stuff.
+ *
+ * @returns {string} HTML for the browser.
+ */
+const getFull = async() => {
+
+  if ( ! leaderboardHtml ) {
+    leaderboardHtml = fs.readFileSync( 'src/html/leaderboard.html', 'utf8' );
+  }
+
+  const scores = await points.retrieveTopScores(),
+        users = rankItems( scores, 'users', 'html' ),
+        things = rankItems( scores, 'things', 'html' );
+
+  return helpers.render( leaderboardHtml, {
+    users,
+    things,
+    title: 'Leaderboard'
+  });
+};
+
+/**
  * Retrieves and sends the current leaderboard to the requesting Slack channel.
  *
  * @param {object} event   A hash of a validated Slack 'app_mention' event. See the docs at
@@ -157,6 +184,7 @@ const handler = async( event, request ) => {
 }; // Handler.
 
 module.exports = {
+  getFull,
   getLeaderboardUrl,
   rankItems,
   handler
