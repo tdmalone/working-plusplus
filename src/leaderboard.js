@@ -8,6 +8,91 @@ const send = require( './send' ),
       points = require( './points' ),
       helpers = require( './helpers' );
 
+const fs = require( 'fs' );
+
+let leaderboardHtml;
+
+/**
+ * Ranks items by their scores, returning them in a human readable list complete with emoji for the
+ * winner. Items which draw will be given the same rank, and the next rank will then be skipped.
+ *
+ * For example, 2 users on 54 would draw 1st. The next user on 52 would be 3rd, and the final on 34
+ * would be 4th.
+ *
+ * @param {array}  topScores An array of score objects, usually pre-retrieved by
+ *                           points.retrieveTopScores(). These *must* be in 'top score' order (i.e.
+ *                           descending order), otherwise ranking will not function correctly. Score
+ *                           objects contain 'item' and 'score' properties.
+ * @param {string} itemType  The type of item to rank. Accepts 'users' or 'things'. Only one type
+ *                           can be ranked at a time.
+ * @param {string} format    The format to return the results in. 'slack' returns or 'object'.
+ *
+ * @returns {array|object} Depending on the value of 'format', an array, in rank order, of either
+ *                         human-readable Slack strings or objects containing 'rank', 'item' and
+ *                         'score' values.
+ */
+const rankItems = ( topScores, itemType = 'users', format = 'slack' ) => {
+
+  let lastScore, lastRank, output;
+  const items = [];
+
+  for ( const score of topScores ) {
+
+    const isUser = helpers.isUser( score.item ) ? true : false;
+
+    // Skip if this item is not the item type we're ranking.
+    if ( isUser && 'users' !== itemType || ! isUser && 'users' === itemType ) {
+      continue;
+    }
+
+    // TODO: If 'slack' !== format, we're gonna need to get the user's name from the Slack API.
+
+    const item = 'slack' === format ? helpers.maybeLinkItem( score.item ) : score.item,
+          itemTitleCase = item.substring( 0, 1 ).toUpperCase() + item.substring( 1 ),
+          plural = helpers.isPlural( score.score ) ? 's' : '';
+
+    // For the Slack format, *users* are already linked with an @. In all other cases we need to
+    // insert an @ for items too.
+    const prefix = isUser && 'slack' === format ? '' : '@';
+
+    // Determine the rank by keeping it the same as the last user if the score is the same, or
+    // otherwise setting it to the same as the item count (and adding 1 to deal with 0-base count).
+    const rank = score.score === lastScore ? lastRank : items.length + 1;
+
+    switch ( format ) {
+      case 'slack':
+
+        output = (
+          rank + '. ' + prefix + itemTitleCase + ' [' + score.score + ' point' + plural + ']'
+        );
+
+        // If this is the first item, it's the winner!
+        if ( ! items.length ) {
+          output += ' ' + ( isUser ? ':muscle:' : ':tada:' );
+        }
+
+        break;
+
+      case 'html':
+        output = {
+          rank,
+          item: prefix + itemTitleCase,
+          score: score.score + ' point' + plural
+        };
+        break;
+    }
+
+    items.push( output );
+
+    lastRank = rank;
+    lastScore = score.score;
+
+  } // For scores.
+
+  return items;
+
+}; // RankItems.
+
 /**
  * Gets the URL for the full leaderboard, including a token to ensure that it is only viewed by
  * someone who has access to this Slack team.
@@ -36,32 +121,9 @@ const handler = async( event, request ) => {
 
   const limit = 5;
 
-  const topScores = await points.retrieveTopScores(),
-        users = [],
-        things = [];
-
-  let lastUserScore, lastUserRank,
-      lastThingScore, lastThingRank;
-
-  // Process the top scores, including applying their ranks.
-  for ( const topScore of topScores ) {
-    const item = helpers.maybeLinkItem( topScore.item ),
-          itemTitleCase = item.substring( 0, 1 ).toUpperCase() + item.substring( 1 ),
-          plural = helpers.isPlural( topScore.score ) ? 's' : '',
-          message = itemTitleCase + ' [' + topScore.score + ' point' + plural + ']';
-
-    if ( helpers.isUser( topScore.item ) ) {
-      const rank = topScore.score === lastUserScore ? lastUserRank : users.length + 1;
-      users.push( rank + '. ' + message + ( users.length ? '' : ' :muscle:' ) );
-      lastUserRank = rank;
-      lastUserScore = topScore.score;
-    } else {
-      const rank = topScore.score === lastThingScore ? lastThingRank : things.length + 1;
-      things.push( rank + '. @' + message + ( things.length ? '' : ' :tada:' ) );
-      lastThingRank = rank;
-      lastThingScore = topScore.score;
-    }
-  }
+  const scores = await points.retrieveTopScores(),
+        users = rankItems( scores, 'users' ),
+        things = rankItems( scores, 'things' );
 
   const messageText = (
     'Here you go. ' +
@@ -72,7 +134,7 @@ const handler = async( event, request ) => {
     attachments: [
       {
         text: messageText,
-        color: 'good',
+        color: 'good', // Slack's 'green' colour.
         fields: [
           {
             title: 'Users',
@@ -91,9 +153,11 @@ const handler = async( event, request ) => {
 
   console.log( 'Sending the leaderboard.' );
   return send.sendMessage( message, event.channel );
-};
+
+}; // Handler.
 
 module.exports = {
   getLeaderboardUrl,
+  rankItems,
   handler
 };
