@@ -6,7 +6,7 @@
 
 'use strict';
 
-const send = require( './send' ),
+const slack = require( './slack' ),
       points = require( './points' ),
       helpers = require( './helpers' );
 
@@ -51,7 +51,7 @@ const rankItems = async( topScores, itemType = 'users', format = 'slack' ) => {
     // For users, we need to link the item (for Slack) or get their real name (for other formats).
     if ( isUser ) {
       item = (
-        'slack' === format ? helpers.maybeLinkItem( item ) : await send.getUserName( item )
+        'slack' === format ? helpers.maybeLinkItem( item ) : await slack.getUserName( item )
       );
     }
 

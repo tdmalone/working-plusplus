@@ -10,7 +10,7 @@
 
 'use strict';
 
-const send = require( '../src/send' );
+const slack = require( '../src/slack' );
 const pathToMock = './mocks/slack';
 
 // Catch all console output during tests.
@@ -27,10 +27,26 @@ beforeEach( () => {
 describe( 'setSlackClient', () => {
 
   it( 'accepts a single parameter (that is later used as the Slack API client)', () => {
-    expect( send.setSlackClient ).toHaveLength( 1 );
+    expect( slack.setSlackClient ).toHaveLength( 1 );
   });
 
 });
+
+describe( 'getUserList', () => {
+
+  it( '', () => {
+
+  });
+
+}); // GetUserList.
+
+describe( 'getUserName', () => {
+
+  it( '', () => {
+
+  });
+
+}); // GetUserName.
 
 describe( 'sendMessage', () => {
 
@@ -42,12 +58,12 @@ describe( 'sendMessage', () => {
   it( 'sends message text to a channel when provided as two arguments', () => {
     expect.assertions( 1 );
     const slackClientMock = require( pathToMock );
-    send.setSlackClient( slackClientMock );
+    slack.setSlackClient( slackClientMock );
 
     // Re-mock the client so we can listen to it.
     slackClientMock.chat.postMessage = jest.fn();
 
-    return send.sendMessage( payload.text, payload.channel ).catch( () => {
+    return slack.sendMessage( payload.text, payload.channel ).catch( () => {
       expect( slackClientMock.chat.postMessage ).toHaveBeenCalledWith( payload );
     });
   });
@@ -55,7 +71,7 @@ describe( 'sendMessage', () => {
   it( 'sends a message to a channel with a full payload as one argument', () => {
     expect.assertions( 1 );
     const slackClientMock = require( pathToMock );
-    send.setSlackClient( slackClientMock );
+    slack.setSlackClient( slackClientMock );
 
     // Re-mock the client so we can listen to it.
     slackClientMock.chat.postMessage = jest.fn();
@@ -70,7 +86,7 @@ describe( 'sendMessage', () => {
       ]
     };
 
-    return send.sendMessage( payload ).catch( () => {
+    return slack.sendMessage( payload ).catch( () => {
       expect( slackClientMock.chat.postMessage ).toHaveBeenCalledWith( payload );
     });
   });
@@ -78,7 +94,7 @@ describe( 'sendMessage', () => {
   it( 'sends a message to a channel when payload and channel are passed separately', () => {
     expect.assertions( 1 );
     const slackClientMock = require( pathToMock );
-    send.setSlackClient( slackClientMock );
+    slack.setSlackClient( slackClientMock );
 
     // Re-mock the client so we can listen to it.
     slackClientMock.chat.postMessage = jest.fn();
@@ -93,7 +109,7 @@ describe( 'sendMessage', () => {
       ]
     };
 
-    return send.sendMessage( payload, channel ).catch( () => {
+    return slack.sendMessage( payload, channel ).catch( () => {
       payload.channel = channel;
       expect( slackClientMock.chat.postMessage ).toHaveBeenCalledWith( payload );
     });
@@ -102,10 +118,10 @@ describe( 'sendMessage', () => {
   it( 'returns a Promise and resolves it if the message succeeds', () => {
     expect.assertions( 1 );
     const slackClientMock = require( pathToMock );
-    send.setSlackClient( slackClientMock );
+    slack.setSlackClient( slackClientMock );
 
     slackClientMock.options.shouldPostMessageSucceed = true;
-    return send.sendMessage( payload.text, payload.channel ).then( ( data ) => {
+    return slack.sendMessage( payload.text, payload.channel ).then( ( data ) => {
       expect( data ).toBeNil();
     });
   });
@@ -113,12 +129,12 @@ describe( 'sendMessage', () => {
   it( 'returns a Promise and rejects it if the message fails', () => {
     expect.assertions( 1 );
     const slackClientMock = require( pathToMock );
-    send.setSlackClient( slackClientMock );
+    slack.setSlackClient( slackClientMock );
 
     slackClientMock.options.shouldPostMessageSucceed = false;
-    return send.sendMessage( payload.text, payload.channel ).catch( ( error ) => {
+    return slack.sendMessage( payload.text, payload.channel ).catch( ( error ) => {
       expect( error ).toBeNil();
     });
   });
 
-});
+}); // SendMessage.

@@ -36,7 +36,7 @@ const getUserList = async() => {
     return users;
   }
 
-  console.log( 'Retrieving user list from Slack...' );
+  console.log( 'Retrieving user list from Slack.' );
 
   users = {};
   const userList = await slack.users.list();

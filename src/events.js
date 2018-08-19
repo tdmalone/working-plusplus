@@ -7,7 +7,7 @@
 
 'use strict';
 
-const send = require( './send' ),
+const slack = require( './slack' ),
       points = require( './points' ),
       helpers = require( './helpers' ),
       messages = require( './messages' ),
@@ -28,7 +28,7 @@ const camelCase = require( 'lodash.camelcase' );
 const handleSelfPlus = ( user, channel ) => {
   console.log( user + ' tried to alter their own score.' );
   const message = messages.getRandomMessage( operations.operations.SELF, user );
-  return send.sendMessage( message, channel );
+  return slack.sendMessage( message, channel );
 };
 
 /**
@@ -47,7 +47,7 @@ const handlePlusMinus = async( item, operation, channel ) => {
         operationName = operations.getOperationName( operation ),
         message = messages.getRandomMessage( operationName, item, score );
 
-  return send.sendMessage( message, channel );
+  return slack.sendMessage( message, channel );
 };
 
 const handlers = {

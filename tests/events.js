@@ -13,14 +13,14 @@
 const events = require( '../src/events' );
 const handlers = events.handlers;
 
-const send = require( '../src/send' ),
+const slack = require( '../src/slack' ),
       points = require( '../src/points' ),
       messages = require( '../src/messages' );
 
 const slackClientMock = require( './mocks/slack' );
-send.setSlackClient( slackClientMock );
+slack.setSlackClient( slackClientMock );
 
-send.sendMessage = jest.fn();
+slack.sendMessage = jest.fn();
 points.updateScore = jest.fn();
 messages.getRandomMessage = jest.fn();
 
@@ -34,7 +34,7 @@ console.warn = jest.fn();
 beforeEach( () => {
   jest.resetModules();
   messages.getRandomMessage.mockClear();
-  send.sendMessage.mockClear();
+  slack.sendMessage.mockClear();
 });
 
 describe( 'handleSelfPlus', () => {
@@ -56,15 +56,15 @@ describe( 'handleSelfPlus', () => {
   });
 
   it( 'sends a message back to the user and channel that called it', () => {
-    const send = require( '../src/send' ),
+    const slack = require( '../src/slack' ),
           events = require( '../src/events' );
 
-    send.sendMessage = jest.fn();
-    send.setSlackClient( slackClientMock );
+    slack.sendMessage = jest.fn();
+    slack.setSlackClient( slackClientMock );
 
     events.handleSelfPlus( user, channel );
 
-    expect( send.sendMessage )
+    expect( slack.sendMessage )
       .toHaveBeenCalledTimes( 1 )
       .toHaveBeenCalledWith( expect.stringContaining( user ), channel );
   });
@@ -83,11 +83,11 @@ describe( 'handlePlusMinus', () => {
   };
 
   it( 'calls the score updater to update an item\'s score', () => {
-    const send = require( '../src/send' ),
+    const slack = require( '../src/slack' ),
           points = require( '../src/points' ),
           events = require( '../src/events' );
 
-    send.setSlackClient( slackClientMock );
+    slack.setSlackClient( slackClientMock );
     points.updateScore = jest.fn();
 
     events.handlePlusMinus( item, '+', channel );
@@ -102,12 +102,12 @@ describe( 'handlePlusMinus', () => {
     ( operationName, operation ) => {
       expect.hasAssertions();
 
-      const send = require( '../src/send' ),
+      const slack = require( '../src/slack' ),
             points = require( '../src/points' ),
             events = require( '../src/events' ),
             messages = require( '../src/messages' );
 
-      send.setSlackClient( slackClientMock );
+      slack.setSlackClient( slackClientMock );
       points.updateScore = jest.fn( updateScoreMock );
       messages.getRandomMessage = jest.fn();
 
@@ -122,16 +122,16 @@ describe( 'handlePlusMinus', () => {
   it( 'sends a message back to the channel that called it', () => {
     expect.hasAssertions();
 
-    const send = require( '../src/send' ),
+    const slack = require( '../src/slack' ),
           points = require( '../src/points' ),
           events = require( '../src/events' );
 
-    send.setSlackClient( slackClientMock );
+    slack.setSlackClient( slackClientMock );
     points.updateScore = jest.fn();
-    send.sendMessage = jest.fn();
+    slack.sendMessage = jest.fn();
 
     return events.handlePlusMinus( item, '+', channel ).then( () => {
-      expect( send.sendMessage )
+      expect( slack.sendMessage )
         .toHaveBeenCalledTimes( 1 )
         .toHaveBeenCalledWith( expect.stringContaining( item ), channel );
     });
