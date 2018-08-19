@@ -1,8 +1,19 @@
 # Changelog
-All notable changes to this project will be documented in this file.
+All notable changes to this project will be documented in this file.  
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+### Added
+- Leaderboard functionality when `@WorkingPlusPlus leaderboard` is sent (requires additional app permissions - see step 6 of the installation instructions), including a link to a full web-based leaderboard with a time-based token to protect your team's data
+- Contributors: a raft of new helper functions including `isUser`, `isPlural` and many more
+- Contributors: additional tests to cover all previously added functionality (leaderboard functionality is not covered yet)
+
+### Changed
+- Contributors: another set of significant structural re-organisations to set the app up for handling more 'direct commands' in future
+
+### Fixed
+- Prevented +- or -+ from being interpreted as valid commands ([`005b69c`](https://github.com/tdmalone/working-plusplus/commit/005b69c6b297abf5c1014fd2dedc7db9e54b2900))
 
 ## [0.0.3] - 2018-08-11
 
@@ -26,7 +37,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) a
 - Contributors: quite a bit of reorganising to make it easier both to grow and to test the app
 
 ### Fixed
-- Scores of -1 are now referred to as -1 point, rather than -1 points
+- Scores of -1 are now referred to as -1 point, rather than -1 points ([`d7d92be`](https://github.com/tdmalone/working-plusplus/commit/d7d92be0cd31aed26afcac1d189d17381330f418))
 
 ## [0.0.1] - 2018-08-06
 
