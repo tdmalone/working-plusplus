@@ -129,15 +129,20 @@ const getFull = async() => {
         users = await rankItems( scores, 'users', 'object' ),
         things = await rankItems( scores, 'things', 'object' );
 
-  return helpers.render( leaderboardHtml, {
+  const data = {
     users,
     things,
     title: 'Leaderboard'
-  });
+  };
+
+  return helpers.render( leaderboardHtml, data );
+
 };
 
 /**
  * Retrieves and sends the current leaderboard to the requesting Slack channel.
+ *
+ * TODO: Rename this method to something like getPartial() or getForSlack().
  *
  * @param {object} event   A hash of a validated Slack 'app_mention' event. See the docs at
  *                         https://api.slack.com/events-api#events_dispatched_as_json and

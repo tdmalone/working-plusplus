@@ -46,7 +46,7 @@ const extractCommand = ( message, commands ) => {
 
   return firstCommand ? firstCommand : false;
 
-};
+}; // ExtractCommand.
 
 /**
  * Gets the user or 'thing' that is being spoken about, and the 'operation' being done on it.
