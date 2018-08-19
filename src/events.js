@@ -123,8 +123,9 @@ const getVersion = ( event ) => {
   // Current git commit of this app.
   /* eslint-disable no-process-env */
   let commit;
+  const SHORT_COMMIT_HASH_LENGTH = 7;
   if ( process.env.HEROKU_SLUG_COMMIT ) {
-    commit = process.env.HEROKU_SLUG_COMMIT.slice( 0, 7 );
+    commit = process.env.HEROKU_SLUG_COMMIT.slice( 0, SHORT_COMMIT_HASH_LENGTH );
   } else {
     try {
       commit = execSync( 'git rev-parse --short HEAD' ).toString().trim();
