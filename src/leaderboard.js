@@ -141,9 +141,9 @@ const getForSlack = async( event, request ) => {
   );
 
   const message = {
+    text: messageText,
     attachments: [
       {
-        text: messageText,
         color: 'good', // Slack's 'green' colour.
         fields: [
           {
@@ -158,8 +158,8 @@ const getForSlack = async( event, request ) => {
           }
         ]
       }
-    ]
-  };
+    ] // Attachments.
+  }; // Message.
 
   console.log( 'Sending the leaderboard.' );
   return slack.sendMessage( message, event.channel );
