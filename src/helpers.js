@@ -121,7 +121,7 @@ const isTimeBasedTokenStillValid = ( token, ts ) => {
   const now = getTimestamp();
 
   // Don't support tokens too far from the past.
-  if ( now > ts + TOKEN_TTL ) {
+  if ( now > parseInt( ts ) + TOKEN_TTL ) {
     return false;
   }
 
