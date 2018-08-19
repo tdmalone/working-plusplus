@@ -20,14 +20,16 @@ const operations = [
   'selfPlus'
 ];
 
-for ( const operation of operations ) {
-  it( 'returns a message for the ' + operation + ' operation', () => {
+describe( 'getRandomMessage', () => {
+
+  it.each( operations )( 'returns a message for the %s operation', ( operation ) => {
     expect( typeof messages.getRandomMessage( operation, 'RandomThing' ) ).toBe( 'string' );
   });
-}
 
-it( 'throws an error for an invalid operation', () => {
-  expect( () => {
-    messages.getRandomMessage( 'INVALID_OPERATION', 'RandomThing' );
-  }).toThrow();
-});
+  it( 'throws an error for an invalid operation', () => {
+    expect( () => {
+      messages.getRandomMessage( 'INVALID_OPERATION', 'RandomThing' );
+    }).toThrow();
+  });
+
+}); // GetRandomMessage.

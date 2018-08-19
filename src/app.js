@@ -41,8 +41,6 @@ const logRequest = ( request ) => {
  * WARNING: When checking the return value of this function, ensure you use strict equality so that
  *          an error response is not misinterpreted as truthy.
  *
- * TODO: Move to calculating the signature instead (newer, more secure method).
- *
  * @param {string} suppliedToken The token supplied in the request.
  * @param {string} serverToken   The token to validate against.
  * @return {object|bool} If invalid, an error object containing an 'error' with HTTP status code

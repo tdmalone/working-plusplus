@@ -261,7 +261,7 @@ describe( 'isTimeBasedTokenStillValid', () => {
     expect( helpers.isTimeBasedTokenStillValid( token, twoDaysAgo ) ).toBeFalse();
   });
 
-});
+}); // IsTimeBasedTokenStillValid.
 
 describe( 'isUser', () => {
 

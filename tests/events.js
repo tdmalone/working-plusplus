@@ -182,6 +182,7 @@ describe( 'handlers.appMention', () => {
   ];
 
   it.each( appCommandTable )( 'calls the app command handler for %s', ( command, handlerFile ) => {
+
     const event = {
       type: eventType,
       text: '<@U00000000> ' + command
@@ -193,6 +194,7 @@ describe( 'handlers.appMention', () => {
     commandHandler.handler = jest.fn();
     events.handlers.appMention( event );
     expect( commandHandler.handler ).toHaveBeenCalledTimes( 1 );
+
   });
 
   it( 'returns false if a supported command cannot be found', () => {

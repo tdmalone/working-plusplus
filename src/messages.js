@@ -104,7 +104,7 @@ const getRandomMessage = ( operation, item, score = 0 ) => {
       break;
 
     default:
-      throw 'Invalid operation: ' + operation;
+      throw Error ( 'Invalid operation: ' + operation );
   }
 
   let totalProbability = 0;
@@ -125,7 +125,7 @@ const getRandomMessage = ( operation, item, score = 0 ) => {
   }
 
   if ( null === chosenSet ) {
-    throw (
+    throw Error(
       'Could not find set for ' + operation + ' (ran out of sets with ' + setRandom + ' remaining)'
     );
   }

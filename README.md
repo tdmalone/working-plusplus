@@ -112,7 +112,6 @@ For full details on contributing, including getting a local environment set up, 
 Although it works, it's very basic. Potential enhancements include:
 
 * A way to retrieve the current version/git hash from Slack, for sanity-checking of deployments
-* Leaderboard functionality (either, or both, via a full leaderboard on the web - with some sort of token or oauth - and a shorter leaderboard via a command in Slack)
 * The ability to customise the messages the bot sends back at runtime (eg. via environment variables)
 * Move to the newer, more secure method of calculating signatures for incoming Slack hooks
 * A way to look up someone's karma without necessarily `++`'ing or `--`'ing them (eg. `@username==`)
@@ -124,6 +123,8 @@ Although it works, it's very basic. Potential enhancements include:
 * Record and make accessible how many karma points someone has _given_
 * Set up a Dockerfile to make local development easier (i.e. to not require Node, Yarn or Postgres)
 * Improve error handling
+* The ability to customise some of the leaderboard web functionality, such as colours and perhaps imagery as well
+* Additional linting tools for CSS and HTML
 
 ## License
 

@@ -53,8 +53,6 @@ You can run just a subset of tests:
 - Integration tests with `yarn integration-tests`
 - End-to-end tests with `yarn e2e-tests`
 
-It is normal to see _some_ errors while running the integration and end-to-end tests, but keep an eye on the exit code of the process to determine if it is successful (run `echo $?` immediately after running `yarn test` - you're looking for an exit code of `0` for a pass).
-
 You can modify the default testing behaviour by adjusting the relevant `scripts` in [`package.json`](package.json) or in some cases by passing additional [Jest configuration parameters](https://jestjs.io/docs/en/configuration.html) at the end of the test commands above.
 
 If you come across annoying *stylistic* linting rules, feel free to [change them](https://eslint.org/docs/rules/) in [`.eslintrc.js`](.eslintrc.js) as part of your pull request, providing they don't cause an adverse effect on existing code.
