@@ -75,7 +75,7 @@ const rankItems = ( topScores, itemType = 'users', format = 'slack' ) => {
 
         break;
 
-      case 'html':
+      case 'object':
         output = {
           rank,
           item: prefix + itemTitleCase,
@@ -125,8 +125,8 @@ const getFull = async() => {
   }
 
   const scores = await points.retrieveTopScores(),
-        users = rankItems( scores, 'users', 'html' ),
-        things = rankItems( scores, 'things', 'html' );
+        users = rankItems( scores, 'users', 'object' ),
+        things = rankItems( scores, 'things', 'object' );
 
   return helpers.render( leaderboardHtml, {
     users,

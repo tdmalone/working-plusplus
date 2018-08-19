@@ -29,6 +29,7 @@
     "@slack/client": "^4.3.1",
     "body-parser": "^1.18.3",
     "express": "^4.16.3",
+    "handlebars": "^4.0.11",
     "lodash.camelcase": "^4.3.0",
     "mime": "^2.3.1",
     "pg": "^7.4.3"
