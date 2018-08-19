@@ -215,13 +215,17 @@ describe( 'handleEvent', () => {
     [ 'app_mention', '<@U12345678> can haz leaderboard' ]
   ];
 
+  const request = {
+    headers: { host: 'test.local' }
+  };
+
   it.each( validEvents )( 'returns a Promise for a \'%s\' event with text', ( type, text ) => {
     const event = {
       type,
       text
     };
 
-    expect( events.handleEvent( event ) instanceof Promise ).toBeTrue();
+    expect( events.handleEvent( event, request ) instanceof Promise ).toBeTrue();
   });
 
   it.each( validEvents )( 'reports a \'%s\' event without text as invalid', ( type ) => {
