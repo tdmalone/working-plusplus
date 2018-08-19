@@ -168,7 +168,12 @@ const handlers = {
       return appCommandHandlers[appCommand]( event, request );
     }
 
-    return false;
+    const defaultMessage = (
+      'Sorry, I\'m not quite sure what you\'re asking me. I\'m not very smart - there\'s only a ' +
+      'few things I\'ve been trained to do. Send me `help` for more details.'
+    );
+
+    return slack.sendMessage( defaultMessage, event.channel );
 
   } // AppMention event.
 }; // Handlers.

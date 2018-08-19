@@ -197,15 +197,6 @@ describe( 'handlers.appMention', () => {
 
   });
 
-  it( 'returns false if a supported command cannot be found', () => {
-    const event = {
-      type: eventType,
-      text: '<@U00000000> some_command_that_should_not_exist'
-    };
-
-    expect( handlers.appMention( event ) ).toBeFalse();
-  });
-
 }); // Handlers.appMention.
 
 describe( 'handleEvent', () => {
