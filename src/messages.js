@@ -9,7 +9,9 @@
 
 'use strict';
 
-const operations = require( './operations' );
+const helpers = require( './helpers' ),
+      operations = require( './operations' ).operations;
+
 const messages = {};
 
 messages[ operations.PLUS ] = [
@@ -81,20 +83,15 @@ messages[ operations.SELF ] = [
  *
  * @param {string}  operation The name of the operation to retrieve potential messages for.
  *                            See operations.js.
- * @param {string}  item      The subject of the message, either "<@user>" or "object".
- * @param {integer} score     The item's current score.
+ * @param {string}  item      The subject of the message, eg. 'U12345678' or 'SomeRandomThing'.
+ * @param {integer} score     The item's current score. Defaults to 0 if not supplied.
  *
  * @returns {string} A random message from the chosen pool.
  */
-const getRandomMessage = ( operation, item, score ) => {
+const getRandomMessage = ( operation, item, score = 0 ) => {
 
   const messageSets = messages[ operation ];
-
-  let setRandom,
-      set,
-      totalProbability = 0,
-      chosenSet = null,
-      format = '';
+  let format = '';
 
   switch ( operation ) {
     case operations.MINUS:
@@ -107,37 +104,38 @@ const getRandomMessage = ( operation, item, score ) => {
       break;
 
     default:
-      throw 'Invalid operation: ' + operation;
+      throw Error ( 'Invalid operation: ' + operation );
   }
 
-  for ( set of messageSets ) {
+  let totalProbability = 0;
+  for ( const set of messageSets ) {
     totalProbability += set.probability;
   }
 
-  setRandom = Math.floor( Math.random() * totalProbability );
+  let chosenSet = null,
+      setRandom = Math.floor( Math.random() * totalProbability );
 
-  for ( set of messageSets ) {
+  for ( const set of messageSets ) {
     setRandom -= set.probability;
 
     if ( 0 > setRandom ) {
       chosenSet = set.set;
-
       break;
     }
   }
 
   if ( null === chosenSet ) {
-    throw (
-      'Could not find set for ' + operation + ' ran out of sets with ' + setRandom + ' remaining'
+    throw Error(
+      'Could not find set for ' + operation + ' (ran out of sets with ' + setRandom + ' remaining)'
     );
   }
 
-  const plural = 1 === Math.abs( score ) ? '' : 's';
-  const max = chosenSet.length - 1;
-  const random = Math.floor( Math.random() * max );
-  const message = chosenSet[ random ];
+  const plural = helpers.isPlural( score ) ? 's' : '',
+        max = chosenSet.length - 1,
+        random = Math.floor( Math.random() * max ),
+        message = chosenSet[ random ];
 
-  const formattedMessage = format.replace( '<item>', item )
+  const formattedMessage = format.replace( '<item>', helpers.maybeLinkItem( item ) )
     .replace( '<score>', score )
     .replace( '<plural>', plural )
     .replace( '<message>', message );
@@ -147,6 +145,6 @@ const getRandomMessage = ( operation, item, score ) => {
 }; // GetRandomMessage.
 
 module.exports = {
-  getRandomMessage,
-  messages
+  messages,
+  getRandomMessage
 };

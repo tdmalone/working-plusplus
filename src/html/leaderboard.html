@@ -1,0 +1,26 @@
+
+<div class="leaderboard">
+  <h2>Users</h2>
+  <ol>
+    {{#each users}}
+      <li>
+        <span class="rank">{{this.rank}}</span>
+        <span class="item">{{this.item}}</span>
+        <span class="score">{{this.score}}</span>
+      </li>
+    {{/each}}
+  </ol>
+</div>
+
+<div class="leaderboard">
+  <h2>Things</h2>
+  <ol>
+    {{#each things}}
+      <li>
+        <span class="rank">{{this.rank}}</span>
+        <span class="item">{{this.item}}</span>
+        <span class="score">{{this.score}}</span>
+      </li>
+    {{/each}}
+  </ol>
+</div>

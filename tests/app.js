@@ -2,6 +2,7 @@
  * Unit tests on the main app.js file.
  *
  * @see https://jestjs.io/docs/en/expect
+ * @see https://github.com/jest-community/jest-extended#api
  * @author Tim Malone <tdmalone@gmail.com>
  */
 
@@ -9,201 +10,13 @@
 
 'use strict';
 
-const app = require( '../src/app' ),
-      slackClientMock = require( './mocks/slack' );
-
-app.setSlackClient( slackClientMock );
+const app = require( '../src/app' );
 
 // Catch all console output during tests.
 console.error = jest.fn();
 console.info = jest.fn();
 console.log = jest.fn();
 console.warn = jest.fn();
-
-describe( 'isValidEvent', () => {
-
-  it( 'reports an event with message and text as valid', () => {
-    const event = {
-      type: 'message',
-      text: 'Hello'
-    };
-
-    expect( app.isValidEvent( event ) ).toBe( true );
-  });
-
-  it( 'reports an event with missing type as invalid', () => {
-    const event = { text: 'Hello' };
-    expect( app.isValidEvent( event ) ).toBe( false );
-  });
-
-  it( 'reports an event without type \'message\' as invalid', () => {
-    const event = {
-      type: 'random',
-      text: 'Hello'
-    };
-
-    expect( app.isValidEvent( event ) ).toBe( false );
-  });
-
-  it( 'reports an event with a subtype as invalid', () => {
-    const event = {
-      type: 'message',
-      subtype: 'random',
-      text: 'Hello'
-    };
-
-    expect( app.isValidEvent( event ) ).toBe( false );
-  });
-
-  it( 'reports an event without text as invalid', () => {
-    const event = { type: 'message' };
-    expect( app.isValidEvent( event ) ).toBe( false );
-  });
-
-  it( 'reports an event with only a space for text as invalid', () => {
-    const event = {
-      type: 'message',
-      text: ' '
-    };
-
-    expect( app.isValidEvent( event ) ).toBe( false );
-  });
-
-}); // IsValidEvent.
-
-describe( 'extractEventData', () => {
-
-  it( 'drops message without an @ symbol', () => {
-    expect( app.extractEventData( 'Hello++' ) ).toBe( false );
-  });
-
-  it( 'drops messages without a valid operation', () => {
-    expect( app.extractEventData( '@Hello' ) ).toBe( false );
-  });
-
-  it( 'drops messages without a valid user/item', () => {
-    expect( app.extractEventData( '@++' ) ).toBe( false );
-  });
-
-  it( 'extracts a \'thing\' and operation from the start of a message', () => {
-    expect( app.extractEventData( '@SomethingRandom++ that was awesome' ) ).toEqual({
-      item: 'SomethingRandom',
-      operation: '+'
-    });
-  });
-
-  it( 'extracts a user and operation from the start of a message', () => {
-    expect( app.extractEventData( '<@U87654321>++ that was awesome' ) ).toEqual({
-      item: 'U87654321',
-      operation: '+'
-    });
-  });
-
-  it( 'extracts data in the middle of a message', () => {
-    expect( app.extractEventData( 'Hey @SomethingRandom++ that was awesome' ) ).toEqual({
-      item: 'SomethingRandom',
-      operation: '+'
-    });
-  });
-
-  it( 'extracts data at the end of a message', () => {
-    expect( app.extractEventData( 'Awesome work @SomethingRandom++' ) ).toEqual({
-      item: 'SomethingRandom',
-      operation: '+'
-    });
-  });
-
-  const itemsToMatch = [
-    {
-      supplied: '<@U1234567890>',
-      expected: 'U1234567890'
-    },
-    {
-      supplied: '@SomethingRandom',
-      expected: 'SomethingRandom'
-    },
-    {
-      supplied: '@SomethingRandom123',
-      expected: 'SomethingRandom123'
-    }
-  ];
-
-  const operationsToMatch = [
-    {
-      supplied: '++',
-      expected: '+'
-    },
-    {
-      supplied: '--',
-      expected: '-'
-    },
-    {
-      supplied: '—', // Emdash, which iOS replaces -- with.
-      expected: '-'
-    }
-  ];
-
-  const operationsNotToMatch = [
-    '+',
-    '-'
-  ];
-
-  for ( const item of itemsToMatch ) {
-
-    for ( const operation of operationsToMatch ) {
-      for ( let iterator = 0; 1 >= iterator; iterator++ ) {
-
-        const space = 1 === iterator ? ' ' : '',
-              messageText = item.supplied + space + operation.supplied,
-              testName = (
-                'matches ' + messageText + ' as ' + item.expected + ' and ' + operation.expected
-              );
-
-        it( testName, () => {
-          const result = app.extractEventData( messageText );
-          expect( result ).toEqual({
-            item: item.expected,
-            operation: operation.expected
-          });
-        });
-
-      } // For iterator.
-    } // For operationsToMatch.
-
-    for ( const operation of operationsNotToMatch ) {
-      const messageText = item.supplied + operation;
-      it( 'does NOT match ' + messageText, () => {
-        expect( app.extractEventData( messageText ) ).toBe( false );
-      });
-    }
-
-  } // For itemsToMatch.
-}); // ExtractEventData.
-
-/**
- * These functions are both suitably covered in the end-to-end tests, and are probably difficult to
- * test as individual units.
- */
-describe( 'respondToUser', () => {});
-describe( 'updateScore', () => {});
-
-describe( 'handleEvent', () => {
-
-  it( 'drops a user trying to ++ themselves', () => {
-    const event = {
-      type: 'message',
-      text: '<@U12345678>++',
-      user: 'U12345678'
-    };
-
-    expect.hasAssertions();
-
-    return app.handleEvent( event ).then( ( data ) => {
-      expect( data ).toBe( false );
-    });
-  });
-
-});
 
 describe( 'logRequest', () => {
 
@@ -259,7 +72,7 @@ describe( 'validateToken', () => {
   });
 
   it( 'returns true for a token that DOES match', () => {
-    expect( app.validateToken( 'something', 'something' ) ).toBe( true );
+    expect( app.validateToken( 'something', 'something' ) ).toBeTrue();
   });
 
 }); // ValidateToken.
@@ -321,7 +134,7 @@ describe( 'handlePost', () => {
     mockExpress.request.body.challenge = Math.random().toString();
     const result = app.handlePost( mockExpress.request, mockExpress.response );
     expect( receivedResponse ).toBe( mockExpress.request.body.challenge );
-    expect( result ).toBe( false );
+    expect( result ).toBeFalse();
 
   });
 

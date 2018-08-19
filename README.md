@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.com/tdmalone/working-plusplus.svg?branch=master)](https://travis-ci.com/tdmalone/working-plusplus)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/d0d9b6c1d1c4430e9fad61bb60b5dc4e)](https://www.codacy.com/project/tdmalone/working-plusplus/dashboard)
-[![Codacy Badge](https://api.codacy.com/project/badge/Coverage/d0d9b6c1d1c4430e9fad61bb60b5dc4e)](https://www.codacy.com/project/tdmalone/working-plusplus/files)
+[![Codacy Badge](https://api.codacy.com/project/badge/Coverage/d0d9b6c1d1c4430e9fad61bb60b5dc4e)](https://www.codacy.com/app/tdmalone/working-plusplus/files)
 
 Like [plusplus.chat](https://plusplus.chat/), except this one actually works - because you can host it yourself! 😉
 
@@ -68,15 +68,38 @@ Completely open source, so do with it what you like. Or if you don't want to mak
 
    Via *Event Subscriptions* in the left menu. After switching on, enter your new Heroku app address - eg. `https://my-plusplus.herokuapp.com` - as the request URL.
 
-   Scroll down and, under *Subscribe to Bot Events*, add the `message.channels` and `message.groups` events, then click *Save Changes*.
+   Scroll down and, under *Subscribe to Bot Events*, select the relevant events for the features you want the app to support:
+
+   * Select `message.channels` to support all general features in _public_ channels it is invited to
+   * Select `message.groups` to support all general features in _private_ channels it is invited to
+   * Select `app_mention` to support extended features such as leaderboards
+
+   Finally, click *Save Changes*. If you wish, you can come back to this screen later and add or change the events the app handles.
 
 1. **Invite your new bot to any channel in your Slack team.**
 
 1. **Think of someone who's been awesome lately and send `@Someone++`!**
 
-## Detailed Instructions
+### More Information
 
 Further instructions, such as hosting elsewhere, upgrading, etc. are coming soon.
+
+## Usage
+
+**Working PlusPlus++** will listen out for messages, in channels it has been invited to, for valid commands. Commands are accepted anywhere in a message - at the beginning, middle, or end - and are currently limited to one command per message (if multiple commands are sent, only the first one found will be handled).
+
+Currently supported general commands are:
+
+* `@Someone++`: Adds points to a user or a thing
+* `@Someone--`: Subtracts points from a user or a thing
+
+Currently supported extended commands are:
+
+* `@WorkingPlusPlus leaderboard`: Displays the leaderboard for your Slack workspace
+
+If you set a different name for your bot when adding the app to your Slack workspace, use that name instead.
+
+ℹ️ _Extended commands are supported if you've subscribed to the `app_mentions` event in your Slack app settings. See **Step 6** in the installation instructions above for further details._
 
 ## Contributing
 
@@ -89,18 +112,19 @@ For full details on contributing, including getting a local environment set up, 
 Although it works, it's very basic. Potential enhancements include:
 
 * A way to retrieve the current version/git hash from Slack, for sanity-checking of deployments
-* Leaderboard functionality (either, or both, via a full leaderboard on the web - with some sort of token or oauth - and a shorter leaderboard via a command in Slack)
 * The ability to customise the messages the bot sends back at runtime (eg. via environment variables)
 * Move to the newer, more secure method of calculating signatures for incoming Slack hooks
 * A way to look up someone's karma without necessarily `++`'ing or `--`'ing them (eg. `@username==`)
 * Support for posting back messages within threads, rather than automatically jumping back out to the channel
-* Support for detecting multiple actions within one message
+* Support for detecting multiple commands within one message
 * Natural language processing to figure out positive and negative sentiment automatically
 * Option to deduct karma instead of adding karma when someone tries to give themselves karma
 * Option to deduct karma automatically for swearing (with customisable word list?)
 * Record and make accessible how many karma points someone has _given_
 * Set up a Dockerfile to make local development easier (i.e. to not require Node, Yarn or Postgres)
 * Improve error handling
+* The ability to customise some of the leaderboard web functionality, such as colours and perhaps imagery as well
+* Additional linting tools for CSS and HTML
 
 ## License
 
