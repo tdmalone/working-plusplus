@@ -34,7 +34,15 @@ describe( 'setSlackClient', () => {
 
 describe( 'getUserList', () => {
 
-  it( '', () => {
+  it( 'contacts the Slack API to retrieve the users list on the first try', () => {
+
+  });
+
+  it( 'retrieves the user list from memory on subsequent tries', () => {
+
+  });
+
+  it( 'returns an object containing user objects indexed by their IDs', () => {
 
   });
 
@@ -42,7 +50,15 @@ describe( 'getUserList', () => {
 
 describe( 'getUserName', () => {
 
-  it( '', () => {
+  it( 'returns a user\'s real_name when it is available', () => {
+
+  });
+
+  it( 'returns a user\'s name if real_name is not available', () => {
+
+  });
+
+  it( 'returns a fallback string if a user cannot be found', () => {
 
   });
 

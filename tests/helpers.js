@@ -170,11 +170,27 @@ describe( 'extractPlusMinusEventData', () => {
 
 describe( 'extractUserID', () => {
 
-  it( '', () => {
+  it( 'returns a Slack user ID found at the beginning of a string', () => {
 
   });
 
-});
+  it( 'returns a Slack user ID found in the middle of a string', () => {
+
+  });
+
+  it( 'returns a Slack user ID found at the end of a string', () => {
+
+  });
+
+  it( 'returns a blank string if no Slack user ID could be found', () => {
+
+  });
+
+  it( 'returns the first Slack user ID when multiple are in a Slack', () => {
+
+  });
+
+}); // ExtractUserID.
 
 describe( 'getTimeBasedToken', () => {
 

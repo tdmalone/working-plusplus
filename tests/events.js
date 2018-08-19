@@ -141,7 +141,11 @@ describe( 'handlePlusMinus', () => {
 
 describe( 'sayThankyou', () => {
 
-  it( '', () => {
+  it( 'returns a Promise to send a Slack message', () => {
+
+  });
+
+  it( 'sends a Slack message back to the user & channel who wrote to it', () => {
 
   });
 
@@ -149,11 +153,47 @@ describe( 'sayThankyou', () => {
 
 describe( 'sendHelp', () => {
 
-  it( '', () => {
+  it( 'returns a Promise to send a Slack message', () => {
+
+  });
+
+  it( 'sends a Slack message back to the channel that wrote to it', () => {
 
   });
 
 }); // SendHelp.
+
+describe( 'getVersion', () => {
+
+  it( 'returns a Promise to send a Slack message', () => {
+
+  });
+
+  it( 'sends a Slack message back to the channel that wrote to it', () => {
+
+  });
+
+  it( 'includes the current version of the app in the message', () => {
+
+  });
+
+  it( 'includes the current version of Node.js in the message', () => {
+
+  });
+
+  it( 'includes the current commit of the app, when git is available', () => {
+
+  });
+
+  it( 'includes the current commit of the app, when Heroku env vars are available', () => {
+
+  });
+
+  it( 'doesn\'t crash if both git and Heroku env vars are not available', () => {
+
+  });
+
+}); // GetVersion.
 
 describe( 'handlers.message', () => {
 

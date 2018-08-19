@@ -159,7 +159,23 @@ describe( 'rankItems', () => {
 
 describe( 'getForSlack', () => {
 
-  it( '', () => {
+  it( 'retrieves the top scores', () => {
+
+  });
+
+  it( 'separately ranks both users and things', () => {
+
+  });
+
+  it( 'returns a Promise to send a Slack message', () => {
+
+  });
+
+  it( 'sends a Slack message payload with attachment', () => {
+
+  });
+
+  it( 'sends a Slack message containing a full leaderboard URL', () => {
 
   });
 
@@ -167,7 +183,19 @@ describe( 'getForSlack', () => {
 
 describe( 'getForWeb', () => {
 
-  it( '', () => {
+  it( 'retrieves the top scores', () => {
+
+  });
+
+  it( 'separately ranks both users and things', () => {
+
+  });
+
+  it( 'returns a string of HTML', () => {
+
+  });
+
+  it( 'passes request data, users and things to the renderer', () => {
 
   });
 
@@ -175,7 +203,7 @@ describe( 'getForWeb', () => {
 
 describe( 'handler', () => {
 
-  it( '', () => {
+  it( 'passes the call to getForSlack', () => {
 
   });
 
