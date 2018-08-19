@@ -96,6 +96,7 @@ Currently supported general commands are:
 Currently supported extended commands are:
 
 * `@WorkingPlusPlus leaderboard`: Displays the leaderboard for your Slack workspace
+* `@WorkingPlusPlus help`: Displays a help message showing these commands
 
 If you set a different name for your bot when adding the app to your Slack workspace, use that name instead.
 

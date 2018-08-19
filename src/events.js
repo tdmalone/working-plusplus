@@ -50,6 +50,62 @@ const handlePlusMinus = async( item, operation, channel ) => {
   return slack.sendMessage( message, channel );
 };
 
+/**
+ * Sends a random thank you message to the requesting channel.
+ *
+ * @param {object} event   A hash of a validated Slack 'app_mention' event. See the docs at
+ *                         https://api.slack.com/events-api#events_dispatched_as_json and
+ *                         https://api.slack.com/events/app_mention for details.
+ * @returns {Promise} A Promise to send the Slack message.
+ */
+const sayThankyou = ( event ) => {
+
+  const thankyouMessages = [
+    'Don\'t mention it!',
+    'You\'re welcome.',
+    'Pleasure!',
+    'No thank YOU!',
+    (
+      '++ for taking the time to say thanks!\n...' +
+      'just kidding, I can\'t `++` you. But it\'s the thought that counts, right??'
+    )
+  ];
+
+  const randomKey = Math.floor( Math.random() * thankyouMessages.length ),
+        message = '<@' + event.user + '> ' + thankyouMessages[ randomKey ];
+
+  return slack.sendMessage( message, event.channel );
+
+}; // SayThankyou.
+
+/**
+ * Sends a help message, explaining the bot's commands, to the requesting channel.
+ *
+ * @param {object} event   A hash of a validated Slack 'app_mention' event. See the docs at
+ *                         https://api.slack.com/events-api#events_dispatched_as_json and
+ *                         https://api.slack.com/events/app_mention for details.
+ * @returns {Promise} A Promise to send the Slack message.
+ */
+const sendHelp = ( event ) => {
+
+  const botUserId = event.text.match( /<@(U[A-Z0-9]{8})>/ )[1];
+
+  const message = (
+    'Sure, here\'s what I can do:\n\n' +
+    '• `@Someone++`: Add points to a user or a thing\n' +
+    '• `@Someone--`: Subtract points from a user or a thing\n' +
+    '• `<@' + botUserId + '> leaderboard`: Display the leaderboard\n' +
+    '• `<@' + botUserId + '> help`: Display this message\n\n' +
+    'You\'ll need to invite me to a channel before I can recognise ' +
+    '`++` and `--` commands in it.\n\n' +
+    'If you\'re a developer, you can teach me new things! ' +
+    'See <https://github.com/tdmalone/working-plusplus|my GitHub repo> to get started.'
+  );
+
+  return slack.sendMessage( message, event.channel );
+
+}; // SendHelp.
+
 const handlers = {
 
   /**
@@ -98,7 +154,11 @@ const handlers = {
   appMention: ( event, request ) => {
 
     const appCommandHandlers = {
-      leaderboard: leaderboard.handler
+      leaderboard: leaderboard.handler,
+      help: sendHelp,
+      thx: sayThankyou,
+      thanks: sayThankyou,
+      thankyou: sayThankyou
     };
 
     const validCommands = Object.keys( appCommandHandlers ),
@@ -133,6 +193,10 @@ const handleEvent = ( event, request ) => {
   }
 
   // If the event has a subtype, we don't support it.
+  // TODO: We could look at this in the future, in particular, the bot_message subtype, which would
+  //       allow us to react to messages sent by other bots. However, we'd have to be careful to
+  //       filter appropriately, because otherwise we'll also react to messages from ourself.
+  //       Because the 'help' output contains commands in it, that could look interesting!
   if ( 'undefined' !== typeof event.subtype ) {
     console.warn( 'Unsupported event subtype: ' + event.subtype );
     return false;
@@ -158,6 +222,8 @@ const handleEvent = ( event, request ) => {
 module.exports = {
   handleSelfPlus,
   handlePlusMinus,
+  sayThankyou,
+  sendHelp,
   handlers,
   handleEvent
 };

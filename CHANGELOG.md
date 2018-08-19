@@ -6,6 +6,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) a
 
 ### Added
 - Leaderboard functionality when `@WorkingPlusPlus leaderboard` is sent (requires additional app permissions - see step 6 of the installation instructions), including a link to a full web-based leaderboard with a time-based token to protect your team's data
+- Help message when `@WorkingPlusPlus help` is sent (requires the same additional app permissions as above)
 - Contributors: a raft of new helper functions including `isUser`, `isPlural` and many more
 - Contributors: additional tests to cover all previously added functionality (leaderboard functionality is not covered yet)
 
