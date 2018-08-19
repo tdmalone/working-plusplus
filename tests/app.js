@@ -106,6 +106,14 @@ describe( 'handleGet', () => {
     expect( typeof receivedResponse ).toBe( 'string' );
   });
 
+  it( 'sends an HTML response for a web leaderboard request with a valid token', () => {
+
+  });
+
+  it( 'sends an HTTP 403 and message for a web leaderboard request with an invalid token', () => {
+
+  });
+
 }); // HandleGet.
 
 describe( 'handlePost', () => {

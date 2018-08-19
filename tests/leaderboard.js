@@ -66,4 +66,117 @@ describe( 'getLeaderboardUrl', () => {
 
 }); // GetLeaderboardUrl.
 
-// TODO: Add tests for handler().
+describe( 'rankItems', () => {
+
+  const scores = [
+    {
+      item: 'U00000100',
+      score: 10
+    }, {
+      item: 'Thing1',
+      score: 10
+    }, {
+      item: 'U00000200',
+      score: 10
+    }, {
+      item: 'U00000300',
+      score: 8
+    }, {
+      item: 'U00000400',
+      score: 5
+    }, {
+      item: 'Thing2',
+      score: 1
+    }, {
+      item: 'U00000500',
+      score: 0
+    }, {
+      item: 'Thing3',
+      score: -5
+    }
+  ];
+
+  it( 'returns an array of strings', async() => {
+    expect.hasAssertions();
+    const items = await leaderboard.rankItems( scores );
+    expect( items ).toBeArray();
+    expect( items[0]).toBeString();
+  });
+
+  it( 'returns only users when users are asked for', () => {
+
+  });
+
+  it( 'returns only things when things are asked for', () => {
+
+  });
+
+  it( 'returns users by default', () => {
+
+  });
+
+  it( 'returns users when users are asked for', () => {
+
+  });
+
+  it( 'returns items in order if provided in order', () => {
+
+  });
+
+  it( 'includes an emoji for the first user result', () => {
+
+  });
+
+  it( 'includes an emoji for the first thing result', () => {
+
+  });
+
+  it( 'uses the same rank for items with the same score', () => {
+
+  });
+
+  it( 'increments the rank if items are scored differently', () => {
+
+  });
+
+  it( 'starts from rank 1', () => {
+
+  });
+
+  it( 'links user\'s names', () => {
+
+  });
+
+  it( 'includes an @ before the name of items', () => {
+
+  });
+
+  it( 'includes a thing\'s current points', () => {
+
+  });
+
+}); // RankItems.
+
+describe( 'getForSlack', () => {
+
+  it( '', () => {
+
+  });
+
+}); // GetForSlack.
+
+describe( 'getForWeb', () => {
+
+  it( '', () => {
+
+  });
+
+}); // GetForWeb.
+
+describe( 'handler', () => {
+
+  it( '', () => {
+
+  });
+
+}); // Handler.

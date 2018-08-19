@@ -32,4 +32,8 @@ describe( 'getRandomMessage', () => {
     }).toThrow();
   });
 
+  it( 'throws an error if a suitable set cannot be found', () => {
+
+  });
+
 }); // GetRandomMessage.

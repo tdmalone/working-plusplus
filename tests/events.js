@@ -137,7 +137,23 @@ describe( 'handlePlusMinus', () => {
     });
   });
 
-});
+}); // HandlePlusMinus.
+
+describe( 'sayThankyou', () => {
+
+  it( '', () => {
+
+  });
+
+}); // SayThankyou.
+
+describe( 'sendHelp', () => {
+
+  it( '', () => {
+
+  });
+
+}); // SendHelp.
 
 describe( 'handlers.message', () => {
 

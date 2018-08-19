@@ -168,6 +168,14 @@ describe( 'extractPlusMinusEventData', () => {
   } // For itemsToMatch.
 }); // ExtractPlusMinusEventData.
 
+describe( 'extractUserID', () => {
+
+  it( '', () => {
+
+  });
+
+});
+
 describe( 'getTimeBasedToken', () => {
 
   it( 'returns a string', () => {
@@ -288,3 +296,31 @@ describe( 'maybeLinkItem', () => {
   });
 
 }); // MaybeLinkItem.
+
+describe( 'render', () => {
+
+  it( 'processes an HTML template path and template context and returns rendered HTML', () => {
+
+  });
+
+  it( 'only retrieves a template file from disk once per session', () => {
+
+  });
+
+  it( 'returns a header containing DOCTYPE, html, head, title and body tags', () => {
+
+  });
+
+  it( 'returns a header that closes the head and title tags', () => {
+
+  });
+
+  it( 'returns a footer that closes the body and html tags', () => {
+
+  });
+
+  it( 'only retrieves header and footer files from disk once per session', () => {
+
+  });
+
+}); // Render.
