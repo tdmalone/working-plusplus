@@ -9,10 +9,14 @@
 
 'use strict';
 
-const express = require( 'express' ),
-      slack = require( '@slack/client' ),
+const app = require( './src/app' ),
+      slack = require( './src/slack' );
+
+const fs = require( 'fs' ),
+      mime = require( 'mime' ),
+      express = require( 'express' ),
       bodyParser = require( 'body-parser' ),
-      app = require( './src/app' );
+      slackClient = require( '@slack/client' );
 
 /* eslint-disable no-process-env, no-magic-numbers */
 const PORT = process.env.PORT || 80; // Let Heroku set the port.
@@ -33,18 +37,30 @@ const bootstrap = ( options = {}) => {
 
   // Allow alternative implementations of both Express and Slack to be passed in.
   const server = options.express || express();
-  app.setSlackClient( options.slack || new slack.WebClient( SLACK_OAUTH_ACCESS_TOKEN ) );
+  slack.setSlackClient( options.slack || new slackClient.WebClient( SLACK_OAUTH_ACCESS_TOKEN ) );
 
   server.use( bodyParser.json() );
   server.enable( 'trust proxy' );
   server.get( '/', app.handleGet );
   server.post( '/', app.handlePost );
 
+  // Static assets.
+  server.get( '/assets/*', ( request, response ) => {
+    const path = 'src/' + request._parsedUrl.path,
+          type = mime.getType( path );
+
+    response.setHeader( 'Content-Type', type );
+    response.send( fs.readFileSync( path ) );
+  });
+
+  // Additional routes.
+  server.get( '/leaderboard', app.handleGet );
+
   return server.listen( PORT, () => {
     console.log( 'Listening on port ' + PORT + '.' );
   });
 
-};
+}; // Bootstrap.
 
 // If module was called directly, bootstrap now.
 if ( require.main === module ) {

@@ -1,0 +1,108 @@
+/**
+ * Main stylesheet for web-based pages for Working PlusPlus++.
+ *
+ * @author Tim Malone <tdmalone@gmail.com>
+ */
+
+* {
+  transition: all .5s;
+}
+
+body {
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 14px;
+  background-color: #7DB83C;
+}
+
+.wrapper {
+  width: 90%;
+  max-width: 900px;
+  margin: 3em auto;
+}
+
+.wrapper:after {
+  display: table;
+  clear: both;
+  content: '';
+}
+
+.site-title,
+h1,
+h2 {
+  text-align: center;
+}
+
+h1 {
+  margin: .5em 0 1em;
+}
+
+.leaderboard {
+  box-sizing: border-box;
+  margin-bottom: 3em;
+  padding: 10px 25px 25px;
+  border-radius: 200px 100px;
+  background-color: #fff;
+}
+
+ol {
+  list-style-type: none;
+}
+
+li {
+  line-height: 1.5em;
+}
+
+.rank:after {
+  content: '.';
+  display: inline;
+}
+
+.item {
+  font-weight: bold;
+}
+
+.score {
+  margin-left: .25em;
+  font-size: .95em;
+  color: #aaa;
+}
+
+@media only screen and (min-width: 430px) {
+
+  body {
+    font-size: 16px;
+  }
+
+  .leaderboard {
+    padding: 20px 50px 50px;
+  }
+
+} /* min-width: 430 */
+
+@media only screen and (min-width: 800px) {
+
+  .leaderboard {
+    margin-bottom: 0;
+    width: 50%;
+    opacity: .8;
+    transform: scale(.9);
+  }
+
+  .leaderboard:hover {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  .leaderboard:nth-child(odd) {
+    float: left;
+    clear: left;
+    transform-origin: top left;
+  }
+
+  .leaderboard:nth-child(even) {
+    float: right;
+    transform-origin: top right;
+    border-radius: 100px 200px;
+  }
+
+} /* min-width: 800 */

@@ -2,6 +2,7 @@
  * End-to-end tests.
  *
  * @see https://jestjs.io/docs/en/expect
+ * @see https://github.com/jest-community/jest-extended#api
  * @author Tim Malone <tdmalone@gmail.com>
  */
 
@@ -61,37 +62,41 @@ afterAll( () => {
 
 describe( 'The database', () => {
 
-  it( 'stores a ++ for a new \'thing\' (ThingA) and returns a score of 1', ( done ) => {
-    expect.hasAssertions();
-    runner( '@ThingA++', { itemToCheck: 'ThingA' }, ( result ) => {
-      expect( result ).toBe( 1 );
-      done();
-    });
-  });
+  const thingTable = [
+    [ '++', 'new     ', 'ThingA', 1 ],
+    [ '++', 'existing', 'ThingA', 2 ],
+    [ '--', 'new     ', 'ThingB', -1 ],
+    [ '--', 'existing', 'ThingB', -2 ]
+  ];
 
-  it( 'stores a -- for a new \'thing\' (ThingB) and returns a score of -1', ( done ) => {
-    expect.hasAssertions();
-    runner( '@ThingB--', { itemToCheck: 'ThingB' }, ( result ) => {
-      expect( result ).toBe( -1 );
-      done();
-    });
-  });
+  const userTable = [
+    [ '++', 'new     ', 'U00000100', 1 ],
+    [ '++', 'existing', 'U00000100', 2 ],
+    [ '--', 'new     ', 'U00000200', -1 ],
+    [ '--', 'existing', 'U00000200', -2 ]
+  ];
 
-  it( 'stores a ++ for an existing \'thing\' (ThingA) and returns a score of 2', ( done ) => {
-    expect.hasAssertions();
-    runner( '@ThingA++', { itemToCheck: 'ThingA' }, ( result ) => {
-      expect( result ).toBe( 2 );
-      done();
-    });
-  });
+  it.each( thingTable )(
+    'stores a %s for a %s thing (%s) and returns a score of %d',
+    ( operation, description, thing, score, done ) => {
+      expect.hasAssertions();
+      runner( '@' + thing + operation, { itemToCheck: thing }, ( result ) => {
+        expect( result ).toBe( score );
+        done();
+      });
+    }
+  );
 
-  it( 'stores a -- for an existing \'thing\' (ThingB) and returns a score of -2', ( done ) => {
-    expect.hasAssertions();
-    runner( '@ThingB--', { itemToCheck: 'ThingB' }, ( result ) => {
-      expect( result ).toBe( -2 );
-      done();
-    });
-  });
+  it.each( userTable )(
+    'stores a %s for a %s user (%s) and returns a score of %d',
+    ( operation, description, user, score, done ) => {
+      expect.hasAssertions();
+      runner( '<@' + user + '>' + operation, { itemToCheck: user }, ( result ) => {
+        expect( result ).toBe( score );
+        done();
+      });
+    }
+  );
 
   it( 'stores a ++ for ThInGa in a different case and returns a score of 3', ( done ) => {
     expect.hasAssertions();
@@ -101,46 +106,14 @@ describe( 'The database', () => {
     });
   });
 
-  it( 'stores a ++ for a new user (100) and returns a score of 1', ( done ) => {
-    expect.hasAssertions();
-    runner( '<@U00000100>++', { itemToCheck: 'U00000100' }, ( result ) => {
-      expect( result ).toBe( 1 );
-      done();
-    });
-  });
-
-  it( 'stores a -- for a new user (200) and returns a score of -1', ( done ) => {
-    expect.hasAssertions();
-    runner( '<@U00000200>--', { itemToCheck: 'U00000200' }, ( result ) => {
-      expect( result ).toBe( -1 );
-      done();
-    });
-  });
-
-  it( 'stores a ++ for an existing user (100) and returns a score of 2', ( done ) => {
-    expect.hasAssertions();
-    runner( '<@U00000100>++', { itemToCheck: 'U00000100' }, ( result ) => {
-      expect( result ).toBe( 2 );
-      done();
-    });
-  });
-
-  it( 'stores a -- for an existing user (200) and returns a score of -2', ( done ) => {
-    expect.hasAssertions();
-    runner( '<@U00000200>--', { itemToCheck: 'U00000200' }, ( result ) => {
-      expect( result ).toBe( -2 );
-      done();
-    });
-  });
-
   it( 'refuses a self ++ for an existing user (100) and still returns a score of 2', ( done ) => {
     expect.hasAssertions();
 
-    const user = 'U00000100',
-          options = {
-            itemToCheck: user,
-            extraBody: { event: { user } }
-          };
+    const user = 'U00000100';
+    const options = {
+      itemToCheck: user,
+      extraBody: { event: { user } }
+    };
 
     runner( '<@' + user + '>++', options, ( result ) => {
       expect( result ).toBe( 2 );
@@ -158,7 +131,7 @@ describe( 'The database', () => {
           };
 
     runner( '<@' + user + '>++', options, ( result ) => {
-      expect( result ).toBe( false );
+      expect( result ).toBeFalse();
       done();
     });
   });
@@ -253,119 +226,60 @@ describe( 'Slack messaging', () => {
     });
   });
 
-  it( 'contains a user\'s link (user 100) and a score of 4 after another ++', ( done ) => {
-    expect.hasAssertions();
-    const user = 'U00000100';
+  const userTable = [
+    [ 'U00000100', 4, '++' ],
+    [ 'U00000200', -4, '--' ]
+  ];
 
-    slackClientMock.chat.postMessage.mockClear();
-    runner( '<@' + user + '>++', () => {
+  it.each( userTable )(
+    'contains a user\'s link (%s) and a score of %d after another %s',
+    ( user, score, operation, done ) => {
+      expect.hasAssertions();
+      const scoreRegExp = new RegExp( '\\s' + score + '\\b' );
 
-      expect( slackClientMock.chat.postMessage )
-        .toHaveBeenCalledTimes( 1 )
-        .toHaveBeenCalledWith(
-          expect.objectContaining({ text: expect.stringContaining( '<@' + user + '>' ) })
-        )
-        .toHaveBeenCalledWith(
-          expect.objectContaining({ text: expect.stringMatching( /\s4\b/ ) })
-        );
+      slackClientMock.chat.postMessage.mockClear();
+      runner( '<@' + user + '>' + operation, () => {
 
-      done();
+        expect( slackClientMock.chat.postMessage )
+          .toHaveBeenCalledTimes( 1 )
+          .toHaveBeenCalledWith(
+            expect.objectContaining({ text: expect.stringContaining( '<@' + user + '>' ) })
+          )
+          .toHaveBeenCalledWith(
+            expect.objectContaining({ text: expect.stringMatching( scoreRegExp ) })
+          );
 
+        done();
+
+      });
     });
-  });
 
-  it( 'contains a user\'s link (user 200) and a score of -4 after another --', ( done ) => {
-    expect.hasAssertions();
-    const user = 'U00000200';
+  const thingTable = [
+    [ 'point', '++', 'ThingC', 1 ],
+    [ 'points', '++', 'ThingC', 2 ],
+    [ 'point', '--', 'ThingD', 1 ],
+    [ 'points', '--', 'ThingD', 2 ]
+  ];
 
-    slackClientMock.chat.postMessage.mockClear();
-    runner( '<@' + user + '>--', () => {
+  it.each( thingTable )(
+    'contains \'%s\' after a %s for %s (i.e. score %d)',
+    ( word, operation, thing, sampleScore, done ) => {
+      expect.hasAssertions();
+      const wordRegExp = new RegExp( '\\s' + word + '\\b' );
 
-      expect( slackClientMock.chat.postMessage )
-        .toHaveBeenCalledTimes( 1 )
-        .toHaveBeenCalledWith(
-          expect.objectContaining({ text: expect.stringContaining( '<@' + user + '>' ) })
-        )
-        .toHaveBeenCalledWith(
-          expect.objectContaining({ text: expect.stringMatching( /\s-4\b/ ) })
-        );
+      slackClientMock.chat.postMessage.mockClear();
+      runner( '@' + thing + operation, () => {
 
-      done();
+        expect( slackClientMock.chat.postMessage )
+          .toHaveBeenCalledTimes( 1 )
+          .toHaveBeenCalledWith(
+            expect.objectContaining({ text: expect.stringMatching( wordRegExp ) })
+          );
 
+        done();
+
+      });
     });
-  });
-
-  it( 'contains the singular \'point\' after a ++ for new ThingC (i.e. score 1)', ( done ) => {
-    expect.hasAssertions();
-    const thing = 'ThingC';
-
-    slackClientMock.chat.postMessage.mockClear();
-    runner( '@' + thing + '++', () => {
-
-      expect( slackClientMock.chat.postMessage )
-        .toHaveBeenCalledTimes( 1 )
-        .toHaveBeenCalledWith(
-          expect.objectContaining({ text: expect.stringMatching( /\spoint\b/ ) })
-        );
-
-      done();
-
-    });
-  });
-
-  it( 'contains the plural \'points\' after another ++ for ThingC (i.e. score 2)', ( done ) => {
-    expect.hasAssertions();
-    const thing = 'ThingC';
-
-    slackClientMock.chat.postMessage.mockClear();
-    runner( '@' + thing + '++', () => {
-
-      expect( slackClientMock.chat.postMessage )
-        .toHaveBeenCalledTimes( 1 )
-        .toHaveBeenCalledWith(
-          expect.objectContaining({ text: expect.stringMatching( /\spoints\b/ ) })
-        );
-
-      done();
-
-    });
-  });
-
-  it( 'contains the singular \'point\' after a -- for new ThingD (i.e. score -1)', ( done ) => {
-    expect.hasAssertions();
-    const thing = 'ThingD';
-
-    slackClientMock.chat.postMessage.mockClear();
-    runner( '@' + thing + '--', () => {
-
-      expect( slackClientMock.chat.postMessage )
-        .toHaveBeenCalledTimes( 1 )
-        .toHaveBeenCalledWith(
-          expect.objectContaining({ text: expect.stringMatching( /\spoint\b/ ) })
-        );
-
-      done();
-
-    });
-  });
-
-  it( 'contains the plural \'points\' after another -- for ThingD (i.e. score -2)', ( done ) => {
-    expect.hasAssertions();
-    const thing = 'ThingD';
-
-    slackClientMock.chat.postMessage.mockClear();
-    runner( '@' + thing + '--', () => {
-
-      expect( slackClientMock.chat.postMessage )
-        .toHaveBeenCalledTimes( 1 )
-        .toHaveBeenCalledWith(
-          expect.objectContaining({ text: expect.stringMatching( /\spoints\b/ ) })
-        );
-
-      done();
-
-    });
-  });
 
   it( 'contains the plural \'points\' for a score of 0 (ThingE++ then --)', ( done ) => {
     expect.hasAssertions();
@@ -386,42 +300,26 @@ describe( 'Slack messaging', () => {
     });
   });
 
-  const operations = [
-    {
-      name: 'plus',
-      operation: '++',
-      extraData: {}
-    },
-    {
-      name: 'minus',
-      operation: '--',
-      extraData: {}
-    },
-    {
-      name: 'selfPlus',
-      operation: '++',
-      extraData: { event: { user: 'U12345678' } }
-    }
+  const operationsTable = [
+    [ 'plus', '++', {} ],
+    [ 'minus', '--', {} ],
+    [ 'selfPlus', '++', { event: { user: 'U12345678' } } ]
   ];
 
-  for ( const operation of operations ) {
-
-    const testName = (
-      'sends a message from the ' + operation.name + ' collection for a ' + operation.operation
-    );
-
-    it( testName, ( done ) => {
+  it.each( operationsTable )(
+    'sends a message from the %s collection for a %s',
+    ( name, operation, extraData, done ) => {
       expect.hasAssertions();
       slackClientMock.chat.postMessage.mockClear();
 
-      const messageText = '<@U12345678>' + operation.operation,
-            options = { extraBody: operation.extraData };
+      const messageText = '<@U12345678>' + operation,
+            options = { extraBody: extraData };
 
       runner( messageText, options, async() => {
 
         const postMessageCall = slackClientMock.chat.postMessage.mock.calls[0],
               payload = postMessageCall[0],
-              collection = messages.messages[ operation.name ];
+              collection = messages.messages[ name ];
 
         let messageFoundInCollection = false;
 
@@ -436,14 +334,12 @@ describe( 'Slack messaging', () => {
         }
 
         expect( slackClientMock.chat.postMessage ).toHaveBeenCalledTimes( 1 );
-        expect( messageFoundInCollection ).toBe( true );
+        expect( messageFoundInCollection ).toBeTrue();
 
         done();
 
       });
     });
-
-  } // For operation.
 
   it( 'sends messages back to the channel they were sent from', ( done ) => {
     expect.hasAssertions();

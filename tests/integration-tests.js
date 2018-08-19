@@ -2,6 +2,7 @@
  * Integration tests.
  *
  * @see https://jestjs.io/docs/en/expect
+ * @see https://github.com/jest-community/jest-extended#api
  * @see https://jestjs.io/docs/en/asynchronous.html
  * @see https://jestjs.io/docs/en/mock-functions#mocking-modules
  * @author Tim Malone <tdmalone@gmail.com>
@@ -15,15 +16,18 @@
  * Environment Configuration.
  ****************************************************************/
 
-const http = require( 'http' ),
-      pg = require( 'pg' ),
-      app = require( '../src/app' ),
-      config = require( './_config' ),
-      runner = require( './_runner' ),
-      slackClientMock = require( './mocks/slack' );
+const app = require( '../src/app' ),
+      points = require( '../src/points' );
 
-const originalProcessEnv = process.env;
-const postgres = new pg.Pool( config.postgresPoolConfig );
+const pathToListener = '../';
+
+const pg = require( 'pg' ),
+      http = require( 'http' );
+
+const config = require( './_config' );
+
+const originalProcessEnv = process.env,
+      postgres = new pg.Pool( config.postgresPoolConfig );
 
 /****************************************************************
  * Jest Setup.
@@ -58,7 +62,7 @@ describe( 'The Express server', () => {
   it( 'returns HTTP 200 for GET operations', ( done ) => {
     expect.hasAssertions();
 
-    const listener = require( '../' )();
+    const listener = require( pathToListener )();
 
     listener.on( 'listening', () => {
       http.get( 'http://localhost:' + config.PORT, ( response ) => {
@@ -73,7 +77,7 @@ describe( 'The Express server', () => {
   it( 'correctly returns the Slack event challenge value', ( done ) => {
     expect.assertions( 2 );
 
-    const listener = require( '../' )();
+    const listener = require( pathToListener )();
     const requestBody = { challenge: Math.random().toString() };
 
     listener.on( 'listening', () => {
@@ -100,7 +104,7 @@ describe( 'The Express server', () => {
     expect.hasAssertions();
 
     delete process.env.SLACK_VERIFICATION_TOKEN;
-    const listener = require( '../' )();
+    const listener = require( pathToListener )();
 
     listener.on( 'listening', () => {
       http.request( config.defaultRequestOptions, ( response ) => {
@@ -116,7 +120,7 @@ describe( 'The Express server', () => {
     expect.hasAssertions();
 
     process.env.SLACK_VERIFICATION_TOKEN = 'xxxxxxxxxxxxxxxxxxxxxxxx';
-    const listener = require( '../' )();
+    const listener = require( pathToListener )();
 
     listener.on( 'listening', () => {
       http.request( config.defaultRequestOptions, ( response ) => {
@@ -131,7 +135,7 @@ describe( 'The Express server', () => {
   it( 'returns HTTP 403 when verification token is incorrect', ( done ) => {
     expect.hasAssertions();
 
-    const listener = require( '../' )();
+    const listener = require( pathToListener )();
     const body = { token: 'something_is_not_right' };
 
     listener.on( 'listening', () => {
@@ -169,7 +173,7 @@ describe( 'The Express server', () => {
     mockExpress.response.send.mockClear();
     mockExpress.request.headers['x-slack-retry-num'] = 1;
     const result = app.handlePost( mockExpress.request, mockExpress.response );
-    expect( result ).toBe( false );
+    expect( result ).toBeFalse();
     expect( mockExpress.response.send ).toHaveBeenCalledTimes( 1 );
 
   });
@@ -181,6 +185,9 @@ describe( 'The Express server', () => {
  ****************************************************************/
 
 describe( 'The database', () => {
+
+  const defaultUser = 'U00000000',
+        defaultItem = 'something';
 
   const tableExistsQuery = 'SELECT EXISTS ( ' +
     'SELECT 1 FROM information_schema.tables ' +
@@ -194,7 +201,7 @@ describe( 'The database', () => {
     const dbClient = await postgres.connect();
     const query = await dbClient.query( tableExistsQuery );
     await dbClient.release();
-    expect( query.rows[0].exists ).toBe( false );
+    expect( query.rows[0].exists ).toBeFalse();
   });
 
   it( 'does not yet have the case-insensitive extension', async() => {
@@ -205,28 +212,14 @@ describe( 'The database', () => {
     expect( query.rowCount ).toBe( 0 );
   });
 
-  /**
-   * Provides a 'first request' and a test that it successfully creates the database table.
-   *
-   * @param {callable} done A callback to use for alerting Jest that the test is complete.
-   * @return {void}
-   */
-  const doFirstRequest = ( done ) => {
+  it( 'creates the ' + config.scoresTableName + ' table on the first request', async() => {
     expect.hasAssertions();
-    const listener = require( '../' )({ slack: slackClientMock });
-
-    listener.on( 'listening', () => {
-      runner( '@something++', async( dbClient ) => {
-        listener.close();
-        const query = await dbClient.query( tableExistsQuery );
-        await dbClient.release();
-        expect( query.rows[0].exists ).toBe( true );
-        done();
-      });
-    });
-  };
-
-  it( 'creates the ' + config.scoresTableName + ' table on the first request', doFirstRequest );
+    await points.updateScore( defaultItem, '++' );
+    const dbClient = await postgres.connect();
+    const query = await dbClient.query( tableExistsQuery );
+    await dbClient.release();
+    expect( query.rows[0].exists ).toBeTrue();
+  });
 
   it( 'also creates the case-insensitive extension on the first request', async() => {
     expect.hasAssertions();
@@ -236,6 +229,37 @@ describe( 'The database', () => {
     expect( query.rowCount ).toBe( 1 );
   });
 
-  it( 'does not cause errors on subsequent requests', doFirstRequest );
+  /* eslint-disable jest/expect-expect */
+  // TODO: This test really should have an assertion, but I can't figure out how to catch the error
+  //       properly... it's possible that updateScore needs rewriting to catch properly. In the
+  //       meantime, this test *does* actually work like expected.
+  it( 'does not cause any errors on a second request when everything already exists', async() => {
+    await points.updateScore( defaultItem, '++' );
+  });
+  /* eslint-enable jest/expect-expect */
+
+  it( 'returns a list of top scores in the correct order', async() => {
+    expect.hasAssertions();
+
+    const expectedScores = [
+      {
+        item: defaultUser,
+        score: 3
+      },
+      {
+        item: defaultItem,
+        score: 2
+      }
+    ];
+
+    // Give us a few additional scores so we can check the order works.
+    await points.updateScore( defaultUser, '++' );
+    await points.updateScore( defaultUser, '++' );
+    await points.updateScore( defaultUser, '++' );
+
+    const topScores = await points.retrieveTopScores();
+    expect( topScores ).toEqual( expectedScores );
+
+  });
 
 }); // Postgres tests.

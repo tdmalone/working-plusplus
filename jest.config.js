@@ -8,7 +8,7 @@
 
 const config = {
   collectCoverage: true,
-  setupTestFrameworkScriptFile: 'jest-chain',
+  setupTestFrameworkScriptFile: './jest.plugins',
   testEnvironment: 'node',
 
   testMatch: [

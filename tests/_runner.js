@@ -1,6 +1,6 @@
 /**
  * Custom test runner that makes an HTTP request to the app and facilitates checking the outcome.
- * Primarily used for end-to-end tests but also useful for some integration tests.
+ * Used for end-to-end testing.
  *
  * @author Tim Malone <tdmalone@gmail.com>
  */

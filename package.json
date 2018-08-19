@@ -10,7 +10,7 @@
     "lint": "eslint --color --ignore-pattern '/coverage/' --ignore-pattern '!.*.js' \"**/*.js\"",
     "fix": "yarn lint --fix",
     "test": "jest --forceExit --runInBand",
-    "unit-tests": "SKIP_INTEGRATION_TESTS=true SKIP_E2E_TESTS=true jest",
+    "unit-tests": "SKIP_INTEGRATION_TESTS=true SKIP_E2E_TESTS=true jest --forceExit",
     "integration-tests": "SKIP_E2E_TESTS=true jest --forceExit integration-tests",
     "e2e-tests": "SKIP_INTEGRATION_TESTS=true jest --forceExit e2e-tests",
     "report-coverage": "codecov && cat ./coverage/lcov.info | codacy-coverage"
@@ -29,6 +29,9 @@
     "@slack/client": "^4.3.1",
     "body-parser": "^1.18.3",
     "express": "^4.16.3",
+    "handlebars": "^4.0.11",
+    "lodash.camelcase": "^4.3.0",
+    "mime": "^2.3.1",
     "pg": "^7.4.3"
   },
   "devDependencies": {
@@ -39,6 +42,7 @@
     "eslint-plugin-jest": "^21.18.0",
     "jest": "^23.4.2",
     "jest-chain": "^1.0.3",
+    "jest-extended": "^0.8.1",
     "object-assign-deep": "^0.4.0"
   }
 }
