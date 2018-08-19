@@ -10,7 +10,7 @@ const fs = require( 'fs' ),
       crypto = require( 'crypto' ),
       handlebars = require( 'handlebars' );
 
-let header, footer, stylesheet;
+const templates = {};
 
 /* eslint-disable no-process-env */
 const envSecret1 = process.env.SLACK_VERIFICATION_TOKEN,
@@ -164,29 +164,39 @@ const maybeLinkItem = ( item ) => {
 /**
  * Renders HTML for the browser, using Handlebars. Includes a standard header and footer.
  *
- * @param {string} template The Handlebars-compatible template to render; that is, valid HTML with
- *                          variable interpolations as required.
- * @param {object} context  The Handlebars-compatible context to render; that is, an object with
- *                          values for the variables referenced in the template. Also include
- *                          standard variables referenced in the header and footer, such as
- *                         'title'. See the contents of ./html/ for more details.
+ * @param {string} templatePath Path to the Handlebars-compatible template file to render; that is,
+ *                              a file containing valid HTML, with variable interpolations as
+ *                              required. The path should be relative to the app's entry-point
+ *                              (which is usually an index.js in the root of the repository).
+ * @param {object} context      The Handlebars-compatible context to render; that is, an object with
+ *                              values for the variables referenced in the template. Also include
+ *                              standard variables referenced in the header and footer, such as
+ *                              'title'. See the contents of ./html/ for more details. Some
+ *                              variables may have defaults provided, which can be overridden.
  * @returns {string} HTML ready to be rendered in the browser.
  * @see https://handlebarsjs.com/
  */
-const render = ( template = '', context = {}) => {
+const render = ( templatePath = '', context = {}) => {
 
-  if ( ! header || ! footer || ! stylesheet ) {
-    header = fs.readFileSync( 'src/html/header.html', 'utf8' );
-    footer = fs.readFileSync( 'src/html/footer.html', 'utf8' );
-    stylesheet = fs.readFileSync( 'src/assets/main.css', 'utf8' );
+  // Retrieve the header and footer HTML, if we don't already have it in memory.
+  if ( ! templates.header ) templates.header = fs.readFileSync( 'src/html/header.html', 'utf8' );
+  if ( ! templates.footer ) templates.footer = fs.readFileSync( 'src/html/footer.html', 'utf8' );
+
+  // Retrieve the requested template HTML if it is not already in memory.
+  if ( ! templates[ templatePath ]) {
+    console.log( 'Retrieving template ' + templatePath + '.' );
+    templates[ templatePath ] = fs.readFileSync( templatePath, 'utf8' );
   }
 
+  /* eslint-disable camelcase */ // Handlebars templates commonly use snake_case instead.
   const defaults = {
-    site_title: 'PlusPlus++ That Works',
-    stylesheet
-  };
 
-  const output = header + template + footer;
+    // TODO: Get this from bot's name settings in the Slack users list.
+    site_title: 'PlusPlus++ That Works'
+  };
+  /* eslint-enable camelcase */
+
+  const output = templates.header + templates[ templatePath ] + templates.footer;
   return handlebars.compile( output )( Object.assign( defaults, context ) );
 
 }; // Render.

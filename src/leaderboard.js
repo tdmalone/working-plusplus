@@ -10,9 +10,20 @@ const slack = require( './slack' ),
       points = require( './points' ),
       helpers = require( './helpers' );
 
-const fs = require( 'fs' );
+/**
+ * Gets the URL for the full leaderboard, including a token to ensure that it is only viewed by
+ * someone who has access to this Slack team.
+ *
+ * @param {string} hostname The hostname this app is being served on.
+ * @returns {string} The leaderboard URL, which will be picked up in ../index.js when called.
+ */
+const getLeaderboardUrl = ( hostname ) => {
+  const ts = helpers.getTimestamp(),
+        token = helpers.getTimeBasedToken( ts ),
+        url = 'https://' + hostname + '/leaderboard?token=' + token + '&ts=' + ts;
 
-let leaderboardHtml;
+  return url;
+};
 
 /**
  * Ranks items by their scores, returning them in a human readable list complete with emoji for the
@@ -29,9 +40,9 @@ let leaderboardHtml;
  *                           can be ranked at a time.
  * @param {string} format    The format to return the results in. 'slack' returns or 'object'.
  *
- * @returns {array|object} Depending on the value of 'format', an array, in rank order, of either
- *                         human-readable Slack strings or objects containing 'rank', 'item' and
- *                         'score' values.
+ * @returns {array} An array, in rank order, of either of either human-readable Slack strings (if
+ *                  format is 'slack') or objects containing 'rank', 'item' and 'score' values (if
+ *                  format is 'object').
  */
 const rankItems = async( topScores, itemType = 'users', format = 'slack' ) => {
 
@@ -97,52 +108,8 @@ const rankItems = async( topScores, itemType = 'users', format = 'slack' ) => {
 }; // RankItems.
 
 /**
- * Gets the URL for the full leaderboard, including a token to ensure that it is only viewed by
- * someone who has access to this Slack team.
- *
- * @param {string} hostname The hostname this app is being served on.
- * @returns {string} The leaderboard URL, which will be picked up in ../index.js when called.
- */
-const getLeaderboardUrl = ( hostname ) => {
-  const ts = helpers.getTimestamp(),
-        token = helpers.getTimeBasedToken( ts ),
-        url = 'https://' + hostname + '/leaderboard?token=' + token + '&ts=' + ts;
-
-  return url;
-};
-
-/**
- * Returns HTML for the full leaderboard.
- *
- * TODO: This should be split out into separate frontend generating functions for the boilerplate
- *       structure and stuff.
- *
- * @returns {string} HTML for the browser.
- */
-const getFull = async() => {
-
-  if ( ! leaderboardHtml ) {
-    leaderboardHtml = fs.readFileSync( 'src/html/leaderboard.html', 'utf8' );
-  }
-
-  const scores = await points.retrieveTopScores(),
-        users = await rankItems( scores, 'users', 'object' ),
-        things = await rankItems( scores, 'things', 'object' );
-
-  const data = {
-    users,
-    things,
-    title: 'Leaderboard'
-  };
-
-  return helpers.render( leaderboardHtml, data );
-
-};
-
-/**
- * Retrieves and sends the current leaderboard to the requesting Slack channel.
- *
- * TODO: Rename this method to something like getPartial() or getForSlack().
+ * Retrieves and sends the current partial leaderboard (top scores only) to the requesting Slack
+ * channel.
  *
  * @param {object} event   A hash of a validated Slack 'app_mention' event. See the docs at
  *                         https://api.slack.com/events-api#events_dispatched_as_json and
@@ -150,7 +117,7 @@ const getFull = async() => {
  * @param {object} request The Express request object that resulted in this handler being run.
  * @returns {Promise} A Promise to send the Slack message.
  */
-const handler = async( event, request ) => {
+const getForSlack = async( event, request ) => {
 
   const limit = 5;
 
@@ -185,13 +152,46 @@ const handler = async( event, request ) => {
   };
 
   console.log( 'Sending the leaderboard.' );
-  return send.sendMessage( message, event.channel );
+  return slack.sendMessage( message, event.channel );
 
-}; // Handler.
+}; // GetForSlack.
+
+/**
+ * Retrieves and returns HTML for the full leaderboard, for displaying on the web.
+ *
+ * @returns {string} HTML for the browser.
+ */
+const getForWeb = async() => {
+
+  const scores = await points.retrieveTopScores(),
+        users = await rankItems( scores, 'users', 'object' ),
+        things = await rankItems( scores, 'things', 'object' );
+
+  const data = {
+    users,
+    things,
+    title: 'Leaderboard'
+  };
+
+  return helpers.render( 'src/html/leaderboard.html', data );
+
+}; // GetForWeb.
+
+/**
+ * The default handler for this command when invoked over Slack.
+ *
+ * @param {*} event   See the documentation for getForSlack.
+ * @param {*} request See the documentation for getForSlack.
+ * @returns {*} See the documentation for getForSlack.
+ */
+const handler = async( event, request ) => {
+  return getForSlack( event, request );
+};
 
 module.exports = {
-  getFull,
   getLeaderboardUrl,
   rankItems,
+  getForSlack,
+  getForWeb,
   handler
 };

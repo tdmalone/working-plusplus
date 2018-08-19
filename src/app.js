@@ -91,7 +91,7 @@ const handleGet = async( request, response ) => {
     // TODO: This should probably be split out into a separate function of sorts, like handlePost.
     case '/leaderboard':
       if ( helpers.isTimeBasedTokenStillValid( request.query.token, request.query.ts ) ) {
-        response.send( await leaderboard.getFull() );
+        response.send( await leaderboard.getForWeb() );
       } else {
         response
           .status( HTTP_403 )
