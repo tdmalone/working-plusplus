@@ -120,6 +120,9 @@ const getVersion = ( event ) => {
         execSync = require( 'child_process' ).execSync,
         packageJson = require( '../package.json' );
 
+  const repoUrl = packageJson.repository,
+        version = packageJson.version;
+
   // Current git commit of this app.
   /* eslint-disable no-process-env */
   let commit;
@@ -130,13 +133,16 @@ const getVersion = ( event ) => {
     try {
       commit = execSync( 'git rev-parse --short HEAD' ).toString().trim();
     } catch ( error ) {
-      commit = 'unknown commit';
+      commit = '';
     }
   }
   /* eslint-disable no-process-env */
 
-  // Version & uptime of this app.
-  let message = packageJson.name + ' v' + packageJson.version + ' (' + commit + ')\n';
+  // Version, commit hash & uptime of this app.
+  let message = '*' + packageJson.name + ' ';
+  message += '<' + repoUrl + '/releases/tag/v' + version + '|v' + version + '>* ';
+  message += commit ? '(<' + repoUrl + '/tree/' + commit + '|' + commit + '>)' : '';
+  message += '\n';
   message += 'started ' + Math.floor( process.uptime() ) + ' seconds ago\n\n';
 
   // Node version.
@@ -204,8 +210,7 @@ const handlers = {
       leaderboard: leaderboard.handler,
       help: sendHelp,
       thx: sayThankyou,
-      thanks: sayThankyou,
-      thankyou: sayThankyou,
+      thank: sayThankyou,
       version: getVersion
     };
 
