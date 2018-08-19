@@ -97,6 +97,7 @@ Currently supported extended commands are:
 
 * `@WorkingPlusPlus leaderboard`: Displays the leaderboard for your Slack workspace
 * `@WorkingPlusPlus help`: Displays a help message showing these commands
+* `@WorkingPlusPlus version`: Returns version and environment information
 
 If you set a different name for your bot when adding the app to your Slack workspace, use that name instead.
 
@@ -112,7 +113,6 @@ For full details on contributing, including getting a local environment set up, 
 
 Although it works, it's very basic. Potential enhancements include:
 
-* A way to retrieve the current version/git hash from Slack, for sanity-checking of deployments
 * The ability to customise the messages the bot sends back at runtime (eg. via environment variables)
 * Move to the newer, more secure method of calculating signatures for incoming Slack hooks
 * A way to look up someone's karma without necessarily `++`'ing or `--`'ing them (eg. `@username==`)

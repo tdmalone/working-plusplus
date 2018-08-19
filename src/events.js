@@ -106,6 +106,39 @@ const sendHelp = ( event ) => {
 
 }; // SendHelp.
 
+/**
+ * Sends a message back to the requesting Slack channel with details of the running version of the
+ * app. Useful for debugging deployments, checking if upgrades are needed, etc.
+ *
+ * @param {object} event   A hash of a validated Slack 'app_mention' event. See the docs at
+ *                         https://api.slack.com/events-api#events_dispatched_as_json and
+ *                         https://api.slack.com/events/app_mention for details.
+ * @returns {Promise} A Promise to send the Slack message.
+ */
+const getVersion = ( event ) => {
+  const fs = require( 'fs' ),
+        execSync = require( 'child_process' ).execSync,
+        packageJson = require( '../package.json' );
+
+  // Version, git commit and uptime of this app.
+  const gitCommit = execSync( 'git rev-parse --short HEAD' ).toString().trim();
+  let message = packageJson.name + ' v' + packageJson.version + ' (' + gitCommit + ')\n';
+  message += 'started ' + Math.floor( process.uptime() ) + ' seconds ago\n\n';
+
+  // Node version.
+  message += 'node ' + process.version + '\n\n';
+
+  // Versions of each direct dependency.
+  Object.keys( packageJson.dependencies ).forEach( function( module ) {
+    const file = fs.readFileSync( 'node_modules/' + module + '/package.json', 'utf8' );
+    const json = JSON.parse( file );
+    message += json.name + ' v' + json.version + '\n';
+  });
+
+  return slack.sendMessage( message, event.channel );
+
+}; // GetVersion.
+
 const handlers = {
 
   /**
@@ -158,7 +191,8 @@ const handlers = {
       help: sendHelp,
       thx: sayThankyou,
       thanks: sayThankyou,
-      thankyou: sayThankyou
+      thankyou: sayThankyou,
+      version: getVersion
     };
 
     const validCommands = Object.keys( appCommandHandlers ),
@@ -229,6 +263,7 @@ module.exports = {
   handlePlusMinus,
   sayThankyou,
   sendHelp,
+  getVersion,
   handlers,
   handleEvent
 };
