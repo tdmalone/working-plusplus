@@ -120,9 +120,22 @@ const getVersion = ( event ) => {
         execSync = require( 'child_process' ).execSync,
         packageJson = require( '../package.json' );
 
-  // Version, git commit and uptime of this app.
-  const gitCommit = execSync( 'git rev-parse --short HEAD' ).toString().trim();
-  let message = packageJson.name + ' v' + packageJson.version + ' (' + gitCommit + ')\n';
+  // Current git commit of this app.
+  /* eslint-disable no-process-env */
+  let commit;
+  if ( process.env.HEROKU_SLUG_COMMIT ) {
+    commit = process.env.HEROKU_SLUG_COMMIT.slice( 0, 7 );
+  } else {
+    try {
+      commit = execSync( 'git rev-parse --short HEAD' ).toString().trim();
+    } catch ( error ) {
+      commit = 'unknown commit';
+    }
+  }
+  /* eslint-disable no-process-env */
+
+  // Version & uptime of this app.
+  let message = packageJson.name + ' v' + packageJson.version + ' (' + commit + ')\n';
   message += 'started ' + Math.floor( process.uptime() ) + ' seconds ago\n\n';
 
   // Node version.
