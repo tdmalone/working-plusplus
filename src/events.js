@@ -210,8 +210,7 @@ const handlers = {
       leaderboard: leaderboard.handler,
       help: sendHelp,
       thx: sayThankyou,
-      thanks: sayThankyou,
-      thankyou: sayThankyou,
+      thank: sayThankyou,
       version: getVersion
     };
 
