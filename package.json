@@ -3,7 +3,7 @@
   "version": "0.0.4",
   "description": "Like plusplus.chat, but one that actually works, because you can host it yourself 😉",
   "main": "index.js",
-  "repository": "git@github.com:tdmalone/working-plusplus.git",
+  "repository": "https://github.com/tdmalone/working-plusplus",
   "author": "Tim Malone <tdmalone@gmail.com>",
   "license": "MIT",
   "scripts": {
