@@ -88,14 +88,14 @@ const sayThankyou = ( event ) => {
  */
 const sendHelp = ( event ) => {
 
-  const botUserId = event.text.match( /<@(U[A-Z0-9]{8})>/ )[1];
+  const botUserID = helpers.extractUserID( event.text );
 
   const message = (
     'Sure, here\'s what I can do:\n\n' +
     '• `@Someone++`: Add points to a user or a thing\n' +
     '• `@Someone--`: Subtract points from a user or a thing\n' +
-    '• `<@' + botUserId + '> leaderboard`: Display the leaderboard\n' +
-    '• `<@' + botUserId + '> help`: Display this message\n\n' +
+    '• `<@' + botUserID + '> leaderboard`: Display the leaderboard\n' +
+    '• `<@' + botUserID + '> help`: Display this message\n\n' +
     'You\'ll need to invite me to a channel before I can recognise ' +
     '`++` and `--` commands in it.\n\n' +
     'If you\'re a developer, you can teach me new things! ' +

@@ -10,20 +10,30 @@ const slack = require( './slack' ),
       points = require( './points' ),
       helpers = require( './helpers' );
 
+const querystring = require( 'querystring' );
+
 /**
  * Gets the URL for the full leaderboard, including a token to ensure that it is only viewed by
  * someone who has access to this Slack team.
  *
- * @param {string} hostname The hostname this app is being served on.
+ * @param {object} request The Express request object that resulted in this handler being run.
  * @returns {string} The leaderboard URL, which will be picked up in ../index.js when called.
  */
-const getLeaderboardUrl = ( hostname ) => {
-  const ts = helpers.getTimestamp(),
-        token = helpers.getTimeBasedToken( ts ),
-        url = 'https://' + hostname + '/leaderboard?token=' + token + '&ts=' + ts;
+const getLeaderboardUrl = ( request ) => {
 
+  const hostname = request.headers.host,
+        ts = helpers.getTimestamp();
+
+  const params = {
+    token: helpers.getTimeBasedToken( ts ),
+    ts,
+    botUser: helpers.extractUserID( request.body.event.text )
+  };
+
+  const url = 'https://' + hostname + '/leaderboard?' + querystring.stringify( params );
   return url;
-};
+
+}; // GetLeaderboardUrl.
 
 /**
  * Ranks items by their scores, returning them in a human readable list complete with emoji for the
@@ -127,7 +137,7 @@ const getForSlack = async( event, request ) => {
 
   const messageText = (
     'Here you go. ' +
-    'Or see the <' + getLeaderboardUrl( request.headers.host ) + '|whole list>.'
+    'Or see the <' + getLeaderboardUrl( request ) + '|whole list>.'
   );
 
   const message = {
@@ -159,9 +169,10 @@ const getForSlack = async( event, request ) => {
 /**
  * Retrieves and returns HTML for the full leaderboard, for displaying on the web.
  *
+ * @param {object} request The Express request object that resulted in this handler being run.
  * @returns {string} HTML for the browser.
  */
-const getForWeb = async() => {
+const getForWeb = async( request ) => {
 
   const scores = await points.retrieveTopScores(),
         users = await rankItems( scores, 'users', 'object' ),
@@ -173,7 +184,7 @@ const getForWeb = async() => {
     title: 'Leaderboard'
   };
 
-  return helpers.render( 'src/html/leaderboard.html', data );
+  return helpers.render( 'src/html/leaderboard.html', data, request );
 
 }; // GetForWeb.
 

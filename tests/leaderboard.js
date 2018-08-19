@@ -17,7 +17,12 @@ describe( 'getLeaderboardUrl', () => {
 
   const MILLISECONDS_TO_SECONDS = 1000;
 
-  const leaderboardUrl = leaderboard.getLeaderboardUrl( 'example.com' ),
+  const request = {
+    headers: { host: 'test.local' },
+    body: { event: { text: '<@U00000000> test' } }
+  };
+
+  const leaderboardUrl = leaderboard.getLeaderboardUrl( request ),
         parsedUrl = new URL( leaderboardUrl ),
         token = parsedUrl.searchParams.get( 'token' ),
         ts = parsedUrl.searchParams.get( 'ts' ),

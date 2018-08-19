@@ -6,6 +6,8 @@
 
 'use strict';
 
+const slack = require( './slack' );
+
 const fs = require( 'fs' ),
       crypto = require( 'crypto' ),
       handlebars = require( 'handlebars' );
@@ -70,6 +72,19 @@ const extractPlusMinusEventData = ( text ) => {
     operation: data[2].substring( 0, 1 ).replace( '—', '-' )
   };
 
+}; // ExtractPlusMinusEventData.
+
+/**
+ * Extracts a valid Slack user ID from a string of text.
+ *
+ * @param {string} text The string in question.
+ * @returns {string} The first matched Slack user ID in the string, or an empty string if a match
+ *                   could not be found.
+ * @see ::isUser
+ */
+const extractUserID = ( text ) => {
+  const match = text.match( /U[A-Z0-9]{8}/ );
+  return match ? match[0] : '';
 };
 
 /**
@@ -144,6 +159,7 @@ const isTimeBasedTokenStillValid = ( token, ts ) => {
  *
  * @param {string} item The string in question.
  * @returns {Boolean} Whether or not the string is a Slack user ID.
+ * @see ::extractUserID()
  */
 const isUser = ( item ) => {
   return item.match( /U[A-Z0-9]{8}/ ) ? true : false;
@@ -173,10 +189,13 @@ const maybeLinkItem = ( item ) => {
  *                              standard variables referenced in the header and footer, such as
  *                              'title'. See the contents of ./html/ for more details. Some
  *                              variables may have defaults provided, which can be overridden.
+ * @param {object} request      Optional. The Express request object that resulted in this
+ *                              rendering job being run. Can be used to provide additional context
+ *                              to the templates.
  * @returns {string} HTML ready to be rendered in the browser.
  * @see https://handlebarsjs.com/
  */
-const render = ( templatePath = '', context = {}) => {
+const render = async( templatePath, context = {}, request = {}) => {
 
   // Retrieve the header and footer HTML, if we don't already have it in memory.
   if ( ! templates.header ) templates.header = fs.readFileSync( 'src/html/header.html', 'utf8' );
@@ -190,9 +209,11 @@ const render = ( templatePath = '', context = {}) => {
 
   /* eslint-disable camelcase */ // Handlebars templates commonly use snake_case instead.
   const defaults = {
-
-    // TODO: Get this from bot's name settings in the Slack users list.
-    site_title: 'PlusPlus++ That Works'
+    site_title: (
+      request.query.botUser ?
+        await slack.getUserName( request.query.botUser ) :
+        'Working PlusPlus++'
+    )
   };
   /* eslint-enable camelcase */
 
@@ -204,6 +225,7 @@ const render = ( templatePath = '', context = {}) => {
 module.exports = {
   extractCommand,
   extractPlusMinusEventData,
+  extractUserID,
   getTimeBasedToken,
   getTimestamp,
   isPlural,
