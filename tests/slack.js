@@ -32,22 +32,6 @@ describe( 'setSlackClient', () => {
 
 });
 
-describe( 'getUserList', () => {
-
-  it( '', () => {
-
-  });
-
-}); // GetUserList.
-
-describe( 'getUserName', () => {
-
-  it( '', () => {
-
-  });
-
-}); // GetUserName.
-
 describe( 'sendMessage', () => {
 
   const payload = {
