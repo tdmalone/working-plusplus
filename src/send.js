@@ -2,12 +2,15 @@
  * Handles sending of messages - i.e. outgoing messages - back to Slack, via Slack's Web API. See
  * also ./events.js, which handles incoming messages from subscribed events.
  *
+ * TODO: This file should probably be renamed to 'slack.js' so it can handle all other requests to
+ *       the Slack APIs rather than just sending.
+ *
  * @see https://api.slack.com/web
  */
 
 'use strict';
 
-let slack;
+let slack, users;
 
 /**
  * Injects the Slack client to be used for all outgoing messages.
@@ -20,6 +23,55 @@ let slack;
  */
 const setSlackClient = ( client ) => {
   slack = client;
+};
+
+/**
+ * Retrieves a list of all users in the linked Slack team. Caches it in memory.
+ *
+ * @returns {object} A collection of Slack user objects, indexed by the user IDs (Uxxxxxxxx).
+ */
+const getUserList = async() => {
+
+  if ( users ) {
+    return users;
+  }
+
+  console.log( 'Retrieving user list from Slack...' );
+
+  users = {};
+  const userList = await slack.users.list();
+
+  if ( ! userList.ok ) {
+    throw Error( 'Error occurred retrieving user list from Slack.' );
+  }
+
+  for ( const user of userList.members ) {
+    users[ user.id ] = user;
+  }
+
+  return users;
+
+}; // GetUserList.
+
+/**
+ * Given a Slack user ID, returns the user's real name or optionally, the user's username. If the
+ * user *does not* have a real name set, their username is returned regardless.
+ *
+ * @param {string} userId   A Slack user ID in the format Uxxxxxxxx.
+ * @param {bool}   username Whether the username should always be returned instead of the real name.
+ * @returns {string} The user's real name, as per their Slack profile.
+ */
+const getUserName = async( userId, username = false ) => {
+
+  const users = await getUserList(),
+        user = users[ userId ];
+
+  if ( 'undefined' === typeof user ) {
+    return '(unknown)';
+  }
+
+  return username || ! user.profile.real_name ? user.name : user.profile.real_name;
+
 };
 
 /**
@@ -62,5 +114,7 @@ const sendMessage = ( text, channel ) => {
 
 module.exports = {
   setSlackClient,
+  getUserList,
+  getUserName,
   sendMessage
 };

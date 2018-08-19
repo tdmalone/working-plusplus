@@ -33,13 +33,14 @@ let leaderboardHtml;
  *                         human-readable Slack strings or objects containing 'rank', 'item' and
  *                         'score' values.
  */
-const rankItems = ( topScores, itemType = 'users', format = 'slack' ) => {
+const rankItems = async( topScores, itemType = 'users', format = 'slack' ) => {
 
   let lastScore, lastRank, output;
   const items = [];
 
   for ( const score of topScores ) {
 
+    let item = score.item;
     const isUser = helpers.isUser( score.item ) ? true : false;
 
     // Skip if this item is not the item type we're ranking.
@@ -47,15 +48,15 @@ const rankItems = ( topScores, itemType = 'users', format = 'slack' ) => {
       continue;
     }
 
-    // TODO: If 'slack' !== format, we're gonna need to get the user's name from the Slack API.
+    // For users, we need to link the item (for Slack) or get their real name (for other formats).
+    if ( isUser ) {
+      item = (
+        'slack' === format ? helpers.maybeLinkItem( item ) : await send.getUserName( item )
+      );
+    }
 
-    const item = 'slack' === format ? helpers.maybeLinkItem( score.item ) : score.item,
-          itemTitleCase = item.substring( 0, 1 ).toUpperCase() + item.substring( 1 ),
+    const itemTitleCase = item.substring( 0, 1 ).toUpperCase() + item.substring( 1 ),
           plural = helpers.isPlural( score.score ) ? 's' : '';
-
-    // For the Slack format, *users* are already linked with an @. In all other cases we need to
-    // insert an @ for items too.
-    const prefix = isUser && 'slack' === format ? '' : '@';
 
     // Determine the rank by keeping it the same as the last user if the score is the same, or
     // otherwise setting it to the same as the item count (and adding 1 to deal with 0-base count).
@@ -65,7 +66,7 @@ const rankItems = ( topScores, itemType = 'users', format = 'slack' ) => {
       case 'slack':
 
         output = (
-          rank + '. ' + prefix + itemTitleCase + ' [' + score.score + ' point' + plural + ']'
+          rank + '. ' + itemTitleCase + ' [' + score.score + ' point' + plural + ']'
         );
 
         // If this is the first item, it's the winner!
@@ -78,7 +79,7 @@ const rankItems = ( topScores, itemType = 'users', format = 'slack' ) => {
       case 'object':
         output = {
           rank,
-          item: prefix + itemTitleCase,
+          item: itemTitleCase,
           score: score.score + ' point' + plural
         };
         break;
@@ -125,8 +126,8 @@ const getFull = async() => {
   }
 
   const scores = await points.retrieveTopScores(),
-        users = rankItems( scores, 'users', 'object' ),
-        things = rankItems( scores, 'things', 'object' );
+        users = await rankItems( scores, 'users', 'object' ),
+        things = await rankItems( scores, 'things', 'object' );
 
   return helpers.render( leaderboardHtml, {
     users,
@@ -149,8 +150,8 @@ const handler = async( event, request ) => {
   const limit = 5;
 
   const scores = await points.retrieveTopScores(),
-        users = rankItems( scores, 'users' ),
-        things = rankItems( scores, 'things' );
+        users = await rankItems( scores, 'users' ),
+        things = await rankItems( scores, 'things' );
 
   const messageText = (
     'Here you go. ' +
