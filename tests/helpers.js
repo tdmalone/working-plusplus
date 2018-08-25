@@ -19,7 +19,9 @@ describe( 'extractCommand', () => {
   const commands = [
     'test-command',
     'something-else',
-    'another-command'
+    'another-command',
+    'UPPERCASE-COMMAND',
+    'Mixed-Case-Command'
   ];
 
   it( 'returns a valid command from a message containing only that command', () => {
@@ -57,7 +59,27 @@ describe( 'extractCommand', () => {
     expect( helpers.extractCommand( message, commands ) ).toBeFalse();
   });
 
-});
+  it( 'supports a command given in uppercase', () => {
+    const message = '<@U12345678> TEST-COMMAND';
+    expect( helpers.extractCommand( message, commands ) ).toEqual( 'test-command' );
+  });
+
+  it( 'supports a command given in mixed case', () => {
+    const message = '<@U12345678> Test-Command';
+    expect( helpers.extractCommand( message, commands ) ).toEqual( 'test-command' );
+  });
+
+  it( 'supports a command defined in uppercase', () => {
+    const message = '<@U12345678> uppercase-command';
+    expect( helpers.extractCommand( message, commands ) ).toEqual( 'UPPERCASE-COMMAND' );
+  });
+
+  it( 'supports a command defined in mixed case', () => {
+    const message = '<@U12345678> mixed-case-command';
+    expect( helpers.extractCommand( message, commands ) ).toEqual( 'Mixed-Case-Command' );
+  });
+
+}); // ExtractCommand.
 
 describe( 'extractPlusMinusEventData', () => {
 
