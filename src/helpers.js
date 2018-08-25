@@ -38,8 +38,10 @@ const extractCommand = ( message, commands ) => {
   let firstLocation = Number.MAX_SAFE_INTEGER,
       firstCommand;
 
+  const messageInLowerCase = message.toLowerCase();
+
   for ( const command of commands ) {
-    const location = message.indexOf( command );
+    const location = messageInLowerCase.indexOf( command.toLowerCase() );
     if ( -1 !== location && location < firstLocation ) {
       firstLocation = location;
       firstCommand = command;
