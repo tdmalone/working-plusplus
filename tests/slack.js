@@ -34,16 +34,50 @@ describe( 'setSlackClient', () => {
 
 describe( 'getUserList', () => {
 
-  it( 'contacts the Slack API to retrieve the users list on the first try', () => {
+  const slackClientMock = require( pathToMock );
+  slack.setSlackClient( slackClientMock );
 
+  // Re-mock the client so we can listen to it.
+  slackClientMock.users.list = jest.fn();
+
+  it( 'contacts the Slack API to retrieve the users list on the first try', () => {
+    expect.assertions( 2 );
+
+    // Calling this function should return a Promise that then throws, because there's nothing in
+    // the mock for it to work with - but we should still be able to spy on it having called the
+    // mock!
+    const userList = slack.getUserList();
+    expect( userList ).toBeInstanceOf( Promise );
+    return userList.catch( () => {
+      expect( slackClientMock.users.list ).toHaveBeenCalledTimes( 1 );
+    });
   });
 
   it( 'retrieves the user list from memory on subsequent tries', () => {
+    expect.assertions( 3 );
+    slackClientMock.users.list.mockClear();
 
+    // This should return a Promise with an empty object, because our 'mocked mock' won't actually
+    // return any users in the object.
+    const userList = slack.getUserList();
+    expect( userList ).toBeInstanceOf( Promise );
+    return userList.then( ( users ) => {
+      expect( slackClientMock.users.list ).not.toHaveBeenCalled();
+      expect( users ).toEqual({});
+    });
   });
 
   it( 'returns an object containing user objects indexed by their IDs', () => {
+    expect.hasAssertions();
 
+    const slack = require( '../src/slack' );
+    const slackClientMock = require( pathToMock );
+    slack.setSlackClient( slackClientMock );
+
+    return slack.getUserList().then( ( users ) => {
+      const keys = Object.keys( users );
+      expect( keys[0]).toBe( users[ keys[0] ].id );
+    });
   });
 
 }); // GetUserList.

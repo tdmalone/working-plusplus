@@ -20,7 +20,29 @@ const chat = {
   }
 };
 
+const users = {
+  list: () => {
+    return new Promise( ( resolve ) => {
+      resolve({
+        ok: true,
+        members: [
+          {
+            id: 'U00000100'
+          },
+          {
+            id: 'U00000200'
+          },
+          {
+            id: 'U00000300'
+          }
+        ]
+      });
+    });
+  }
+};
+
 module.exports = {
   options,
-  chat
+  chat,
+  users
 };
