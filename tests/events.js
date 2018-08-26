@@ -272,7 +272,7 @@ describe( 'handleEvent', () => {
       text
     };
 
-    expect( events.handleEvent( event, request ) instanceof Promise ).toBeTrue();
+    expect( events.handleEvent( event, request ) ).toBeInstanceOf( Promise );
   });
 
   it.each( validEvents )( 'reports a \'%s\' event without text as invalid', ( type ) => {

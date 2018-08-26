@@ -106,7 +106,7 @@ describe( 'sendMessage', () => {
   };
 
   it( 'sends message text to a channel when provided as two arguments', () => {
-    expect.assertions( 1 );
+    expect.hasAssertions();
     const slackClientMock = require( pathToMock );
     slack.setSlackClient( slackClientMock );
 
@@ -119,7 +119,7 @@ describe( 'sendMessage', () => {
   });
 
   it( 'sends a message to a channel with a full payload as one argument', () => {
-    expect.assertions( 1 );
+    expect.hasAssertions();
     const slackClientMock = require( pathToMock );
     slack.setSlackClient( slackClientMock );
 
@@ -142,7 +142,7 @@ describe( 'sendMessage', () => {
   });
 
   it( 'sends a message to a channel when payload and channel are passed separately', () => {
-    expect.assertions( 1 );
+    expect.hasAssertions();
     const slackClientMock = require( pathToMock );
     slack.setSlackClient( slackClientMock );
 
@@ -166,7 +166,7 @@ describe( 'sendMessage', () => {
   });
 
   it( 'returns a Promise and resolves it if the message succeeds', () => {
-    expect.assertions( 1 );
+    expect.hasAssertions();
     const slackClientMock = require( pathToMock );
     slack.setSlackClient( slackClientMock );
 
@@ -177,7 +177,7 @@ describe( 'sendMessage', () => {
   });
 
   it( 'returns a Promise and rejects it if the message fails', () => {
-    expect.assertions( 1 );
+    expect.hasAssertions();
     const slackClientMock = require( pathToMock );
     slack.setSlackClient( slackClientMock );
 
