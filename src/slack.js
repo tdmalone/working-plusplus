@@ -59,7 +59,8 @@ const getUserList = async() => {
  *
  * @param {string} userId   A Slack user ID in the format Uxxxxxxxx.
  * @param {bool}   username Whether the username should always be returned instead of the real name.
- * @returns {string} The user's real name, as per their Slack profile.
+ * @returns {string} The user's real name, as per their Slack profile, or the user's username if
+ *                   the real name is not set or 'true' is passed as the second argument.
  */
 const getUserName = async( userId, username = false ) => {
 

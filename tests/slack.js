@@ -84,16 +84,33 @@ describe( 'getUserList', () => {
 
 describe( 'getUserName', () => {
 
-  it( 'returns a user\'s real_name when it is available', () => {
+  const slack = require( '../src/slack' );
+  const slackClientMock = require( pathToMock );
+  slack.setSlackClient( slackClientMock );
 
+  it( 'returns a user\'s real_name when it is available', async() => {
+    const slack = require( '../src/slack' );
+    const slackClientMock = require( pathToMock );
+    slack.setSlackClient( slackClientMock );
+    expect.hasAssertions();
+    expect( await slack.getUserName( 'U00000100' ) ).toBe( 'Real Name' );
   });
 
-  it( 'returns a user\'s name if real_name is not available', () => {
-
+  it.skip( 'returns a user\'s username if real_name is not available', async() => {
+    expect.hasAssertions();
+    expect( await slack.getUserName( 'U00000200' ) ).toBe( 'username' );
   });
 
-  it( 'returns a fallback string if a user cannot be found', () => {
+  it.skip( 'returns a user\'s username regardless, if asked to', async() => {
+    expect.hasAssertions();
+    expect( await slack.getUserName( 'U00000100', true ) ).toBe( 'username' );
+  });
 
+  it( 'returns a fallback string if a user cannot be found', async() => {
+    expect.assertions( 2 );
+    const userName = await slack.getUserName( 'UXXXXXXXX' );
+    expect( userName ).toBeString();
+    expect( userName.length ).toBeGreaterThan( 0 );
   });
 
 }); // GetUserName.

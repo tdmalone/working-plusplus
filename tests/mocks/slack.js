@@ -6,8 +6,6 @@
 
 'use strict';
 
-/* eslint-disable no-empty-function */
-
 const options = {
   shouldPostMessageSucceed: true
 };
@@ -22,24 +20,37 @@ const chat = {
 
 const users = {
   list: () => {
+
     return new Promise( ( resolve ) => {
       resolve({
         ok: true,
+
+        /* eslint-disable camelcase */
         members: [
           {
-            id: 'U00000100'
+            id: 'U00000100',
+            name: 'username',
+            profile: {
+              real_name: 'Real Name'
+            }
           },
-          {
-            id: 'U00000200'
+          { // This user must not have a real_name; see getUserName tests.
+            id: 'U00000200',
+
+            name: 'username',
+            profile: {} // This user must not have a real_name; see getUserName tests.
           },
           {
             id: 'U00000300'
           }
         ]
+        /* eslint-enable camelcase */
+
       });
     });
-  }
-};
+
+  } // List.
+}; // Users.
 
 module.exports = {
   options,
