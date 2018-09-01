@@ -41,7 +41,9 @@ const users = {
             profile: {} // This user must not have a real_name; see getUserName tests.
           },
           {
-            id: 'U00000300'
+            id: 'U00000300',
+            name: 'username',
+            profile: {}
           }
         ]
         /* eslint-enable camelcase */

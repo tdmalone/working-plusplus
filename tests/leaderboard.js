@@ -11,7 +11,11 @@
 'use strict';
 
 const leaderboard = require( '../src/leaderboard' ),
-      helpers = require( '../src/helpers' );
+      helpers = require( '../src/helpers' ),
+      slack = require( '../src/slack' );
+
+const slackMock = require( './mocks/slack' );
+slack.setSlackClient( slackMock );
 
 describe( 'getLeaderboardUrl', () => {
 
@@ -68,6 +72,7 @@ describe( 'getLeaderboardUrl', () => {
 
 describe( 'rankItems', () => {
 
+  const emojiMatcher = /:[a-z0-9_-]+:/;
   const scores = [
     {
       item: 'U00000100',
@@ -96,63 +101,181 @@ describe( 'rankItems', () => {
     }
   ];
 
-  it( 'returns an array of strings', async() => {
+  it( 'returns an array of strings by default', async() => {
     expect.hasAssertions();
     const items = await leaderboard.rankItems( scores );
     expect( items ).toBeArray();
-    expect( items[0]).toBeString();
+    for ( const item of items ) {
+      expect( item ).toBeString();
+    }
   });
 
-  it( 'returns only users when users are asked for', () => {
-
+  it( 'returns an array of strings when the \'slack\' format is asked for', async() => {
+    expect.hasAssertions();
+    const items = await leaderboard.rankItems( scores, 'users', 'slack' );
+    expect( items ).toBeArray();
+    for ( const item of items ) {
+      expect( item ).toBeString();
+    }
   });
 
-  it( 'returns only things when things are asked for', () => {
-
+  it( 'returns an array of objects (rank, item, score, suffix) when asked for objects', async() => {
+    expect.hasAssertions();
+    const items = await leaderboard.rankItems( scores, 'users', 'object' );
+    expect( items ).toBeArray();
+    for ( const item of items ) {
+      expect( item )
+        .toBeObject()
+        .toContainAllKeys([ 'rank', 'item', 'score', 'suffix' ]);
+    }
   });
 
-  it( 'returns users by default', () => {
-
+  it( 'returns only users by default', async() => {
+    expect.hasAssertions();
+    const items = await leaderboard.rankItems( scores );
+    for ( const item of items ) {
+      expect( item ).toMatch( /U[A-Z0-9]{8}/ );
+    }
   });
 
-  it( 'returns users when users are asked for', () => {
-
+  it( 'returns only users when users are asked for', async() => {
+    expect.hasAssertions();
+    const items = await leaderboard.rankItems( scores, 'users' );
+    for ( const item of items ) {
+      expect( item ).toMatch( /U[A-Z0-9]{8}/ );
+    }
   });
 
-  it( 'returns items in order if provided in order', () => {
-
+  it( 'returns only things when things are asked for', async() => {
+    expect.hasAssertions();
+    const items = await leaderboard.rankItems( scores, 'things' );
+    for ( const item of items ) {
+      expect( item ).not.toMatch( /<@U[A-Z0-9]{8}>/ );
+    }
   });
 
-  it( 'includes an emoji for the first user result', () => {
-
+  it( 'returns items in order (when provided in order)', async() => {
+    expect.hasAssertions();
+    let count = 0;
+    const items = await leaderboard.rankItems( scores, 'users' );
+    for ( const item of items ) {
+      count++;
+      expect( item ).toContain( 'U00000' + count + '00' );
+    }
   });
 
-  it( 'includes an emoji for the first thing result', () => {
-
+  it( 'includes an emoji for (and only for) the users ranked #1', async() => {
+    expect.hasAssertions();
+    const items = await leaderboard.rankItems( scores, 'users' );
+    for ( const item of items ) {
+      if ( item.match( /^1\.\s/ ) ) {
+        expect( item ).toMatch( emojiMatcher );
+      } else {
+        expect( item ).not.toMatch( emojiMatcher );
+      }
+    }
   });
 
-  it( 'uses the same rank for items with the same score', () => {
-
+  it( 'includes an emoji for (and only for) the things ranked #1', async() => {
+    expect.hasAssertions();
+    const items = await leaderboard.rankItems( scores, 'things' );
+    for ( const item of items ) {
+      if ( item.match( /^1\.\s/ ) ) {
+        expect( item ).toMatch( emojiMatcher );
+      } else {
+        expect( item ).not.toMatch( emojiMatcher );
+      }
+    }
   });
 
-  it( 'increments the rank if items are scored differently', () => {
+  it( 'uses the same rank for items with the same score', async() => {
+    expect.hasAssertions();
 
+    const scores = [
+      {
+        item: 'U00000100',
+        score: 10
+      }, {
+        item: 'U00000200',
+        score: 10
+      }
+    ];
+
+    const items = await leaderboard.rankItems( scores, 'users' );
+    expect( items[0]).toMatch( /^1\.\s/ ).toMatch( /\b10\b/ );
+    expect( items[1]).toMatch( /^1\.\s/ ).toMatch( /\b10\b/ );
   });
 
-  it( 'starts from rank 1', () => {
+  it( 'increments the rank if items are scored differently', async() => {
+    expect.hasAssertions();
 
+    const scores = [
+      {
+        item: 'Thing1',
+        score: 10
+      }, {
+        item: 'Thing2',
+        score: 1
+      }
+    ];
+
+    const items = await leaderboard.rankItems( scores, 'things' );
+    expect( items[0]).toMatch( /^1\.\s/ );
+    expect( items[1]).toMatch( /^2\.\s/ );
   });
 
-  it( 'links user\'s names', () => {
-
+  it( 'starts from rank 1', async() => {
+    expect.hasAssertions();
+    const items = await leaderboard.rankItems( scores );
+    expect( items[0]).toMatch( /^1\.\s/ );
   });
 
-  it( 'includes an @ before the name of items', () => {
-
+  it( 'links user\'s names', async() => {
+    expect.hasAssertions();
+    const items = await leaderboard.rankItems( scores, 'users' );
+    for ( const item of items ) {
+      expect( item ).toMatch( /<@U[A-Z0-9]{8}>/ );
+    }
   });
 
-  it( 'includes a thing\'s current points', () => {
+  it( 'includes an item\'s current points', async() => {
+    expect.hasAssertions();
 
+    const scores = [
+      {
+        item: 'Thing1',
+        score: 75391230183
+      }
+    ];
+
+    const items = await leaderboard.rankItems( scores, 'things' );
+    expect( items[0]).toContain( scores[0].score );
+  });
+
+  it( 'returns the correct rank, score and suffix when objects are asked for', async() => {
+    expect.hasAssertions();
+
+    const scores = [
+      {
+        item: 'Thing1',
+        score: 1538931
+      },
+      {
+        item: 'Thing2',
+        score: 1
+      }
+    ];
+
+    let count = 0;
+    const items = await leaderboard.rankItems( scores, 'things', 'object' );
+    for ( const item of items ) {
+      const score = scores[count].score;
+      expect( item )
+        .toContainEntry([ 'rank', count + 1 ])
+        .toContainEntry([ 'score', score ])
+        .toContainEntry([ 'suffix', 'point' + ( 1 === score ? '' : 's' ) ]);
+      count++;
+    }
   });
 
 }); // RankItems.
