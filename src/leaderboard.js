@@ -101,7 +101,8 @@ const rankItems = async( topScores, itemType = 'users', format = 'slack' ) => {
         output = {
           rank,
           item: itemTitleCase,
-          score: score.score + ' point' + plural
+          score: score.score,
+          suffix: 'point' + plural
         };
         break;
     }
