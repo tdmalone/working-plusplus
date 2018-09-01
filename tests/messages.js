@@ -26,14 +26,12 @@ describe( 'getRandomMessage', () => {
     expect( typeof messages.getRandomMessage( operation, 'RandomThing' ) ).toBe( 'string' );
   });
 
-  it( 'throws an error for an invalid operation', () => {
+  it( 'throws \'invalid operation\' if an invalid operation is provided', () => {
     expect( () => {
-      messages.getRandomMessage( 'INVALID_OPERATION', 'RandomThing' );
-    }).toThrow();
+      messages.getRandomMessage( 'some-operation', 'RandomThing' );
+    }).toThrow( /invalid operation/i );
   });
 
-  it( 'throws an error if a suitable set cannot be found', () => {
-
-  });
+  // TODO: Add test for 'could not find set' / 'ran out of sets' throw.
 
 }); // GetRandomMessage.
