@@ -16,8 +16,8 @@
     "report-coverage": "codecov && cat ./coverage/lcov.info | codacy-coverage && cat ./coverage/lcov.info | coveralls"
   },
   "engines": {
-    "node": "10.8.0",
-    "yarn": "1.9.4"
+    "node": "10.11.0",
+    "yarn": "1.10.1"
   },
   "keywords": [
     "slack",
