@@ -13,7 +13,11 @@ module.exports = {
     path: '/some-path',
 
     body: {
-      token: process.env.SLACK_VERIFICATION_TOKEN // eslint-disable-line no-process-env
+      token: process.env.SLACK_VERIFICATION_TOKEN, // eslint-disable-line no-process-env
+      event: {
+        text: '',
+        channel: 'C12345678'
+      }
     },
 
     headers: {

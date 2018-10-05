@@ -12,10 +12,19 @@
 
 const leaderboard = require( '../src/leaderboard' ),
       helpers = require( '../src/helpers' ),
+      points = require( '../src/points' ),
       slack = require( '../src/slack' );
 
-const slackMock = require( './mocks/slack' );
+const expressMock = require( './mocks/express' ),
+      slackMock = require( './mocks/slack' );
+
 slack.setSlackClient( slackMock );
+
+// Catch all console output during tests.
+console.error = jest.fn();
+console.info = jest.fn();
+console.log = jest.fn();
+console.warn = jest.fn();
 
 describe( 'getLeaderboardUrl', () => {
 
@@ -282,24 +291,78 @@ describe( 'rankItems', () => {
 
 describe( 'getForSlack', () => {
 
-  it( 'retrieves the top scores', () => {
+  it( 'attempts to retrieve the top scores', async() => {
+    expect.hasAssertions();
 
-  });
+    points.retrieveTopScores = jest.fn( () => {
+      return [ {
+        item: '',
+        score: 0
+      } ];
+    });
 
-  it( 'separately ranks both users and things', () => {
-
+    await leaderboard.getForSlack({}, expressMock.request );
+    expect( points.retrieveTopScores ).toHaveBeenCalledTimes( 1 );
   });
 
   it( 'returns a Promise to send a Slack message', () => {
-
+    const getForSlack = leaderboard.getForSlack({}, expressMock.request );
+    expect( getForSlack ).toBeInstanceOf( Promise );
   });
 
-  it( 'sends a Slack message payload with attachment', () => {
+  it( 'sends a Slack message payload with attachment', async() => {
+    expect.hasAssertions();
+    slack.sendMessage = jest.fn();
+    await leaderboard.getForSlack( expressMock.request.body.event, expressMock.request );
 
+    expect( slack.sendMessage ).toHaveBeenCalledWith(
+      expect.objectContaining({ attachments: [ expect.any( Object ) ] }),
+      expect.anything(),
+    );
   });
 
-  it( 'sends a Slack message containing a full leaderboard URL', () => {
+  it( 'sends a Slack message back to the requesting channel', async() => {
+    expect.hasAssertions();
+    slack.sendMessage = jest.fn();
+    await leaderboard.getForSlack( expressMock.request.body.event, expressMock.request );
 
+    expect( slack.sendMessage ).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.stringContaining( expressMock.request.body.event.channel )
+    );
+  });
+
+  it( 'sends a Slack attachment with fields for each of Users and Things', async() => {
+    expect.hasAssertions();
+    slack.sendMessage = jest.fn();
+    await leaderboard.getForSlack( expressMock.request.body.event, expressMock.request );
+
+    expect( slack.sendMessage ).toHaveBeenCalledWith(
+      expect.objectContaining({
+        attachments: [
+          expect.objectContaining({
+            fields: [
+              expect.objectContaining({ title: 'Users' }),
+              expect.objectContaining({ title: 'Things' })
+            ]
+          })
+        ]
+      }),
+      expect.anything(),
+    );
+  });
+
+  it( 'sends a Slack message containing a full leaderboard URL', async() => {
+    expect.hasAssertions();
+    slack.sendMessage = jest.fn();
+    await leaderboard.getForSlack( expressMock.request.body.event, expressMock.request );
+
+    expect( slack.sendMessage ).toHaveBeenCalledWith(
+      expect.objectContaining({
+        text: expect.stringMatching( /<https:\/\/.*?>/ )
+      }),
+      expect.anything(),
+    );
   });
 
 }); // GetForSlack.
