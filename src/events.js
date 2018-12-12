@@ -98,8 +98,8 @@ const sendHelp = ( event ) => {
     '• `<@' + botUserID + '> help`: Display this message\n\n' +
     'You\'ll need to invite me to a channel before I can recognise ' +
     '`++` and `--` commands in it.\n\n' +
-    'If you\'re a developer, you can teach me new things! ' +
-    'See <https://github.com/tdmalone/working-plusplus|my GitHub repo> to get started.'
+    'If you\'re a developer, you can teach me new things! :awwww_yeah:  '
+     
   );
 
   return slack.sendMessage( message, event.channel );
