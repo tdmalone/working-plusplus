@@ -67,7 +67,7 @@ const extractAllEventData = ( text ) => {
     return false;
   }
 
-  return data;
+  return Object.values(data);
 
 }; // ExtractPlusMinusEventData.
 const extractPlusMinusEventData = ( text ) => {
