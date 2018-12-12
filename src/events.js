@@ -122,7 +122,8 @@ const handlers = {
   message: ( event ) => {
 
     // Extract the relevant data from the message text.
-    const { item, operation } = helpers.extractPlusMinusEventData( event.text );
+     for (let theitem of helpers.extractAllEventData(event.text)) {
+    const { item, operation } = helpers.extractPlusMinusEventData( theitem );
 
     if ( ! item || ! operation ) {
       return false;
@@ -136,7 +137,7 @@ const handlers = {
 
     // Otherwise, let's go!
     return handlePlusMinus( item, operation, event.channel );
-
+     }
   }, // Message event.
 
   /**
