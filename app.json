@@ -2,7 +2,7 @@
   "name": "Working PlusPlus++",
   "description": "Like plusplus.chat, but one that actually works, because you can host it yourself 😉",
   "website": "https://github.com/tdmalone/working-plusplus",
-  "repository": "https://github.com/rowdychildren/working-plusplus",
+  "repository": "https://github.com/tdmalone/working-plusplus",
   "keywords": [
     "slack",
     "karma"
