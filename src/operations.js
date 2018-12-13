@@ -7,7 +7,7 @@
 const operations = {
   PLUS: 'plus',
   MINUS: 'minus',
-  SELF: 'selfPlus'
+  SELF: 'selfPlus',
   EQUAL: 'equal'
 };
 
