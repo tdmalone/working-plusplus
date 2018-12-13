@@ -125,6 +125,10 @@ const sendHelp = ( event ) => {
 
 }; // SendHelp.
 
+const donothing = ( event ) => {
+
+}; // donothing
+
 const handlers = {
 
   /**
@@ -182,7 +186,10 @@ const handlers = {
       help: sendHelp,
       thx: sayThankyou,
       thanks: sayThankyou,
-      thankyou: sayThankyou
+      thankyou: sayThankyou,
+      '++': handlePlusMinus,
+      '--': handlePlusMinus,
+      '==': handlePlusEqual
     };
 
     const validCommands = Object.keys( appCommandHandlers ),
