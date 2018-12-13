@@ -80,7 +80,7 @@ const extractPlusMinusEventData = ( text ) => {
   }
 
   return {
-    item: data[1],
+    item: data[1].toUpperCase(),
     operation: data[2].substring( 0, 1 ).replace( '—', '-' )
   };
 
