@@ -116,8 +116,8 @@ const getRandomMessage = ( operation, item, score = 0 ) => {
     case operations.SELF:
       format = '<item> <message>';
       break;
-    
-    case operations.EQUAL:
+
+      case operations.EQUAL:
       format = '<message> *<item>* currently at <score> point<plural>.';
       break;
 

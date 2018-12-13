@@ -69,7 +69,6 @@ const handlePlusEqual = async( item, operation, channel ) => {
   return slack.sendMessage( message, channel );
 };
 
-
 /**
  * Sends a random thank you message to the requesting channel.
  *
