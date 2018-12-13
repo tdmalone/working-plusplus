@@ -20,6 +20,7 @@ messages[ operations.PLUS ] = [
     set: [
       'Congrats!',
       'Got it!',
+       'SOMEONE GET THIS PATRIOT A COAT',
       'Bravo.',
       'Oh well done.',
       'Nice work!',
@@ -49,6 +50,7 @@ messages[ operations.MINUS ] = [
     set: [
       'Oh RLY?',
       'Oh, really?',
+      'THE WALL JUST GOT 10 FEET HIGHER',
       'Oh :slightly_frowning_face:.',
       'I see.',
       'Ouch.',
