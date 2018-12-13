@@ -60,8 +60,20 @@ const extractCommand = ( message, commands ) => {
  *                   'operation' being done on it - expressed as a valid mathematical operation
  *                   (i.e. + or -).
  */
+const extractAllEventData = ( text ) => {
+  const data = text.match( /@([A-Za-z0-9:-_]+?)>?\s*(\+{2}|-{2}|—{1})/g );
+
+  if ( ! data ) {
+    return false;
+  }
+
+  return Object.values(data);
+
+}; // ExtractPlusMinusEventData.
 const extractPlusMinusEventData = ( text ) => {
-  const data = text.match( /@([A-Za-z0-9]+?)>?\s*(\+{2}|-{2}|—{1}|={2})/ );
+
+  const data = text.match( /@([A-Za-z0-9:-_]+?)>?\s*(\+{2}|-{2}|—{1})/ );
+
 
   if ( ! data ) {
     return false;
@@ -232,5 +244,6 @@ module.exports = {
   isTimeBasedTokenStillValid,
   isUser,
   maybeLinkItem,
-  render
+  render,
+  extractAllEventData    
 };
