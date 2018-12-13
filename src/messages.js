@@ -20,7 +20,7 @@ messages[ operations.PLUS ] = [
     set: [
       'Congrats!',
       'Got it!',
-       'SOMEONE GET THIS PATRIOT A COAT',
+      'SOMEONE GET THIS PATRIOT A COAT',
       'Bravo.',
       'Oh well done.',
       'Nice work!',
