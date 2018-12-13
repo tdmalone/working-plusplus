@@ -8,6 +8,7 @@ const operations = {
   PLUS: 'plus',
   MINUS: 'minus',
   SELF: 'selfPlus'
+  EQUAL: 'equal'
 };
 
 /**
@@ -23,6 +24,7 @@ const getOperationName = ( operation ) => {
   switch ( operation ) {
     case '+': operationName = operations.PLUS; break;
     case '-': operationName = operations.MINUS; break;
+    case '=': operationName = operations.EQUAL; break;
   }
   /* eslint-enable max-statements-per-line */
 

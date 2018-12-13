@@ -102,6 +102,10 @@ const getRandomMessage = ( operation, item, score = 0 ) => {
     case operations.SELF:
       format = '<item> <message>';
       break;
+    
+    case operations.equal:
+    format = '*<item>* is currently at <score> point<plural>.';
+    break;
 
     default:
       throw Error ( 'Invalid operation: ' + operation );
