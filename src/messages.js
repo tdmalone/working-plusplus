@@ -18,6 +18,9 @@ messages[ operations.PLUS ] = [
   {
     probability: 100,
     set: [
+      'Sincerest congratulations.',
+      'Delicious.',
+      'SOMEONE GET THIS PATRIOT A COAT',
       'Congrats!',
       'Got it!',
       'Bravo.',
