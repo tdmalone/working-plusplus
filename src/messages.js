@@ -33,7 +33,8 @@ messages[ operations.PLUS ] = [
       'Well, well!',
       'Well played.',
       'Sincerest congratulations.',
-      'Delicious.'
+      'Delicious.',
+      'SOMEONE GET THIS PATRIOT A COAT'
     ]
   },
   {
@@ -53,7 +54,8 @@ messages[ operations.MINUS ] = [
       'Ouch.',
       'Oh là là.',
       'Oh.',
-      'Condolences.'
+      'Condolences.',
+      'THE WALL JUST GOT 10 FEET HIGHER'
     ]
   },
   {
@@ -110,7 +112,7 @@ const getRandomMessage = ( operation, item, score = 0 ) => {
   switch ( operation ) {
     case operations.MINUS:
     case operations.PLUS:
-      format = '<message> *<item>* is now on <score> point<plural>.';
+      format = '<message> *<item>* has <score> point<plural>.';
       break;
 
     case operations.SELF:
