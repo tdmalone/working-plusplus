@@ -119,7 +119,6 @@ const sendHelp = ( event ) => {
     '`++` and `--` commands in it.\n\n' +
     'If you\'re a developer, you can teach me new things! ' +
     'See <https://github.com/tdmalone/working-plusplus|my GitHub repo> to get started.'
-     
   );
 
   return slack.sendMessage( message, event.channel );
@@ -142,8 +141,7 @@ const handlers = {
   message: ( event ) => {
 
     // Extract the relevant data from the message text.
-     for (let theitem of helpers.extractAllEventData(event.text)) {
-    const { item, operation } = helpers.extractPlusMinusEventData( theitem );
+    const { item, operation } = helpers.extractPlusMinusEventData( event.text );
 
     if ( ! item || ! operation ) {
       return false;
