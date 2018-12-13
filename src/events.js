@@ -159,8 +159,7 @@ const handlers = {
 
     // Otherwise, let's go!
     return handlePlusMinus( item, operation, event.channel );
-     }
-  }, // Message event.
+  } // Message event.
 
   /**
    * Handles 'app_mention' events sent from Slack, primarily by looking for known app commands, and
