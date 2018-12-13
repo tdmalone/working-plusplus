@@ -71,7 +71,9 @@ const extractAllEventData = ( text ) => {
 
 }; // ExtractPlusMinusEventData.
 const extractPlusMinusEventData = ( text ) => {
+
   const data = text.match( /@([A-Za-z0-9:-_]+?)>?\s*(\+{2}|-{2}|—{1})/ );
+
 
   if ( ! data ) {
     return false;
