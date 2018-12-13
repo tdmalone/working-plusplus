@@ -55,7 +55,8 @@ messages[ operations.MINUS ] = [
       'Oh là là.',
       'Oh.',
       'Condolences.',
-      'THE WALL JUST GOT 10 FEET HIGHER'
+      'THE WALL JUST GOT 10 FEET HIGHER',
+      'oh.'
     ]
   },
   {
