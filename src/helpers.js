@@ -238,5 +238,5 @@ module.exports = {
   isUser,
   maybeLinkItem,
   render,
-  extractAllEventData    
+    
 };
