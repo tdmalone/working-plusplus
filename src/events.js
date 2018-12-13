@@ -152,9 +152,9 @@ const handlers = {
       handleSelfPlus( event.user, event.channel );
       return false;
     }
-    
+
     if ( '=' === operation ) {
-      return handlePlusEqual( item, operation, event.channel );
+      return handlePlusEqual( item, event.channel );
     }
 
     // Otherwise, let's go!
