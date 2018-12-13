@@ -33,7 +33,8 @@ messages[ operations.PLUS ] = [
       'Well, well!',
       'Well played.',
       'Sincerest congratulations.',
-      'Delicious.'
+      'Delicious.',
+      'SOMEONE GET THIS PATRIOT A COAT'
     ]
   },
   {
@@ -53,7 +54,8 @@ messages[ operations.MINUS ] = [
       'Ouch.',
       'Oh là là.',
       'Oh.',
-      'Condolences.'
+      'Condolences.',
+      'THE WALL JUST GOT 10 FEET HIGHER'
     ]
   },
   {
