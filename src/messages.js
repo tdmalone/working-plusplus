@@ -62,6 +62,20 @@ messages[ operations.MINUS ] = [
   }
 ];
 
+messages[ operations.EQUAL ] = [
+  {
+    probability: 100,
+    set: [
+      'How is',
+      'Why is'
+    ]
+  },
+  {
+    probability: 1,
+    set: [ ':shifty:' ]
+  }
+];
+
 messages[ operations.SELF ] = [
   {
     probability: 100,
@@ -104,7 +118,7 @@ const getRandomMessage = ( operation, item, score = 0 ) => {
       break;
     
     case operations.EQUAL:
-      format = '*<item>* is currently at <score> point<plural>.';
+      format = '<message> *<item>* currently at <score> point<plural>.';
       break;
 
     default:
