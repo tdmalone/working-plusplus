@@ -73,7 +73,7 @@ const extractPlusMinusEventData = ( text ) => {
   }
 
   return {
-    item: data[1].toUpperCase(),
+    item: data[1],
     operation: data[2].substring( 0, 1 ).replace( '—', '-' )
   };
 
@@ -237,5 +237,6 @@ module.exports = {
   isTimeBasedTokenStillValid,
   isUser,
   maybeLinkItem,
-  render
+  render,
+    
 };
