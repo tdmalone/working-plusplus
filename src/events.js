@@ -51,6 +51,25 @@ const handlePlusMinus = async( item, operation, channel ) => {
 };
 
 /**
+ * Handles a random against a user, and then notifies the channel of the new score.
+ *
+ * @param {string} item      The Slack user ID (if user) or name (if thing) of the item being
+ *                           operated on.
+ * @param {string} operation The mathematical operation performed on the item's score.
+ * @param {object} channel   The ID of the channel (Cxxxxxxxx for public channels or Gxxxxxxxx for
+ *                           private channels - aka groups) that the message was sent from.
+ * @return {Promise} A Promise to send a Slack message back to the requesting channel after the
+ *                   points have been updated.
+ */
+const handlePlusRandom = async( item, operation, channel ) => {
+  const score = await points.randomScore( item, operation ),
+        operationName = operations.getOperationName( operation ),
+        message = messages.getRandomMessage( operationName, item, score );
+
+  return slack.sendMessage( message, channel );
+};
+
+/**
  * Handles a = against a user, and then notifies the channel of the new score.
  *
  * @param {string} item      The Slack user ID (if user) or name (if thing) of the item being
@@ -162,6 +181,9 @@ const handlers = {
     }
     if ( '=' === operation ) {
       return handlePlusEqual( item, operation, event.channel );
+    }
+    if ( '#' === operation ) {
+      return handlePlusRandom( item, operation, event.channel );
     }
 
     // Otherwise, let's go!
