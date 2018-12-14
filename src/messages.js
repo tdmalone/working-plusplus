@@ -20,6 +20,7 @@ messages[ operations.PLUS ] = [
     set: [
       'Congrats!',
       'Got it!',
+      'SOMEONE GET THIS PATRIOT A COAT',
       'Bravo.',
       'Oh well done.',
       'Nice work!',
@@ -33,7 +34,8 @@ messages[ operations.PLUS ] = [
       'Well, well!',
       'Well played.',
       'Sincerest congratulations.',
-      'Delicious.'
+      'Delicious.',
+      'SOMEONE GET THIS PATRIOT A COAT'
     ]
   },
   {
@@ -48,12 +50,14 @@ messages[ operations.MINUS ] = [
     set: [
       'Oh RLY?',
       'Oh, really?',
+      'THE WALL JUST GOT 10 FEET HIGHER',
       'Oh :slightly_frowning_face:.',
       'I see.',
       'Ouch.',
       'Oh là là.',
       'Oh.',
-      'Condolences.'
+      'Condolences.',
+      'THE WALL JUST GOT 10 FEET HIGHER'
     ]
   },
   {

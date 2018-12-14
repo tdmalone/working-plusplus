@@ -60,30 +60,37 @@ const extractCommand = ( message, commands ) => {
  *                   'operation' being done on it - expressed as a valid mathematical operation
  *                   (i.e. + or -).
  */
-const extractAllEventData = ( text ) => {
-  const data = text.match( /@([A-Za-z0-9:-_]+?)>?\s*(\+{2}|-{2}|—{1})/g );
 
-  if ( ! data ) {
+const extractPlusMinusEventData = (text) => {
+
+  const data = text.match(/@([A-Za-z0-9:-_]+?)>?\s*(\+{2}|-{2}|—{1}|={2}|#{2})/);
+
+
+  if (!data) {
     return false;
   }
 
-  return Object.values(data);
-
-}; // ExtractPlusMinusEventData.
-const extractPlusMinusEventData = ( text ) => {
-
-  const data = text.match( /@([A-Za-z0-9:-_]+?)>?\s*(\+{2}|-{2}|—{1})/ );
-
-
-  if ( ! data ) {
-    return false;
-  }
-
+<<<<<<< HEAD
   return {
     item: data[1].toUpperCase(),
     operation: data[2].substring( 0, 1 ).replace( '—', '-' )
   };
 
+=======
+  if ('##' === data[2]) {
+    var ops = ['+', '-'];
+    var item = ops[Math.floor(Math.random() * ops.length)];
+    return {
+      item: data[1].toUpperCase(),
+      operation: item
+    };
+  } else {
+    return {
+      item: data[1].toUpperCase(),
+      operation: data[2].substring(0, 1).replace('—', '-')
+    };
+  }
+>>>>>>> c67cceb6ea3768b40af96ad2c9b0af3884d9f346
 }; // ExtractPlusMinusEventData.
 
 /**
@@ -244,6 +251,5 @@ module.exports = {
   isTimeBasedTokenStillValid,
   isUser,
   maybeLinkItem,
-  render,
-  extractAllEventData    
+  render
 };

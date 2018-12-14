@@ -113,6 +113,8 @@ const sendHelp = ( event ) => {
     'Sure, here\'s what I can do:\n\n' +
     '• `@Someone++`: Add points to a user or a thing\n' +
     '• `@Someone--`: Subtract points from a user or a thing\n' +
+    '• `@Someone==`: Gets current points from a user or a thing\n' +
+    '• `@Someone##`: Randomly adds or removes points from a user or a thing\n' +
     '• `<@' + botUserID + '> leaderboard`: Display the leaderboard\n' +
     '• `<@' + botUserID + '> help`: Display this message\n\n' +
     'You\'ll need to invite me to a channel before I can recognise ' +
@@ -142,11 +144,12 @@ const handlers = {
    * @return {bool|Promise} Either `false` if the event cannot be handled, or a Promise to send a
    *                        Slack message back to the requesting channel.
    */
-  message: ( event ) => {
+      
+      
+      message: ( event ) => {
 
     // Extract the relevant data from the message text.
-     for (let theitem of helpers.extractAllEventData(event.text)) {
-    const { item, operation } = helpers.extractPlusMinusEventData( theitem );
+    const { item, operation } = helpers.extractPlusMinusEventData( event.text );
 
     if ( ! item || ! operation ) {
       return false;
@@ -157,15 +160,16 @@ const handlers = {
       handleSelfPlus( event.user, event.channel );
       return false;
     }
-    
     if ( '=' === operation ) {
       return handlePlusEqual( item, operation, event.channel );
     }
 
     // Otherwise, let's go!
     return handlePlusMinus( item, operation, event.channel );
-     }
+
   }, // Message event.
+
+ 
 
   /**
    * Handles 'app_mention' events sent from Slack, primarily by looking for known app commands, and
