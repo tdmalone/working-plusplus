@@ -51,6 +51,25 @@ const handlePlusMinus = async( item, operation, channel ) => {
 };
 
 /**
+ * Handles a random against a user, and then notifies the channel of the new score.
+ *
+ * @param {string} item      The Slack user ID (if user) or name (if thing) of the item being
+ *                           operated on.
+ * @param {string} operation The mathematical operation performed on the item's score.
+ * @param {object} channel   The ID of the channel (Cxxxxxxxx for public channels or Gxxxxxxxx for
+ *                           private channels - aka groups) that the message was sent from.
+ * @return {Promise} A Promise to send a Slack message back to the requesting channel after the
+ *                   points have been updated.
+ */
+const handlePlusRandom = async( item, operation, channel ) => {
+  const score = await points.randomScore( item, operation ),
+        operationName = operations.getOperationName( operation ),
+        message = messages.getRandomMessage( operationName, item, score );
+
+  return slack.sendMessage( message, channel );
+};
+
+/**
  * Handles a = against a user, and then notifies the channel of the new score.
  *
  * @param {string} item      The Slack user ID (if user) or name (if thing) of the item being
@@ -62,7 +81,7 @@ const handlePlusMinus = async( item, operation, channel ) => {
  *                   points have been updated.
  */
 const handlePlusEqual = async( item, operation, channel ) => {
-  const score = await points.GetScore( item, operation ),
+  const score = await points.getScore( item, operation ),
         operationName = operations.getOperationName( operation ),
         message = messages.getRandomMessage( operationName, item, score );
 
@@ -114,7 +133,7 @@ const sendHelp = ( event ) => {
     '• `@Someone++`: Add points to a user or a thing\n' +
     '• `@Someone--`: Subtract points from a user or a thing\n' +
     '• `@Someone==`: Gets current points from a user or a thing\n' +
-    '• `@Someone##`: Randomly adds or removes points from a user or a thing\n' +
+    '• `@Someone##`: Randomly adds or removes 1-5 points from a user or a thing\n' +
     '• `<@' + botUserID + '> leaderboard`: Display the leaderboard\n' +
     '• `<@' + botUserID + '> help`: Display this message\n\n' +
     'You\'ll need to invite me to a channel before I can recognise ' +
@@ -162,6 +181,9 @@ const handlers = {
     }
     if ( '=' === operation ) {
       return handlePlusEqual( item, operation, event.channel );
+    }
+    if ( '#' === operation ) {
+      return handlePlusRandom( item, operation, event.channel );
     }
 
     // Otherwise, let's go!
