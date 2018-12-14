@@ -113,6 +113,8 @@ const sendHelp = ( event ) => {
     'Sure, here\'s what I can do:\n\n' +
     '• `@Someone++`: Add points to a user or a thing\n' +
     '• `@Someone--`: Subtract points from a user or a thing\n' +
+    '• `@Someone==`: Gets current points from a user or a thing\n' +
+    '• `@Someone##`: Randomly adds or removes points from a user or a thing\n' +
     '• `<@' + botUserID + '> leaderboard`: Display the leaderboard\n' +
     '• `<@' + botUserID + '> help`: Display this message\n\n' +
     'You\'ll need to invite me to a channel before I can recognise ' +

@@ -61,22 +61,28 @@ const extractCommand = ( message, commands ) => {
  *                   (i.e. + or -).
  */
 
+const extractPlusMinusEventData = (text) => {
+
+  const data = text.match(/@([A-Za-z0-9:-_]+?)>?\s*(\+{2}|-{2}|—{1}|={2}|#{2})/);
 
 
-const extractPlusMinusEventData = ( text ) => {
-
-  const data = text.match( /@([A-Za-z0-9:-_]+?)>?\s*(\+{2}|-{2}|—{1}|={2})/ );
-
-
-  if ( ! data ) {
+  if (!data) {
     return false;
   }
 
-  return {
-    item: data[1].toUpperCase(),
-    operation: data[2].substring( 0, 1 ).replace( '—', '-' )
-  };
-
+  if ('##' === data[2]) {
+    var ops = ['+', '-'];
+    var item = ops[Math.floor(Math.random() * ops.length)];
+    return {
+      item: data[1].toUpperCase(),
+      operation: item
+    };
+  } else {
+    return {
+      item: data[1].toUpperCase(),
+      operation: data[2].substring(0, 1).replace('—', '-')
+    };
+  }
 }; // ExtractPlusMinusEventData.
 
 /**
