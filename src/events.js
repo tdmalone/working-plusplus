@@ -81,7 +81,7 @@ const handlePlusRandom = async( item, operation, channel ) => {
  *                   points have been updated.
  */
 const handlePlusEqual = async( item, operation, channel ) => {
-  const score = await points.GetScore( item, operation ),
+  const score = await points.getScore( item, operation ),
         operationName = operations.getOperationName( operation ),
         message = messages.getRandomMessage( operationName, item, score );
 
