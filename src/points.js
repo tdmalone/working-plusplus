@@ -109,6 +109,7 @@ const GetScore = async( item, operation ) => {
 
   // Connect to the DB, and create a table if it's not yet there.
   // We also set up the citext extension, so that we can easily be case insensitive.
+  operation = operation;
   const dbClient = await postgres.connect();
   await dbClient.query( '\
     CREATE EXTENSION IF NOT EXISTS citext; \
