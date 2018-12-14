@@ -124,7 +124,7 @@ const randomScore = async( item, operation ) => {
   // TODO: Fix potential SQL injection issues here, even though we know the input should be safe.
   await dbClient.query( '\
     INSERT INTO ' + scoresTableName + ' VALUES (\'' + item + '\', ' + operation + ' ' + amount + ') \
-    ON CONFLICT (item) DO UPDATE SET score = ' + scoresTableName + '.score ' + operation + ' ' + amount + ' 1; \
+    ON CONFLICT (item) DO UPDATE SET score = ' + scoresTableName + '.score ' + operation + ' ' + amount + ' ; \
   ' );
 
   // Get the new value.
