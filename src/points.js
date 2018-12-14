@@ -180,5 +180,6 @@ const GetScore = async( item, operation ) => {
 module.exports = {
   retrieveTopScores,
   updateScore,
+  randomScore,
   GetScore
 };
