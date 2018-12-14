@@ -70,13 +70,6 @@ const extractPlusMinusEventData = (text) => {
     return false;
   }
 
-<<<<<<< HEAD
-  return {
-    item: data[1].toUpperCase(),
-    operation: data[2].substring( 0, 1 ).replace( '—', '-' )
-  };
-
-=======
   if ('##' === data[2]) {
     var ops = ['+', '-'];
     var item = ops[Math.floor(Math.random() * ops.length)];
@@ -90,7 +83,6 @@ const extractPlusMinusEventData = (text) => {
       operation: data[2].substring(0, 1).replace('—', '-')
     };
   }
->>>>>>> c67cceb6ea3768b40af96ad2c9b0af3884d9f346
 }; // ExtractPlusMinusEventData.
 
 /**
