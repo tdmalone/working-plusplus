@@ -105,7 +105,7 @@ const updateScore = async( item, operation ) => {
  * @param {string} operation The mathematical operation performed on the item's score.
  * @return {int} The item's new score after the update has been applied.
  */
-const GetScore = async( item ) => {
+const getScore = async( item ) => {
 
   // Connect to the DB, and create a table if it's not yet there.
   // We also set up the citext extension, so that we can easily be case insensitive.
@@ -132,5 +132,5 @@ const GetScore = async( item ) => {
 module.exports = {
   retrieveTopScores,
   updateScore,
-  GetScore
+  getScore
 };
