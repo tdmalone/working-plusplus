@@ -233,5 +233,5 @@ module.exports = {
   isTimeBasedTokenStillValid,
   isUser,
   maybeLinkItem,
-  render 
+  render`
 };
