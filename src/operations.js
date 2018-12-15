@@ -28,6 +28,7 @@ const getOperationName = ( operation ) => {
     case '-': operationName = operations.MINUS; break;
     case '=': operationName = operations.EQUAL; break;
     case '#': operationName = operations.RANDOM; break;
+    case '!': operationName = operations.REALLYRANDOM; break;
   }
   /* eslint-enable max-statements-per-line */
 
