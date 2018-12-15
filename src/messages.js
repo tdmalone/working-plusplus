@@ -111,7 +111,21 @@ messages[ operations.RANDOM ] = [
     set: [ ':shifty:' ]
   }
 ];
-
+messages[ operations.REALLYRANDOM ] = [
+  {
+    probability: 100,
+    set: [
+      'Hahahahahahaha no.',
+      'Nope.',
+      'No. Just no.',
+      'Not cool!'
+    ]
+  },
+  {
+    probability: 1,
+    set: [ ':shifty:' ]
+  }
+];
 /**
  * Retrieves a random message from the given pool of messages.
  *
