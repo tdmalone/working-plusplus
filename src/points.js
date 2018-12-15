@@ -141,6 +141,44 @@ const randomScore = async( item, operation ) => {
 
 }; // UpdateScore.
 
+
+
+const reallyRandomScore = async( item, operation ) => {
+
+  // Connect to the DB, and create a table if it's not yet there.
+  // We also set up the citext extension, so that we can easily be case insensitive.
+  const dbClient = await postgres.connect();
+  await dbClient.query( '\
+    CREATE EXTENSION IF NOT EXISTS citext; \
+    CREATE TABLE IF NOT EXISTS ' + scoresTableName + ' (item CITEXT PRIMARY KEY, score INTEGER); \
+  ' );
+  //Set Random Operation
+  var ops = ['+', '-'];
+  var operation = ops[Math.floor(Math.random() * ops.length)];
+  //Set Random int
+  var N = 100;
+  var numbers = Array.apply(null, {length: N}).map(Number.call, Number);
+  var amount = numbers[Math.floor(Math.random() * numbers.length)];
+  // Atomically record the action.
+  // TODO: Fix potential SQL injection issues here, even though we know the input should be safe.
+  await dbClient.query( '\
+    INSERT INTO ' + scoresTableName + ' VALUES (\'' + item + '\', ' + operation + ' ' + amount + ') \
+    ON CONFLICT (item) DO UPDATE SET score = ' + scoresTableName + '.score ' + operation + ' ' + amount + ' ; \
+  ' );
+
+  // Get the new value.
+  // TODO: Fix potential SQL injection issues here, even though we know the input should be safe.
+  const dbSelect = await dbClient.query( '\
+    SELECT score FROM ' + scoresTableName + ' WHERE item = \'' + item + '\'; \
+  ' );
+
+  await dbClient.release();
+  const score = dbSelect.rows[0].score;
+
+  console.log( item + ' now on ' + score );
+  return score;
+
+}; // UpdateScore.
 /**
  * Gets score
  * into the database with an assumed initial score of 0.
@@ -181,5 +219,6 @@ module.exports = {
   retrieveTopScores,
   updateScore,
   randomScore,
+  reallyRandomScore,
   getScore
 };

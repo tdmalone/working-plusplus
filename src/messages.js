@@ -140,6 +140,10 @@ const getRandomMessage = (operation, item, score = 0) => {
     case operations.RANDOM:
       format = '<item> was randomly changed to <score>';
       break;
+    
+    case operations.REALLYRANDOM:
+      format = '<item> was randomly changed to <score>';
+      break;
 
     case operations.EQUAL:
       format = '<message> *<item>* currently at <score> point<plural>.';
