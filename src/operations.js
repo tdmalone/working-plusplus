@@ -9,7 +9,8 @@ const operations = {
   MINUS: 'minus',
   SELF: 'selfPlus',
   RANDOM: 'random',
-  EQUAL: 'equal'
+  EQUAL: 'equal',
+  REALLYRANDOM: 'reallyrandom'
 };
 
 /**
