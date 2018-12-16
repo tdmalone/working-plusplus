@@ -144,7 +144,7 @@ const getRandomMessage = (operation, item, score = 0) => {
   switch (operation) {
     case operations.MINUS:
     case operations.PLUS:
-      format = '<message> *<item>* has <score> point<plural>.';
+      format = '<message> *<item>* has <score> princess point<plural>.';
       break;
 
     case operations.SELF:
@@ -160,7 +160,7 @@ const getRandomMessage = (operation, item, score = 0) => {
       break;
 
     case operations.EQUAL:
-      format = '<message> *<item>* currently at <score> point<plural>.';
+      format = '<message> *<item>* currently at <score> princess point<plural>.';
       break;
 
     default:
