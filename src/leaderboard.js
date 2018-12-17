@@ -92,7 +92,7 @@ const rankItems = async( topScores, itemType = 'users', format = 'slack' ) => {
 
         // If this is the first item, it's the winner!
         if ( ! items.length ) {
-          output += ' ' + ( isUser ? ':princess:' : ':pepe:' );
+          output += ' ' + ( isUser ? ':nail_care:' : ':pepe:' );
         }
 
         break;
@@ -100,7 +100,7 @@ const rankItems = async( topScores, itemType = 'users', format = 'slack' ) => {
       case 'object':
         output = {
           rank,
-          item: itemTitleCase,
+          item: itemTitleCase
           score: score.score + ' point' + plural
         };
         break;
