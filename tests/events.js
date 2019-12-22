@@ -37,18 +37,38 @@ beforeEach( () => {
   slack.sendMessage.mockClear();
 });
 
-describe( 'handleSelfPlus', () => {
+describe( 'handlePlusMinus', () => {
 
   const user = 'U12345678',
-        channel = 'C12345678';
+        item = 'SomeRandomThing',
+        item2 = 'SomeOtherThing',
+        channel = 'C12345678',
+        score = 5;
+
+  /** @returns {integer} Returns a fake score. */
+  const updateScoreMock = () => {
+    return score;
+  };
 
   it( 'logs an attempt by a user to increment their own score', () => {
-    events.handleSelfPlus( user, channel );
+    const mentions = [
+      {
+        item: user,
+        operation: '+'
+      }
+    ];
+    events.handlePlusMinus( mentions, user, channel );
     expect( console.log ).toHaveBeenCalledTimes( 1 );
   });
 
   it( 'gets a message from the \'self plus\' collection', () => {
-    events.handleSelfPlus( user, channel );
+    const mentions = [
+      {
+        item: user,
+        operation: '+'
+      }
+    ];
+    events.handlePlusMinus( mentions, user, channel );
 
     expect( messages.getRandomMessage )
       .toHaveBeenCalledTimes( 1 )
@@ -62,25 +82,18 @@ describe( 'handleSelfPlus', () => {
     slack.sendMessage = jest.fn();
     slack.setSlackClient( slackClientMock );
 
-    events.handleSelfPlus( user, channel );
+    const mentions = [
+      {
+        item: user,
+        operation: '+'
+      }
+    ];
+    events.handlePlusMinus( mentions, user, channel );
 
     expect( slack.sendMessage )
       .toHaveBeenCalledTimes( 1 )
       .toHaveBeenCalledWith( expect.stringContaining( user ), channel );
   });
-
-});
-
-describe( 'handlePlusMinus', () => {
-
-  const item = 'SomeRandomThing',
-        channel = 'C12345678',
-        score = 5;
-
-  /** @returns {integer} Returns a fake score. */
-  const updateScoreMock = () => {
-    return score;
-  };
 
   it( 'calls the score updater to update an item\'s score', () => {
     const slack = require( '../src/slack' ),
@@ -90,11 +103,24 @@ describe( 'handlePlusMinus', () => {
     slack.setSlackClient( slackClientMock );
     points.updateScore = jest.fn();
 
-    events.handlePlusMinus( item, '+', channel );
+    const operation = '+';
+    const mentions = [
+      {
+        item,
+        operation
+      },
+      {
+        item: item2,
+        operation
+      }
+    ];
+    events.handlePlusMinus( mentions, user, channel ).then( () => {
+      expect( points.updateScore )
+        .toHaveBeenCalledTimes( 2 )
+        .toHaveBeenNthCalledWith( 1, item, '+' )
+        .toHaveBeenNthCalledWith( 2, item2, '+' );
+    });
 
-    expect( points.updateScore )
-      .toHaveBeenCalledTimes( 1 )
-      .toHaveBeenCalledWith( item, '+' );
   });
 
   it.each([ [ 'plus', '+' ], [ 'minus', '-' ] ])(
@@ -111,10 +137,21 @@ describe( 'handlePlusMinus', () => {
       points.updateScore = jest.fn( updateScoreMock );
       messages.getRandomMessage = jest.fn();
 
-      return events.handlePlusMinus( item, operation, channel ).then( () => {
+      const mentions = [
+        {
+          item,
+          operation
+        },
+        {
+          item: item2,
+          operation
+        }
+      ];
+      return events.handlePlusMinus( mentions, user, channel ).then( () => {
         expect( messages.getRandomMessage )
-          .toHaveBeenCalledTimes( 1 )
-          .toHaveBeenCalledWith( operationName, item, score );
+          .toHaveBeenCalledTimes( 2 )
+          .toHaveBeenNthCalledWith( 1, operationName, item, score )
+          .toHaveBeenNthCalledWith( 2, operationName, item2, score );
       });
     }
   );
@@ -130,7 +167,17 @@ describe( 'handlePlusMinus', () => {
     points.updateScore = jest.fn();
     slack.sendMessage = jest.fn();
 
-    return events.handlePlusMinus( item, '+', channel ).then( () => {
+    const mentions = [
+      {
+        item,
+        operation: '+'
+      },
+      {
+        item: item2,
+        operation: '+'
+      }
+    ];
+    return events.handlePlusMinus( mentions, user, channel ).then( () => {
       expect( slack.sendMessage )
         .toHaveBeenCalledTimes( 1 )
         .toHaveBeenCalledWith( expect.stringContaining( item ), channel );
@@ -156,16 +203,6 @@ describe( 'handlers.message', () => {
     const event = {
       type: eventType,
       text: '<@U12345678>+-+' // Invalid operation.
-    };
-
-    expect( handlers.message( event ) ).toBeFalse();
-  });
-
-  it( 'returns false if a user trying to ++ themselves', () => {
-    const event = {
-      type: eventType,
-      text: '<@U12345678>++',
-      user: 'U12345678'
     };
 
     expect( handlers.message( event ) ).toBeFalse();

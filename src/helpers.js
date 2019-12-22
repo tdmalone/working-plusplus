@@ -55,22 +55,32 @@ const extractCommand = ( message, commands ) => {
  * We take the operation down to one character, and also support — due to iOS' replacement of --.
  *
  * @param {string} text The message text sent through in the event.
- * @returns {object} An object containing both the 'item' being referred to - either a Slack user
- *                   ID (eg. 'U12345678') or the name of a 'thing' (eg. 'NameOfThing'); and the
- *                   'operation' being done on it - expressed as a valid mathematical operation
- *                   (i.e. + or -).
+ * @returns {object} An array of objects containing both the 'item' being referred to - either a
+ *                   Slack user ID (eg. 'U12345678') or the name of a 'thing' (eg. 'NameOfThing');
+ *                   and the 'operation' being done on it - expressed as a valid mathematical
+ *                   operation (i.e. + or -).
  */
 const extractPlusMinusEventData = ( text ) => {
-  const data = text.match( /@([A-Za-z0-9]+?)>?\s*(\+{2}|-{2}|—{1})/ );
+  const matchAll = /@([A-Za-z0-9]+?)>?\s*(\+{2}|-{2}|—{1})/g;
+  const matchOne = /@([A-Za-z0-9]+?)>?\s*(\+{2}|-{2}|—{1})/;
 
-  if ( ! data ) {
+  const matches = text.match( matchAll );
+
+  if ( null === matches ) {
     return false;
   }
 
-  return {
-    item: data[1],
-    operation: data[2].substring( 0, 1 ).replace( '—', '-' )
-  };
+  const data = [];
+  for ( const match of matches ) {
+    const parts = match.match( matchOne );
+    data.push(
+      {
+        item: parts[1],
+        operation: parts[2].substring( 0, 1 ).replace( '—', '-' )
+      }
+    );
+  }
+  return data;
 
 }; // ExtractPlusMinusEventData.
 
