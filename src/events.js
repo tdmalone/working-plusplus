@@ -17,37 +17,36 @@ const slack = require( './slack' ),
 const camelCase = require( 'lodash.camelcase' );
 
 /**
+ * Handles a plus or minus against a user, and then notifies the channel of the new score.
  * Handles an attempt by a user to 'self plus' themselves, which includes both logging the attempt
  * and letting the user know it wasn't successful.
  *
- * @param {object} user    The ID of the user (Uxxxxxxxx) who tried to self plus.
- * @param {object} channel The ID of the channel (Cxxxxxxxx for public channels or Gxxxxxxxx for
- *                         private channels - aka groups) that the message was sent from.
- * @return {Promise} A Promise to send a Slack message back to the requesting channel.
- */
-const handleSelfPlus = ( user, channel ) => {
-  console.log( user + ' tried to alter their own score.' );
-  const message = messages.getRandomMessage( operations.operations.SELF, user );
-  return slack.sendMessage( message, channel );
-};
-
-/**
- * Handles a plus or minus against a user, and then notifies the channel of the new score.
- *
- * @param {string} item      The Slack user ID (if user) or name (if thing) of the item being
- *                           operated on.
- * @param {string} operation The mathematical operation performed on the item's score.
+ * @param {object} mentions  Array of parsed objects from a Slack message with objects containing
+ *                           the Slack user ID (if user) or name (if thing) of the item being
+ *                           operated on and the +/- operation performed on the item's score.
+ * @param {object} user      The ID of the user (Uxxxxxxxx) who sent the message.
  * @param {object} channel   The ID of the channel (Cxxxxxxxx for public channels or Gxxxxxxxx for
  *                           private channels - aka groups) that the message was sent from.
  * @return {Promise} A Promise to send a Slack message back to the requesting channel after the
  *                   points have been updated.
  */
-const handlePlusMinus = async( item, operation, channel ) => {
-  const score = await points.updateScore( item, operation ),
-        operationName = operations.getOperationName( operation ),
-        message = messages.getRandomMessage( operationName, item, score );
+const handlePlusMinus = async( mentions, user, channel ) => {
 
-  return slack.sendMessage( message, channel );
+  const messageLines = [];
+  for ( const mention of mentions ) {
+
+    // Handle self plus as an event avoiding incrementing the score
+    if ( mention.item === user && '+' === mention.operation ) {
+      console.log( user + ' tried to alter their own score.' );
+      messageLines.push( messages.getRandomMessage( operations.operations.SELF, user ) );
+    } else {
+      const score = await points.updateScore( mention.item, mention.operation ),
+            operationName = operations.getOperationName( mention.operation );
+      messageLines.push( messages.getRandomMessage( operationName, mention.item, score ) );
+    }
+  }
+
+  return slack.sendMessage( messageLines.join( '\n' ), channel );
 };
 
 /**
@@ -122,20 +121,14 @@ const handlers = {
   message: ( event ) => {
 
     // Extract the relevant data from the message text.
-    const { item, operation } = helpers.extractPlusMinusEventData( event.text );
+    const mentions = helpers.extractPlusMinusEventData( event.text );
 
-    if ( ! item || ! operation ) {
-      return false;
-    }
-
-    // Bail if the user is trying to ++ themselves...
-    if ( item === event.user && '+' === operation ) {
-      handleSelfPlus( event.user, event.channel );
+    if ( ! mentions ) {
       return false;
     }
 
     // Otherwise, let's go!
-    return handlePlusMinus( item, operation, event.channel );
+    return handlePlusMinus( mentions, event.user, event.channel );
 
   }, // Message event.
 
@@ -225,7 +218,6 @@ const handleEvent = ( event, request ) => {
 }; // HandleEvent.
 
 module.exports = {
-  handleSelfPlus,
   handlePlusMinus,
   sayThankyou,
   sendHelp,
