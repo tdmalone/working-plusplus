@@ -196,6 +196,12 @@ describe( 'The database', () => {
 
   const extensionExistsQuery = 'SELECT * FROM pg_extension WHERE extname = \'citext\'';
 
+  // Get the new value.
+  const getCurrentScore = {
+    text: 'SELECT score FROM ' + config.scoresTableName + ' WHERE item = $1;',
+    values: [ defaultItem ]
+  };
+
   it( 'does not yet have the ' + config.scoresTableName + ' table', async() => {
     expect.hasAssertions();
     const dbClient = await postgres.connect();
@@ -215,11 +221,13 @@ describe( 'The database', () => {
   it( 'creates the ' + config.scoresTableName + ' table on the first request', async() => {
     expect.hasAssertions();
     const newScore = await points.updateScore( defaultItem, '+' );
+    expect( newScore ).toBe( 1 );
     const dbClient = await postgres.connect();
     const query = await dbClient.query( tableExistsQuery );
-    await dbClient.release();
     expect( query.rows[0].exists ).toBeTrue();
-    expect( newScore ).toBe( 1 );
+    const queryScore = await dbClient.query( getCurrentScore );
+    expect( queryScore.rows[0].score ).toBe( 1 );
+    await dbClient.release();
   });
 
   it( 'also creates the case-insensitive extension on the first request', async() => {
@@ -234,6 +242,10 @@ describe( 'The database', () => {
     expect.hasAssertions();
     const newScore = await points.updateScore( defaultItem, '+' );
     expect( newScore ).toBe( 2 );
+    const dbClient = await postgres.connect();
+    const queryScore = await dbClient.query( getCurrentScore );
+    expect( queryScore.rows[0].score ).toBe( 2 );
+    await dbClient.release();
   });
 
   it( 'returns a list of top scores in the correct order', async() => {
