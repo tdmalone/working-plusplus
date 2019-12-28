@@ -73,17 +73,21 @@ const updateScore = async( item, operation ) => {
   ' );
 
   // Atomically record the action.
-  // TODO: Fix potential SQL injection issues here, even though we know the input should be safe.
-  await dbClient.query( '\
-    INSERT INTO ' + scoresTableName + ' VALUES (\'' + item + '\', ' + operation + '1) \
-    ON CONFLICT (item) DO UPDATE SET score = ' + scoresTableName + '.score ' + operation + ' 1; \
-  ' );
+  const insertOrUpdateScore = {
+    text: '\
+      INSERT INTO ' + scoresTableName + ' VALUES ($1, $2) \
+      ON CONFLICT (item) DO UPDATE SET score = ' + scoresTableName + '.score ' + operation + ' 1; \
+      ',
+    values: [ item, operation + '1' ]
+  };
+  await dbClient.query( insertOrUpdateScore );
 
   // Get the new value.
-  // TODO: Fix potential SQL injection issues here, even though we know the input should be safe.
-  const dbSelect = await dbClient.query( '\
-    SELECT score FROM ' + scoresTableName + ' WHERE item = \'' + item + '\'; \
-  ' );
+  const getCurrentScore = {
+    text: 'SELECT score FROM ' + scoresTableName + ' WHERE item = $1;',
+    values: [ item ]
+  };
+  const dbSelect = await dbClient.query( getCurrentScore );
 
   await dbClient.release();
   const score = dbSelect.rows[0].score;
