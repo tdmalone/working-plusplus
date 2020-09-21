@@ -1,0 +1,73 @@
+version: '3'
+
+services:
+  traefik:
+    image: traefik:1.6.6-alpine
+    container_name: ${PROJECT_NAME}_traefik
+    command: --docker
+    ports:
+      - '80:80'
+      - '443:443'
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./traefik/traefik.toml:/traefik.toml
+      - ./traefik/.certs:/certs
+    networks:
+      - proxy
+    labels:
+      - 'traefik.frontend.rule=Host:monitor.localhost'
+      - 'traefik.port=8080'
+
+  nodejs:
+    image: node:10
+    working_dir: /home/node/app
+    container_name: ${PROJECT_NAME}_nodejs
+    environment:
+      NODE_ENV: production
+      SLACK_BOT_USER_OAUTH_ACCESS_TOKEN: xoxb-1180457775792-1366394875781-Ty6zNJaxhNiCRuBM9gFJ2yDv
+      SLACK_VERIFICATION_TOKEN: 0Ov0OcZ5KfGVg9p7GPckps8i
+      DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@database:5432/${POSTGRES_DB}
+      DATABASE_USE_SSL: ${DATABASE_USE_SSL}
+    command: "node index.js"
+    restart: unless-stopped
+    depends_on:
+      - database
+    volumes:
+      - ./:/home/node/app
+    expose:
+      - "80"
+    labels:
+      - 'traefik.frontend.rule=Host:${PROJECT_HOSTNAME},www.${PROJECT_HOSTNAME}'
+      - 'traefik.docker.network=proxy'
+    networks:
+      - proxy
+      - default
+
+  database:
+    image: postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    ports:
+      - "${POSTGRES_APP_PORT}:5432"
+    volumes:
+      - ./psql:/var/lib/postgresql/data/
+    networks:
+      - default
+  ngrok:
+    image: shkoliar/ngrok:latest
+    ports:
+      - 4551:4551
+    links:
+      - nodejs
+    environment:
+      - DOMAIN=nodejs
+      - PORT=80
+      - REGION=eu
+
+networks:
+  default:
+  proxy:
+    external: true
