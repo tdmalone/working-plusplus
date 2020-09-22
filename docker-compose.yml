@@ -23,15 +23,7 @@ services:
     working_dir: /home/node/app
     container_name: ${PROJECT_NAME}_nodejs
     environment:
-      SCOREBOT_PORT: 3000
       NODE_ENV: production
-      SLACK_BOT_USER_OAUTH_ACCESS_TOKEN: ${SLACK_BOT_USER_OAUTH_ACCESS_TOKEN}
-      SLACK_VERIFICATION_TOKEN: ${SLACK_VERIFICATION_TOKEN}
-      DATABASE_NAME: ${DATABASE_NAME}
-      DATABASE_HOST: ${DATABASE_HOST}
-      DATABASE_USER: ${DATABASE_USER}
-      DATABASE_PASSWORD: ${DATABASE_PASSWORD}
-      SIGNING_SECRET: ${SIGNING_SECRET}
     command: "node index.js"
     restart: unless-stopped
     depends_on:

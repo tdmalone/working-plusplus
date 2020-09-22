@@ -8,7 +8,7 @@
  */
 
 'use strict';
-
+require( 'dotenv' ).config();
 const app = require( './src/app' ),
       slack = require( './src/slack' );
 
