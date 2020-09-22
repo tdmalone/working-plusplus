@@ -16,7 +16,7 @@ const templates = {};
 
 /* eslint-disable no-process-env */
 const envSecret1 = process.env.SLACK_VERIFICATION_TOKEN,
-      envSecret2 = process.env.DATABASE_URL;
+      envSecret2 = process.env.SIGNING_SECRET;
 /* eslint-enable no-process-env */
 
 const ONE_DAY = 60 * 60 * 24, // eslint-disable-line no-magic-numbers

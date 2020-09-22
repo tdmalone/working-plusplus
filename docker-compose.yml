@@ -30,6 +30,7 @@ services:
       DATABASE_HOST: ${DATABASE_HOST}
       DATABASE_USER: ${DATABASE_USER}
       DATABASE_PASSWORD: ${DATABASE_PASSWORD}
+      SIGNING_SECRET: ${SIGNING_SECRET}
     command: "node index.js"
     restart: unless-stopped
     depends_on:
@@ -54,7 +55,7 @@ services:
       MYSQL_USER: ${DATABASE_USER}
       MYSQL_PASSWORD: ${DATABASE_PASSWORD}
       MYSQL_ROOT_PASSWORD: ${DATABASE_ROOT_PASSWORD}
-      MYSQL_PORT: 3306
+      MYSQL_PORT: ${DATABASE_PORT}
     volumes:
       - ./mysql:/var/lib/mysql
     networks:
