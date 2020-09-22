@@ -19,7 +19,7 @@ const fs = require( 'fs' ),
       slackClient = require( '@slack/client' );
 
 /* eslint-disable no-process-env, no-magic-numbers */
-const PORT = process.env.PORT || 80; // Let Heroku set the port.
+const PORT = process.env.SCOREBOT_PORT || 80; // Let Heroku set the port.
 const SLACK_OAUTH_ACCESS_TOKEN = process.env.SLACK_BOT_USER_OAUTH_ACCESS_TOKEN;
 /* eslint-enable no-process-env, no-magic-numbers */
 
