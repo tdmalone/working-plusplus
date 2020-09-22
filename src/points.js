@@ -96,7 +96,6 @@ function getNewScore( item ) {
     console.log( query );
     db.query( query, [ scoresTableName, item ], function( err, result ) {
       if ( err ) {
-        console.log( db.sql );
         reject( err );
       } else {
         resolve( result );
@@ -117,7 +116,6 @@ function getAllScores() {
     const inserts = [ scoresTableName ];
     const str = 'SELECT * FROM ?? ORDER BY score DESC';
     const query = mysql.format( str, inserts );
-    console.log( query );
     db.query( query, [ scoresTableName ], function( err, result ) {
       if ( err ) {
         console.log( db.sql );
@@ -145,7 +143,6 @@ function updateExisting( item, operation ) {
     const inserts = [ scoresTableName, item ];
     const str = 'INSERT INTO ?? (item, score) VALUES (?,' + operation + '1) ON DUPLICATE KEY UPDATE score = score' + operation + '1';
     const query = mysql.format( str, inserts );
-    console.log( query );
     db.query( query, function( err, result ) {
       if ( err ) {
         console.log( db.sql );
@@ -170,7 +167,6 @@ function createTable() {
     const inserts = [ scoresTableName ];
     const str = 'CREATE TABLE IF NOT EXISTS ?? (item VARCHAR(255) PRIMARY KEY, score INT);';
     const query = mysql.format( str, inserts );
-    console.log( query );
     db.query( query, function( err, result ) {
       if ( err ) {
         reject( err );
