@@ -1,3 +1,4 @@
+/* eslint-disable max-len */
 /**
  * All the stuff that handles the giving, taking away, or otherwise querying of points.
  *
@@ -11,20 +12,23 @@
 
 'use strict';
 
-const pg = require( 'pg' );
+const mysql = require( 'mysql' );
+const scoresTableName = 'scores';
 
 /* eslint-disable no-process-env */
-const DATABASE_URL = process.env.DATABASE_URL,
-      DATABASE_USE_SSL = 'false' === process.env.DATABASE_USE_SSL ? false : true;
 /* eslint-enable no-process-env */
-
-const scoresTableName = 'scores',
-      postgresPoolConfig = {
-        connectionString: DATABASE_URL,
-        ssl: DATABASE_USE_SSL
-      };
-
-const postgres = new pg.Pool( postgresPoolConfig );
+const mysqlConfig = {
+  // eslint-disable-next-line no-process-env
+  host: process.env.DATABASE_HOST,
+  // eslint-disable-next-line no-process-env
+  port: process.env.DATABASE_PORT,
+  // eslint-disable-next-line no-process-env
+  user: process.env.DATABASE_USER,
+  // eslint-disable-next-line no-process-env
+  password: process.env.DATABASE_PASSWORD,
+  // eslint-disable-next-line no-process-env
+  database: process.env.DATABASE_NAME
+};
 
 /**
  * Retrieves all scores from the database, ordered from highest to lowest.
@@ -38,14 +42,10 @@ const postgres = new pg.Pool( postgresPoolConfig );
  */
 const retrieveTopScores = async() => {
 
-  const query = 'SELECT * FROM ' + scoresTableName + ' ORDER BY score DESC';
-
-  const dbClient = await postgres.connect(),
-        result = await dbClient.query( query ),
-        scores = result.rows;
-
-  await dbClient.release();
-
+  let scores = '';
+  await getAllScores().then( function( result ) {
+    scores = result;
+  });
   return scores;
 
 };
@@ -65,33 +65,121 @@ const retrieveTopScores = async() => {
 const updateScore = async( item, operation ) => {
 
   // Connect to the DB, and create a table if it's not yet there.
-  // We also set up the citext extension, so that we can easily be case insensitive.
-  const dbClient = await postgres.connect();
-  await dbClient.query( '\
-    CREATE EXTENSION IF NOT EXISTS citext; \
-    CREATE TABLE IF NOT EXISTS ' + scoresTableName + ' (item CITEXT PRIMARY KEY, score INTEGER); \
-  ' );
-
-  // Atomically record the action.
-  // TODO: Fix potential SQL injection issues here, even though we know the input should be safe.
-  await dbClient.query( '\
-    INSERT INTO ' + scoresTableName + ' VALUES (\'' + item + '\', ' + operation + '1) \
-    ON CONFLICT (item) DO UPDATE SET score = ' + scoresTableName + '.score ' + operation + ' 1; \
-  ' );
-
-  // Get the new value.
-  // TODO: Fix potential SQL injection issues here, even though we know the input should be safe.
-  const dbSelect = await dbClient.query( '\
-    SELECT score FROM ' + scoresTableName + ' WHERE item = \'' + item + '\'; \
-  ' );
-
-  await dbClient.release();
-  const score = dbSelect.rows[0].score;
-
-  console.log( item + ' now on ' + score );
-  return score;
+  await createTable();
+  await updateExisting( item, operation );
+  let finalResult = '';
+  await getNewScore( item ).then( function( result ) {
+    finalResult = result[0].score;
+  }).catch( ( err ) => setImmediate( () => {
+    throw err;
+  })
+  );
+  console.log( item + ' now on ' + finalResult );
+  return finalResult;
 
 }; // UpdateScore.
+
+/**
+ * Selects score for item.
+ *
+ * @param {string} item
+ *   Item to get the score for.
+ * @returns {Promise}
+ *   The promise.
+ */
+function getNewScore( item ) {
+  return new Promise( function( resolve, reject ) {
+    const db = mysql.createConnection( mysqlConfig );
+    const inserts = [ scoresTableName, item ];
+    const str = 'SELECT score FROM ?? WHERE item = ?;';
+    const query = mysql.format( str, inserts );
+    console.log( query );
+    db.query( query, [ scoresTableName, item ], function( err, result ) {
+      if ( err ) {
+        console.log( db.sql );
+        reject( err );
+      } else {
+        resolve( result );
+      }
+    });
+  });
+}
+
+/**
+ * Retrieves all scores for leaderboard.
+ *
+ * @returns {Promise}
+ *   The promise.
+ */
+function getAllScores() {
+  return new Promise( function( resolve, reject ) {
+    const db = mysql.createConnection( mysqlConfig );
+    const inserts = [ scoresTableName ];
+    const str = 'SELECT * FROM ?? ORDER BY score DESC';
+    const query = mysql.format( str, inserts );
+    console.log( query );
+    db.query( query, [ scoresTableName ], function( err, result ) {
+      if ( err ) {
+        console.log( db.sql );
+        reject( err );
+      } else {
+        resolve( result );
+      }
+    });
+  });
+}
+
+/**
+ * Inserts or updates score for item.
+ *
+ * @param {string} item
+ *   Item to update.
+ * @param {string} operation
+ *   Operation to perform.
+ * @returns {Promise}
+ *   The promise.
+ */
+function updateExisting( item, operation ) {
+  return new Promise( function( resolve, reject ) {
+    const db = mysql.createConnection( mysqlConfig );
+    const inserts = [ scoresTableName, item ];
+    const str = 'INSERT INTO ?? (item, score) VALUES (?,' + operation + '1) ON DUPLICATE KEY UPDATE score = score' + operation + '1';
+    const query = mysql.format( str, inserts );
+    console.log( query );
+    db.query( query, function( err, result ) {
+      if ( err ) {
+        console.log( db.sql );
+        reject( err );
+      } else {
+        resolve( result );
+      }
+    });
+  });
+}
+
+/**
+ *
+ * Creates table if it does not exist.
+ *
+ * @returns {Promise}
+ *   The promise.
+ */
+function createTable() {
+  return new Promise( function( resolve, reject ) {
+    const db = mysql.createConnection( mysqlConfig );
+    const inserts = [ scoresTableName ];
+    const str = 'CREATE TABLE IF NOT EXISTS ?? (item VARCHAR(255) PRIMARY KEY, score INT);';
+    const query = mysql.format( str, inserts );
+    console.log( query );
+    db.query( query, function( err, result ) {
+      if ( err ) {
+        reject( err );
+      } else {
+        resolve( result );
+      }
+    });
+  });
+}
 
 module.exports = {
   retrieveTopScores,

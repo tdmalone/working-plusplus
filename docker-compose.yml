@@ -28,10 +28,14 @@ services:
       SLACK_VERIFICATION_TOKEN: ${SLACK_VERIFICATION_TOKEN}
       DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@database:5432/${POSTGRES_DB}
       DATABASE_USE_SSL: ${DATABASE_USE_SSL}
+      DATABASE_NAME: ${DATABASE_NAME}
+      DATABASE_HOST: ${DATABASE_HOST}
+      DATABASE_USER: ${DATABASE_USER}
+      DATABASE_PASSWORD: ${DATABASE_PASSWORD}
     command: "node index.js"
     restart: unless-stopped
     depends_on:
-      - database
+      - mysql
     volumes:
       - ./:/home/node/app
     expose:
@@ -42,20 +46,25 @@ services:
     networks:
       - proxy
       - default
-
-  database:
-    image: postgres
+  mysql:
+    image: mysql
+    command: --default-authentication-plugin=mysql_native_password
     restart: unless-stopped
     environment:
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB}
-    ports:
-      - "${POSTGRES_APP_PORT}:5432"
+      MYSQL_DATABASE: ${DATABASE_NAME}
+      MYSQL_USER: ${DATABASE_USER}
+      MYSQL_PASSWORD: ${DATABASE_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${DATABASE_ROOT_PASSWORD}
+      MYSQL_PORT: 3306
     volumes:
-      - ./psql:/var/lib/postgresql/data/
+      - ./mysql:/var/lib/mysql
     networks:
       - default
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8080:8080
   ngrok:
     image: shkoliar/ngrok:latest
     ports:
