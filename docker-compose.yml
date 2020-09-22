@@ -23,6 +23,7 @@ services:
     working_dir: /home/node/app
     container_name: ${PROJECT_NAME}_nodejs
     environment:
+      SCOREBOT_PORT: 3000
       NODE_ENV: production
       SLACK_BOT_USER_OAUTH_ACCESS_TOKEN: ${SLACK_BOT_USER_OAUTH_ACCESS_TOKEN}
       SLACK_VERIFICATION_TOKEN: ${SLACK_VERIFICATION_TOKEN}
@@ -75,7 +76,7 @@ services:
       - nodejs
     environment:
       - DOMAIN=nodejs
-      - PORT=80
+      - PORT=${SCOREBOT_PORT}
       - REGION=eu
 
 networks:
