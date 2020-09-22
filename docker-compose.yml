@@ -26,8 +26,6 @@ services:
       NODE_ENV: production
       SLACK_BOT_USER_OAUTH_ACCESS_TOKEN: ${SLACK_BOT_USER_OAUTH_ACCESS_TOKEN}
       SLACK_VERIFICATION_TOKEN: ${SLACK_VERIFICATION_TOKEN}
-      DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@database:5432/${POSTGRES_DB}
-      DATABASE_USE_SSL: ${DATABASE_USE_SSL}
       DATABASE_NAME: ${DATABASE_NAME}
       DATABASE_HOST: ${DATABASE_HOST}
       DATABASE_USER: ${DATABASE_USER}
@@ -48,6 +46,7 @@ services:
       - default
   mysql:
     image: mysql
+    container_name: ${PROJECT_NAME}_mysql
     command: --default-authentication-plugin=mysql_native_password
     restart: unless-stopped
     environment:
@@ -62,11 +61,13 @@ services:
       - default
   adminer:
     image: adminer
+    container_name: ${PROJECT_NAME}_adminer
     restart: always
     ports:
       - 8080:8080
   ngrok:
     image: shkoliar/ngrok:latest
+    container_name: ${PROJECT_NAME}_ngrok
     ports:
       - 4551:4551
     links:
