@@ -29,9 +29,9 @@ const getLeaderboardUrl = ( request ) => {
     ts,
     botUser: helpers.extractUserID( request.body.event.text )
   };
-
-  const url = 'https://' + hostname + '/leaderboard?' + querystring.stringify( params );
-  return url;
+  // eslint-disable-next-line no-process-env,no-negated-condition,yoda
+  const protocol = process.env.SCOREBOT_USE_SSL !== '1' ? 'http://' : 'https://';
+  return protocol + hostname + '/leaderboard?' + querystring.stringify( params );
 
 }; // GetLeaderboardUrl.
 
