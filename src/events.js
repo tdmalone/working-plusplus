@@ -43,11 +43,18 @@ const handleSelfPlus = ( user, channel ) => {
  *                   points have been updated.
  */
 const handlePlusMinus = async( item, operation, channel ) => {
-  const score = await points.updateScore( item, operation ),
-        operationName = operations.getOperationName( operation ),
-        message = messages.getRandomMessage( operationName, item, score );
-
-  return slack.sendMessage( message, channel );
+  try {
+    if (operation === '-') {
+      return slack.sendMessage( "NO SOUP FOR YOU!", channel );
+    } else if (operation === '+') {
+      const score = await points.updateScore( item, operation ),
+      operationName = operations.getOperationName( operation ),
+      message = messages.getRandomMessage( operationName, item, score );
+      return slack.sendMessage( message, channel );
+    }
+  } catch(err) {
+    console.error(err.message);
+  }
 };
 
 /**
