@@ -83,7 +83,7 @@ const extractPlusMinusEventData = ( text ) => {
  * @see ::isUser
  */
 const extractUserID = ( text ) => {
-  const match = text.match( /U[A-Z0-9]{8}/ );
+  const match = text.match( /U[A-Z0-9]{10}/ );
   return match ? match[0] : '';
 };
 
