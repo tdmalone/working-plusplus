@@ -62,8 +62,9 @@ const extractCommand = ( message, commands ) => {
  */
 const extractPlusMinusEventData = ( text ) => {
   const data = text.match( /@([A-Za-z0-9]+?)>?\s*(\+{2}|-{2}|—{1})/ );
+  const usernameID = extractUserID(data[1]);
 
-  if ( ! data ) {
+  if ( ! usernameID ) {
     return false;
   }
 

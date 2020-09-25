@@ -98,14 +98,14 @@ const sendHelp = async( event ) => {
   const botUserID = await helpers.extractUserID( event.text );
   const userName = await slack.getUserName(botUserID); // 'U01ASBLRRNZ'
 
-  //const userList = await slack.getUserList();
+  // const userList = await slack.getUserList();
   // console.log("USERS: " + JSON.stringify(userList));
   // console.log("USERNAME: " + userName);
   // console.log("BOT USER ID: " + botUserID);
 
   const message = (
     'Sure, here\'s what I can do:\n\n' +
-    '• `@Someone++`: Add points to a user or a thing\n' +
+    '• `<@Someone> ++`: Add points to a user\n' +
     '• `<@' + userName + '> leaderboard`: Display the leaderboard\n' +
     '• `<@' + userName + '> help`: Display this message\n\n' +
     'You\'ll need to invite me to a channel before I can recognise ' +
