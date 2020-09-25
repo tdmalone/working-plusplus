@@ -132,8 +132,8 @@ const getForSlack = async( event, request ) => {
   const limit = 5;
 
   const scores = await points.retrieveTopScores(),
-        users = await rankItems( scores, 'users' ),
-        things = await rankItems( scores, 'things' );
+        users = await rankItems( scores, 'users' );
+        // things = await rankItems( scores, 'things' );
 
   const messageText = (
     'Here you go. ' +
@@ -151,11 +151,11 @@ const getForSlack = async( event, request ) => {
             value: users.slice( 0, limit ).join( '\n' ),
             short: true
           },
-          {
-            title: 'Things',
-            value: things.slice( 0, limit ).join( '\n' ),
-            short: true
-          }
+          // {
+          //   title: 'Things',
+          //   value: things.slice( 0, limit ).join( '\n' ),
+          //   short: true
+          // }
         ]
       }
     ]
@@ -175,12 +175,12 @@ const getForSlack = async( event, request ) => {
 const getForWeb = async( request ) => {
 
   const scores = await points.retrieveTopScores(),
-        users = await rankItems( scores, 'users', 'object' ),
-        things = await rankItems( scores, 'things', 'object' );
+        users = await rankItems( scores, 'users', 'object' );
+        // things = await rankItems( scores, 'things', 'object' );
 
   const data = {
     users,
-    things,
+    // things,
     title: 'Leaderboard'
   };
 
