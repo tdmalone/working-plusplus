@@ -1,0 +1,67 @@
+body, html {
+  height: 100%;
+  padding: 0;
+  margin: 0;
+}
+
+body {
+  background: url("/bg.jpg") no-repeat fixed center;
+  background-size: cover;
+  color: #FFFFFF;
+}
+
+body::before {
+  content: "";
+  background: #032633;
+  opacity: 0.9;
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: -1;
+}
+
+#root {
+  padding: 50px 0;
+}
+
+.table {
+  color: #FFFFFF;
+}
+
+.table-hover tbody tr:hover {
+  color: #FFFFFF;
+  background-color: rgba(3,38,51, 0.8);
+}
+
+.podium {
+  padding-left: 8px !important;
+}
+
+.input-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.input-wrapper input {
+  height: 40px;
+  border-radius: 20px;
+  padding: 0px 20px;
+  box-sizing: border-box;
+  background: rgba(3,38,51, 1);
+  border: 0;
+}
+
+.input-wrapper input:focus {
+  outline: none;
+  background: #ffffff;
+}
+
+@media (max-width: 575.98px) {
+  .logo-wrapper, .input-wrapper {
+    text-align: center !important;
+    justify-content: center !important;
+  }
+}
