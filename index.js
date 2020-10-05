@@ -15,7 +15,7 @@ const app = require( './src/app' ),
 const fs = require( 'fs' ),
       mime = require( 'mime' ),
       express = require( 'express' ),
-      cors = require('cors'),
+      cors = require( 'cors' ),
       bodyParser = require( 'body-parser' ),
       slackClient = require( '@slack/client' );
 
@@ -40,13 +40,13 @@ const bootstrap = ( options = {}) => {
   const server = options.express || express();
   slack.setSlackClient( options.slack || new slackClient.WebClient( SLACK_OAUTH_ACCESS_TOKEN ) );
 
-  server.use(cors({
-      'allowedHeaders': ['sessionId', 'Content-Type'],
-      'exposedHeaders': ['sessionId'],
-      'methods': ['GET', 'POST'],
-      'credentials': true,
-      'origin': ['http://127.0.0.1:3000', 'http://localhost:3000'], // here goes Frontend IP
-  }))
+  server.use( cors({
+    'allowedHeaders': [ 'sessionId', 'Content-Type' ],
+    'exposedHeaders': [ 'sessionId' ],
+    'methods': [ 'GET', 'POST' ],
+    'credentials': true,
+    'origin': [ 'http://127.0.0.1:3000', 'http://localhost:3000' ] // Here goes Frontend IP
+  }) );
 
   server.use( bodyParser.json() );
   server.enable( 'trust proxy' );
