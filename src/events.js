@@ -42,7 +42,13 @@ const handleSelfPlus = ( user, channel ) => {
  * @return {Promise} A Promise to send a Slack message back to the requesting channel after the
  *                   points have been updated.
  */
-const handlePlusMinus = async( item, operation, channel ) => {
+
+// const votedUserID = await helpers.extractUserID(event.text);
+// userList.push(...userList, [event.user, votedUserID])
+// console.log(userList);
+
+let usersList = [];
+const handlePlusMinus = async( item, operation, channel, userVoting ) => {
   try {
     if (operation === '-') {
       return slack.sendMessage( "NO SOUP FOR YOU!", channel );
@@ -50,12 +56,44 @@ const handlePlusMinus = async( item, operation, channel ) => {
       const score = await points.updateScore( item, operation ),
       operationName = operations.getOperationName( operation ),
       message = messages.getRandomMessage( operationName, item, score );
+
+      const findVoter = usersList.find(user => user.voter === userVoting);
+
+      if (findVoter) {
+        const location = usersList.indexOf(userVoting);
+        usersList.splice(location, 1);
+      }
+      usersList.push({ voter: userVoting, user: item })
+
       return slack.sendMessage( message, channel );
     }
   } catch(err) {
     console.error(err.message);
   }
 };
+
+const undoPlus = async(event) => {
+  try {
+    let message;
+    const findVoter = usersList.find(user => user.voter === event.user);
+    const userName = await slack.getUserName(event.user);
+    if (findVoter) {
+      const location = usersList.indexOf(event.user);
+      usersList.splice(location, 1);
+      const score = await points.updateScore( findVoter.user, '-' );
+      const operationName = operations.getOperationName('-');
+      message = messages.getRandomMessage( operationName, findVoter.user, score );
+    } else {
+      message = '@' + userName + " there is nothing to undo!";
+    }
+
+    return slack.sendMessage( message, event.channel );
+
+  } catch(err) {
+    console.log(err.message);
+  }
+  
+}
 
 /**
  * Sends a random thank you message to the requesting channel.
@@ -143,9 +181,8 @@ const handlers = {
       handleSelfPlus( event.user, event.channel );
       return false;
     }
-
     // Otherwise, let's go!
-    return handlePlusMinus( item, operation, event.channel );
+    return handlePlusMinus( item, operation, event.channel, event.user );
 
   }, // Message event.
 
@@ -168,7 +205,8 @@ const handlers = {
       help: sendHelp,
       thx: sayThankyou,
       thanks: sayThankyou,
-      thankyou: sayThankyou
+      thankyou: sayThankyou,
+      undo: undoPlus,
     };
 
     const validCommands = Object.keys( appCommandHandlers ),
