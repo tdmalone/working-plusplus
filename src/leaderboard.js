@@ -35,6 +35,21 @@ const getLeaderboardUrl = ( request ) => {
 
 }; // GetLeaderboardUrl.
 
+const getLeaderboardLocalhost = ( request ) => {
+
+  const hostname = request.headers.host,
+        ts = helpers.getTimestamp();
+
+  const params = {
+    token: helpers.getTimeBasedToken( ts ),
+    ts,
+    botUser: helpers.extractUserID( request.body.event.text )
+  };
+  // eslint-disable-next-line no-process-env,no-negated-condition,yoda
+  return 'http://localhost:3000?' + querystring.stringify( params );
+
+}; // GetLeaderboardLocalhost.
+
 /**
  * Ranks items by their scores, returning them in a human readable list complete with emoji for the
  * winner. Items which draw will be given the same rank, and the next rank will then be skipped.
@@ -132,12 +147,13 @@ const getForSlack = async( event, request ) => {
   const limit = 5;
 
   const scores = await points.retrieveTopScores(),
-        users = await rankItems( scores, 'users' ),
-        things = await rankItems( scores, 'things' );
+        users = await rankItems( scores, 'users' );
+        // things = await rankItems( scores, 'things' );
 
   const messageText = (
     'Here you go. ' +
-    'Or see the <' + getLeaderboardUrl( request ) + '|whole list>.'
+    'Or see the <' + getLeaderboardUrl( request ) + '|whole list>.' +
+    'or localhost <' + getLeaderboardLocalhost( request ) + '|react list>.'
   );
 
   const message = {
@@ -151,11 +167,11 @@ const getForSlack = async( event, request ) => {
             value: users.slice( 0, limit ).join( '\n' ),
             short: true
           },
-          {
-            title: 'Things',
-            value: things.slice( 0, limit ).join( '\n' ),
-            short: true
-          }
+          // {
+          //   title: 'Things',
+          //   value: things.slice( 0, limit ).join( '\n' ),
+          //   short: true
+          // }
         ]
       }
     ]
@@ -174,17 +190,24 @@ const getForSlack = async( event, request ) => {
  */
 const getForWeb = async( request ) => {
 
-  const scores = await points.retrieveTopScores(),
-        users = await rankItems( scores, 'users', 'object' ),
-        things = await rankItems( scores, 'things', 'object' );
+  try {
 
-  const data = {
-    users,
-    things,
-    title: 'Leaderboard'
-  };
+    const scores = await points.retrieveTopScores(),
+      users = await rankItems( scores, 'users', 'object' );
+      // things = await rankItems( scores, 'things', 'object' );
 
-  return helpers.render( 'src/html/leaderboard.html', data, request );
+    const data = {
+      users,
+      // things,
+      title: 'Leaderboard'
+    };
+
+    // return helpers.render( 'src/html/leaderboard.html', data, request );
+    return users;
+
+  } catch(err) {
+    console.error(err.message);
+  }
 
 }; // GetForWeb.
 

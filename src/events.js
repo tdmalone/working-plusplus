@@ -93,15 +93,21 @@ const sayThankyou = ( event ) => {
  *                         https://api.slack.com/events/app_mention for details.
  * @returns {Promise} A Promise to send the Slack message.
  */
-const sendHelp = ( event ) => {
+const sendHelp = async( event ) => {
 
-  const botUserID = helpers.extractUserID( event.text );
+  const botUserID = await helpers.extractUserID( event.text );
+  const userName = await slack.getUserName(botUserID); // 'U01ASBLRRNZ'
+
+  // const userList = await slack.getUserList();
+  // console.log("USERS: " + JSON.stringify(userList));
+  // console.log("USERNAME: " + userName);
+  // console.log("BOT USER ID: " + botUserID);
 
   const message = (
     'Sure, here\'s what I can do:\n\n' +
-    '• `@Someone++`: Add points to a user or a thing\n' +
-    '• `<@' + botUserID + '> leaderboard`: Display the leaderboard\n' +
-    '• `<@' + botUserID + '> help`: Display this message\n\n' +
+    '• `<@Someone> ++`: Add points to a user\n' +
+    '• `<@' + userName + '> leaderboard`: Display the leaderboard\n' +
+    '• `<@' + userName + '> help`: Display this message\n\n' +
     'You\'ll need to invite me to a channel before I can recognise ' +
     '`++` command in it.'
   );
