@@ -43,11 +43,18 @@ const handleSelfPlus = ( user, channel ) => {
  *                   points have been updated.
  */
 const handlePlusMinus = async( item, operation, channel ) => {
-  const score = await points.updateScore( item, operation ),
-        operationName = operations.getOperationName( operation ),
-        message = messages.getRandomMessage( operationName, item, score );
-
-  return slack.sendMessage( message, channel );
+  try {
+    if (operation === '-') {
+      return slack.sendMessage( "NO SOUP FOR YOU!", channel );
+    } else if (operation === '+') {
+      const score = await points.updateScore( item, operation ),
+      operationName = operations.getOperationName( operation ),
+      message = messages.getRandomMessage( operationName, item, score );
+      return slack.sendMessage( message, channel );
+    }
+  } catch(err) {
+    console.error(err.message);
+  }
 };
 
 /**
@@ -93,13 +100,10 @@ const sendHelp = ( event ) => {
   const message = (
     'Sure, here\'s what I can do:\n\n' +
     '• `@Someone++`: Add points to a user or a thing\n' +
-    '• `@Someone--`: Subtract points from a user or a thing\n' +
     '• `<@' + botUserID + '> leaderboard`: Display the leaderboard\n' +
     '• `<@' + botUserID + '> help`: Display this message\n\n' +
     'You\'ll need to invite me to a channel before I can recognise ' +
-    '`++` and `--` commands in it.\n\n' +
-    'If you\'re a developer, you can teach me new things! ' +
-    'See <https://github.com/tdmalone/working-plusplus|my GitHub repo> to get started.'
+    '`++` command in it.'
   );
 
   return slack.sendMessage( message, event.channel );
