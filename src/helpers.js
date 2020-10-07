@@ -51,31 +51,6 @@ const extractCommand = ( message, commands ) => {
 }; // ExtractCommand.
 
 /**
- * Gets the user or 'thing' that is being spoken about, and the 'operation' being done on it.
- * We take the operation down to one character, and also support — due to iOS' replacement of --.
- *
- * @param {string} text The message text sent through in the event.
- * @returns {object} An object containing both the 'item' being referred to - either a Slack user
- *                   ID (eg. 'U12345678') or the name of a 'thing' (eg. 'NameOfThing'); and the
- *                   'operation' being done on it - expressed as a valid mathematical operation
- *                   (i.e. + or -).
- */
-const extractPlusMinusEventData = ( text ) => {
-  const data = text.match( /@([A-Za-z0-9]+?)>?\s*(\+{2}|-{2}|—{1})/ );
-  const usernameID = extractUserID(data[1]);
-
-  if ( ! usernameID ) {
-    return false;
-  }
-
-  return {
-    item: data[1],
-    operation: data[2].substring( 0, 1 ).replace( '—', '-' )
-  };
-
-}; // ExtractPlusMinusEventData.
-
-/**
  * Extracts a valid Slack user ID from a string of text.
  *
  * @param {string} text The string in question.
@@ -87,6 +62,34 @@ const extractUserID = ( text ) => {
   const match = text.match( /U[A-Z0-9]{10}/ );
   return match ? match[0] : '';
 };
+
+/**
+ * Gets the user or 'thing' that is being spoken about, and the 'operation' being done on it.
+ * We take the operation down to one character, and also support — due to iOS' replacement of --.
+ *
+ * @param {string} text The message text sent through in the event.
+ * @returns {object} An object containing both the 'item' being referred to - either a Slack user
+ *                   ID (eg. 'U12345678') or the name of a 'thing' (eg. 'NameOfThing'); and the
+ *                   'operation' being done on it - expressed as a valid mathematical operation
+ *                   (i.e. + or -).
+ */
+const extractPlusMinusEventData = ( text ) => {
+  let usernameID;
+  const data = text.match( /@([A-Za-z0-9]+?)>?\s*(\+{2}|-{2}|—{1})/ );
+  if ( null !== data && 'undefined' !== typeof data[1] && null !== data[1]) {
+    usernameID = extractUserID( data[1]);
+  }
+
+  if ( ! usernameID ) {
+    return false;
+  }
+
+  return {
+    item: data[1],
+    operation: data[2].substring( 0, 1 ).replace( '—', '-' )
+  };
+
+}; // ExtractPlusMinusEventData.
 
 /**
  * Generates a time-based token based on secrets from the environment.
