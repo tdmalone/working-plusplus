@@ -17,9 +17,10 @@ const querystring = require( 'querystring' );
  * someone who has access to this Slack team.
  *
  * @param {object} request The Express request object that resulted in this handler being run.
+ * @param {string} channelId  ChannelId to get score for.
  * @returns {string} The leaderboard URL, which will be picked up in ../index.js when called.
  */
-const getLeaderboardUrl = ( request ) => {
+const getLeaderboardUrl = ( request, channelId ) => {
 
   const hostname = request.headers.host,
         ts = helpers.getTimestamp();
@@ -27,7 +28,8 @@ const getLeaderboardUrl = ( request ) => {
   const params = {
     token: helpers.getTimeBasedToken( ts ),
     ts,
-    botUser: helpers.extractUserID( request.body.event.text )
+    botUser: helpers.extractUserID( request.body.event.text ),
+    channel: channelId
   };
   // eslint-disable-next-line no-process-env,no-negated-condition,yoda
   const protocol = process.env.SCOREBOT_USE_SSL !== '1' ? 'http://' : 'https://';
@@ -35,15 +37,15 @@ const getLeaderboardUrl = ( request ) => {
 
 }; // GetLeaderboardUrl.
 
-const getLeaderboardLocalhost = ( request ) => {
+const getLeaderboardLocalhost = ( request, channelId ) => {
 
-  const hostname = request.headers.host,
-        ts = helpers.getTimestamp();
+  const ts = helpers.getTimestamp();
 
   const params = {
     token: helpers.getTimeBasedToken( ts ),
     ts,
-    botUser: helpers.extractUserID( request.body.event.text )
+    botUser: helpers.extractUserID( request.body.event.text ),
+    channel: channelId
   };
   // eslint-disable-next-line no-process-env,no-negated-condition,yoda
   return 'http://localhost:3000?' + querystring.stringify( params );
@@ -146,13 +148,15 @@ const getForSlack = async( event, request ) => {
 
   const limit = 5;
 
-  const scores = await points.retrieveTopScores(),
+  const scores = await points.retrieveTopScores( event.channel ),
         users = await rankItems( scores, 'users' );
-        // things = await rankItems( scores, 'things' );
+
+  // Things = await rankItems( scores, 'things' );
 
   const messageText = (
-    'Here you go. ' +
-    'Or see the <' + getLeaderboardUrl( request ) + '|whole list>.' +
+    'Here you go. Best people in channel <#' + event.channel + '|' +
+     await slack.getChannelName( event.channel ) + '>. ' +
+    'Or see the <' + getLeaderboardUrl( request, event.channel ) + '|whole list>. ' +
     'or localhost <' + getLeaderboardLocalhost( request ) + '|react list>.'
   );
 
@@ -166,7 +170,8 @@ const getForSlack = async( event, request ) => {
             title: 'Users',
             value: users.slice( 0, limit ).join( '\n' ),
             short: true
-          },
+          }
+
           // {
           //   title: 'Things',
           //   value: things.slice( 0, limit ).join( '\n' ),
@@ -191,22 +196,20 @@ const getForSlack = async( event, request ) => {
 const getForWeb = async( request ) => {
 
   try {
-
-    const scores = await points.retrieveTopScores(),
-      users = await rankItems( scores, 'users', 'object' );
-      // things = await rankItems( scores, 'things', 'object' );
+    const channelId = request.query.channel;
+    const scores = await points.retrieveTopScores( channelId ),
+          users = await rankItems( scores, 'users', 'object' );
 
     const data = {
       users,
-      // things,
       title: 'Leaderboard'
     };
 
-    // return helpers.render( 'src/html/leaderboard.html', data, request );
+    // Return helpers.render( 'src/html/leaderboard.html', data, request );
     return users;
 
-  } catch(err) {
-    console.error(err.message);
+  } catch ( err ) {
+    console.error( err.message );
   }
 
 }; // GetForWeb.
