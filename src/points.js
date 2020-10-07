@@ -13,7 +13,9 @@
 'use strict';
 
 const mysql = require( 'mysql' );
-const scoresTableName = 'scores';
+const uuid = require ( 'uuid' );
+const slack = require( './slack' );
+const scoresTableName = 'score';
 
 /* eslint-disable no-process-env */
 /* eslint-enable no-process-env */
@@ -31,8 +33,10 @@ const mysqlConfig = {
 };
 
 /**
- * Retrieves all scores from the database, ordered from highest to lowest.
+ * Retrieves all scores from the database, ordered from highest to lowest per channel.
  *
+ * @param {string} channelId
+ *   Slack channel id.
  * TODO: Add further smarts to retrieve only a limited number of scores, to avoid having to query
  *       everything. Note that this isn't just LIMIT, because we'll need to apply the limit
  *       separately to both users (/U[A-Z0-9]{8}/) and things (everything else) & return both sets.
@@ -40,10 +44,9 @@ const mysqlConfig = {
  * @return {array} An array of entries, each an object containing 'item' (string) and 'score'
  *                (integer) properties.
  */
-const retrieveTopScores = async() => {
-
+const retrieveTopScores = async( channelId ) => {
   let scores = '';
-  await getAllScores().then( function( result ) {
+  await getAllScores( channelId ).then( function( result ) {
     scores = result;
   });
   return scores;
@@ -57,43 +60,172 @@ const retrieveTopScores = async() => {
  * This function also sets up the database if it is not already ready, including creating the
  * scores table and activating the Postgres case-insensitive extension.
  *
- * @param {string} item      The Slack user ID (if user) or name (if thing) of the item being
  *                           operated on.
- * @param {string} operation The mathematical operation performed on the item's score.
- * @return {int} The item's new score after the update has been applied.
+ * @return {int}
+ *   The item's new score after the update has been applied.
+ * @param {string} toUserId
+ *   User that receives score.
+ * @param {string} fromUserId
+ *   User that gives score.
+ * @param {string} channelId
+ *   In which channel user gets score.
+ * @param {string} description
+ *   Optional description. To be implemented.
  */
-const updateScore = async( item, operation ) => {
+const updateScore = async( toUserId, fromUserId, channelId, description ) => {
 
   // Connect to the DB, and create a table if it's not yet there.
-  await createTable();
-  await updateExisting( item, operation );
+  await insertScore( toUserId, fromUserId, channelId, description );
   let finalResult = '';
-  await getNewScore( item ).then( function( result ) {
+  await getUserScore( toUserId, channelId ).then( function( result ) {
     finalResult = result[0].score;
   }).catch( ( err ) => setImmediate( () => {
     throw err;
   })
   );
-  console.log( item + ' now on ' + finalResult );
+  console.log( toUserId + ' now on ' + finalResult );
   return finalResult;
 
 }; // UpdateScore.
+/**
+ *
+ * Undoes last score.
+ *
+ * @param {string} fromUserId
+ *   For which user to remove score.
+ * @param {string} toUserId
+ *   Sent by who.
+ * @param {string} channelId
+ *   on which channel.
+ * @returns {Promise<string|*>}
+ *   Returned promise.
+ */
+const undoScore = async( fromUserId, toUserId, channelId ) => {
+  let last;
+  await getLast( fromUserId, channelId ).then(
+    function( result ) {
+      if ( 'undefined' !== typeof result[0]) {
+        last = result[0].score_id;
+      }
+    }
+  ).catch( ( err ) => setImmediate( () => {
+    throw err;
+  })
+  );
+
+  // Returning undefined as time run out.
+  if ( 'undefined' === typeof last ) {
+    return last;
+  }
+  await removeLast( last ).catch( ( err ) => setImmediate( () => {
+    throw err;
+  })
+  );
+  let finalResult = '';
+  await getUserScore( toUserId, channelId ).then( function( result ) {
+    finalResult = result[0].score;
+  }).catch( ( err ) => setImmediate( () => {
+    throw err;
+  })
+  );
+  console.log( toUserId + ' now on ' + finalResult );
+  return finalResult;
+
+};
+
+/**
+ * Gets the user score.
+ *
+ * @param {string} toUserId
+ *   Slack user id.
+ * @param {string} channelId
+ *   Slack channel id.
+ * @returns {Promise}
+ *   Returned promise.
+ */
+const getNewScore = async( toUserId, channelId ) => {
+  let finalResult = '';
+  await getUserScore( toUserId, channelId ).then( function( result ) {
+    finalResult = result[0].score;
+  }).catch( ( err ) => setImmediate( () => {
+    throw err;
+  })
+  );
+  console.log( toUserId + ' now on ' + finalResult );
+  return finalResult;
+};
+
+/**
+ * Checks if user exists in the db.
+ *
+ * @param {string} userId
+ *   Slack userid.
+ * @returns {Promise}
+ *   Returned promise.
+ */
+const checkUser = async( userId ) => {
+  let user = '';
+  await getUser( userId ).then( function( result ) {
+    user = result[0];
+    if ( 'undefined' === typeof user ) {
+      user = null;
+    } else {
+      user = userId;
+    }
+  }).catch( ( err ) => setImmediate( () => {
+    throw err;
+  })
+  );
+  if ( null === user ) {
+    await insertUser( userId );
+  }
+
+  return userId;
+};
+
+/**
+ * Checks if channel exists in the db.
+ *
+ * @param {string} channelId
+ *   Slack channelId
+ * @returns {Promise}
+ *   Returned promise.
+ */
+const checkChannel = async( channelId ) => {
+  let channel = '';
+  const channelName = await slack.getChannelName( channelId );
+  await getChannel( channelId ).then( function( result ) {
+    channel = result[0];
+    if ( 'undefined' === typeof channel ) {
+      channel = null;
+    } else {
+      channel = channelId;
+    }
+  }).catch( ( err ) => setImmediate( () => {
+    throw err;
+  })
+  );
+  if ( null === channel ) {
+    await insertChannel( channelId, channelName );
+  }
+  return channelId;
+};
 
 /**
  * Selects score for item.
  *
  * @param {string} item
  *   Item to get the score for.
+ * @param {string} channelId channel id.
  * @returns {Promise}
  *   The promise.
  */
-function getNewScore( item ) {
+function getUserScore( item, channelId ) {
   return new Promise( function( resolve, reject ) {
     const db = mysql.createConnection( mysqlConfig );
-    const inserts = [ scoresTableName, item ];
-    const str = 'SELECT score FROM ?? WHERE item = ?;';
+    const inserts = [ 'score', scoresTableName, item, channelId ];
+    const str = 'SELECT COUNT(score_id) as ?? FROM ?? WHERE to_user_id = ? AND `channel_id` = ?';
     const query = mysql.format( str, inserts );
-    console.log( query );
     db.query( query, [ scoresTableName, item ], function( err, result ) {
       if ( err ) {
         reject( err );
@@ -107,16 +239,25 @@ function getNewScore( item ) {
 /**
  * Retrieves all scores for leaderboard.
  *
+ * @param {string} channelId
+ *   Slack channel id. If undefined it will return score for all channels.
  * @returns {Promise}
  *   The promise.
  */
-function getAllScores() {
+function getAllScores( channelId ) {
   return new Promise( function( resolve, reject ) {
     const db = mysql.createConnection( mysqlConfig );
-    const inserts = [ scoresTableName ];
-    const str = 'SELECT * FROM ?? ORDER BY score DESC';
+    let str = '';
+    const inserts = [ channelId ];
+    // eslint-disable-next-line no-negated-condition
+    if ( 'undefined' !== typeof channelId ) {
+      str = 'SELECT to_user_id  as item,  COUNT(score_id) as score FROM `score` WHERE `channel_id` = ? GROUP BY to_user_id ORDER BY score DESC';
+    } else {
+      str = 'SELECT to_user_id  as item,  COUNT(score_id) as score FROM `score` GROUP BY to_user_id ORDER BY score DESC';
+    }
+
     const query = mysql.format( str, inserts );
-    db.query( query, [ scoresTableName ], function( err, result ) {
+    db.query( query, function( err, result ) {
       if ( err ) {
         console.log( db.sql );
         reject( err );
@@ -130,18 +271,50 @@ function getAllScores() {
 /**
  * Inserts or updates score for item.
  *
- * @param {string} item
- *   Item to update.
- * @param {string} operation
- *   Operation to perform.
+ * @param {string}  toUserId
+ *   Who to score.
+ * @param {string}  fromUserId
+ *    From whom.
+ * @param {string}  channelId
+ *    On which channel.
+ * @param {string}  description
+ *    Optional description.
  * @returns {Promise}
  *   The promise.
  */
-function updateExisting( item, operation ) {
+function insertScore( toUserId, fromUserId, channelId, description = null ) {
+
   return new Promise( function( resolve, reject ) {
     const db = mysql.createConnection( mysqlConfig );
-    const inserts = [ scoresTableName, item ];
-    const str = 'INSERT INTO ?? (item, score) VALUES (?,' + operation + '1) ON DUPLICATE KEY UPDATE score = score' + operation + '1';
+    // eslint-disable-next-line no-magic-numbers
+    const ts = new Date().toISOString().slice( 0, 19 ).replace( 'T', ' ' );
+    const inserts = [ 'score', 'timestamp', uuid.v4(), ts, toUserId, fromUserId, channelId, description ];
+    const str = 'INSERT INTO ?? (score_id, ??, to_user_id, from_user_id, channel_id, description) VALUES (?,?,?,?,?,?);';
+    const query = mysql.format( str, inserts );
+    db.query( query, function( err, result ) {
+      if ( err ) {
+        console.log( db.sql );
+        reject( err );
+      } else {
+        resolve( result );
+      }
+    });
+  });
+}
+
+/**
+ *  Gets the user from the db.
+ *
+ * @param {string} userId
+ *   Slack user id.
+ * @returns {Promise}
+ *  Returned promise.
+ */
+function getUser( userId ) {
+  return new Promise( function( resolve, reject ) {
+    const db = mysql.createConnection( mysqlConfig );
+    const str = 'SELECT user_id FROM ?? WHERE user_id = ?';
+    const inserts = [ 'user', userId ];
     const query = mysql.format( str, inserts );
     db.query( query, function( err, result ) {
       if ( err ) {
@@ -156,19 +329,131 @@ function updateExisting( item, operation ) {
 
 /**
  *
- * Creates table if it does not exist.
+ * Inserts user into db.
  *
+ * @param {string} userId
+ *   Slack user id.
  * @returns {Promise}
- *   The promise.
+ *   Returned promise.
  */
-function createTable() {
+function insertUser( userId ) {
   return new Promise( function( resolve, reject ) {
     const db = mysql.createConnection( mysqlConfig );
-    const inserts = [ scoresTableName ];
-    const str = 'CREATE TABLE IF NOT EXISTS ?? (item VARCHAR(255) PRIMARY KEY, score INT);';
+    const str = 'INSERT INTO ?? (user_id, banned_until) VALUES (?, NULL);';
+    const inserts = [ 'user', userId ];
     const query = mysql.format( str, inserts );
     db.query( query, function( err, result ) {
       if ( err ) {
+        console.log( db.sql );
+        reject( err );
+      } else {
+        resolve( result );
+      }
+    });
+  });
+}
+
+/**
+ * Gets the channel from db.
+ *
+ * @param {string} channelId
+ *   Slack channel id.
+ * @returns {Promise}
+ *   Returned promise.
+ */
+function getChannel( channelId ) {
+  return new Promise( function( resolve, reject ) {
+    const db = mysql.createConnection( mysqlConfig );
+    const str = 'SELECT channel_id FROM ?? WHERE channel_id = ?;';
+    const inserts = [ 'channel', channelId ];
+    const query = mysql.format( str, inserts );
+    db.query( query, function( err, result ) {
+      if ( err ) {
+        console.log( db.sql );
+        reject( err );
+      } else {
+        resolve( result );
+      }
+    });
+  });
+}
+
+/**
+ * Inserts channel into db.
+ *
+ * @param {string} channelId
+ *   Slack channel id.
+ * @param {string} channelName
+ *   Slack channel name.
+ * @returns {Promise}
+ *   Returned promise.
+ */
+function insertChannel( channelId, channelName ) {
+  return new Promise( function( resolve, reject ) {
+    const db = mysql.createConnection( mysqlConfig );
+    const str = 'INSERT INTO ?? (channel_id, channel_name) VALUES (?, ?);';
+    const inserts = [ 'channel', channelId, channelName ];
+    const query = mysql.format( str, inserts );
+    db.query( query, function( err, result ) {
+      if ( err ) {
+        console.log( db.sql );
+        reject( err );
+      } else {
+        resolve( result );
+      }
+    });
+  });
+}
+
+/**
+ * Gets the last score record for user per channel.
+ *
+ * @param {string} fromUserId
+ *   User id to retrieve the last score.
+ * @param {string} channelId
+ *   Slack channel id.
+ * @returns {Promise}
+ *   Returned promise.
+ */
+function getLast( fromUserId, channelId ) {
+  return new Promise( function( resolve, reject ) {
+    const db = mysql.createConnection( mysqlConfig );
+    const date = new Date();
+    // eslint-disable-next-line no-magic-numbers
+    const newDate = new Date( date.getTime() - 5 * 60000 );
+    // eslint-disable-next-line no-magic-numbers
+    const rangedTs = newDate.toISOString().slice( 0, 19 ).replace( 'T', ' ' );
+    const str = 'SELECT `score_id`, `timestamp` FROM `score` WHERE `from_user_id` = ? AND `timestamp` >= ? AND `channel_id` = ? ORDER BY `timestamp` DESC LIMIT 1;';
+    const inserts = [ fromUserId, rangedTs, channelId ];
+    const query = mysql.format( str, inserts );
+    db.query( query, function( err, result ) {
+      if ( err ) {
+        console.log( db.sql );
+        reject( err );
+      } else {
+        resolve( result );
+      }
+    });
+  });
+}
+
+/**
+ * Removes score record from db.
+ *
+ * @param {string} scoreId
+ *   Score id to delete.
+ * @returns {Promise}
+ *   The returned promise.
+ */
+function removeLast( scoreId ) {
+  return new Promise( function( resolve, reject ) {
+    const db = mysql.createConnection( mysqlConfig );
+    const str = 'DELETE FROM `score` WHERE `score_id` = ?;';
+    const inserts = [ scoreId ];
+    const query = mysql.format( str, inserts );
+    db.query( query, function( err, result ) {
+      if ( err ) {
+        console.log( db.sql );
         reject( err );
       } else {
         resolve( result );
@@ -179,5 +464,9 @@ function createTable() {
 
 module.exports = {
   retrieveTopScores,
-  updateScore
+  updateScore,
+  checkUser,
+  checkChannel,
+  undoScore,
+  getNewScore
 };
