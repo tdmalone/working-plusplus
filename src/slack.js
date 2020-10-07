@@ -111,10 +111,89 @@ const sendMessage = ( text, channel ) => {
 
   }); // Return new Promise.
 }; // SendMessage.
+/**
+ * Sends an Ephemeral message to a Slack channel.
+ *
+ * @param {string|Object} text    Either message text to send, or a Slack message payload. See the
+ *                                docs at https://api.slack.com/methods/chat.postMessage and
+ *                                https://api.slack.com/docs/message-formatting.
+ * @param {string}        channel The ID of the channel to send the message to. Can alternatively
+ *                                be provided as part of the payload in the previous argument.
+ * @param {string}        user    UserId to sent the message to.
+ * @return {Promise} A Promise to send the message to Slack.
+ */
+const sendEphemeral = ( text, channel, user ) => {
+
+  let payload = {
+    channel,
+    text,
+    user
+  };
+
+  // If 'text' was provided as an object instead, merge it into the payload.
+  if ( 'object' === typeof text ) {
+    delete payload.text;
+    payload = Object.assign( payload, text );
+  }
+
+  return new Promise( ( resolve, reject ) => {
+    slack.chat.postEphemeral( payload ).then( ( data ) => {
+
+      if ( ! data.ok ) {
+        console.error( 'Error occurred posting response.' );
+        return reject();
+      }
+
+      resolve();
+
+    });
+
+  }); // Return new Promise.
+}; // SendMessage.
+
+/**
+ *
+ * Filters the channel array.
+ *
+ * @param {array} channelData
+ *   Single item from array.
+ * @returns {boolean}
+ *   Returns T|F.
+ */
+function channelFilter( channelData ) {
+  return this === channelData.id;
+}
+
+/**
+ *
+ * Gets the channel name from slack api.
+ *
+ * @param {string} channelId
+ *   ChannelId to get name for.
+ * @returns {Promise}
+ *   Returned promise./
+ */
+const getChannelName = async( channelId ) => {
+  const channelList = await slack.conversations.list({
+    // eslint-disable-next-line camelcase
+    exclude_archived: true,
+    types: 'public_channel'
+  });
+  const channel = channelList.channels.filter( channelFilter, channelId );
+
+  if ( 'undefined' === typeof channel ) {
+    return '(unknown)';
+  }
+
+  return channel[0].name;
+
+};
 
 module.exports = {
   setSlackClient,
   getUserList,
   getUserName,
-  sendMessage
+  sendMessage,
+  getChannelName,
+  sendEphemeral
 };
