@@ -50,7 +50,12 @@ const handlePlusMinus = async( item, operation, channel, userVoting ) => {
     if ( '-' === operation ) {
       return slack.sendMessage( 'NO SOUP FOR YOU!', channel );
     } else if ( '+' === operation ) {
-      const score = await points.updateScore( item, operation ),
+
+      // TODO: implement check for ban.
+      const dbUserTo = await points.checkUser( item );
+      const dbUserFrom = await points.checkUser( userVoting );
+      const checkChannel = await points.checkChannel( channel );
+      const score = await points.updateScore( dbUserTo, dbUserFrom, checkChannel, null ),
             operationName = operations.getOperationName( operation ),
             message = messages.getRandomMessage( operationName, item, score );
 
@@ -82,15 +87,23 @@ const undoPlus = async( event ) => {
   try {
     let message;
     const findVoter = usersList.find( ( user ) => user.voter === event.user );
-    const userName = await slack.getUserName( event.user );
     if ( findVoter ) {
       const location = usersList.indexOf( event.user );
       usersList.splice( location, 1 );
-      const score = await points.updateScore( findVoter.user, '-' );
-      const operationName = operations.getOperationName( '-' );
-      message = messages.getRandomMessage( operationName, findVoter.user, score );
+
+      const score = await points.undoScore( event.user, findVoter.user, event.channel );
+      // eslint-disable-next-line no-negated-condition
+      if ( 'undefined' !== typeof score ) {
+        const operationName = operations.getOperationName( '-' );
+        message = messages.getRandomMessage( operationName, findVoter.user, score );
+      } else {
+        message = 'You can undo only for duration of 5 minutes after up voting!';
+        return slack.sendEphemeral( message, event.channel, event.user );
+      }
+
     } else {
-      message = '@' + userName + ' there is nothing to undo!';
+      message = '<@' + event.user + '> there is nothing to undo!';
+      return slack.sendEphemeral( message, event.channel, event.user );
     }
 
     return slack.sendMessage( message, event.channel );
