@@ -58,3 +58,13 @@ You can modify the default testing behaviour by adjusting the relevant `scripts`
 If you come across annoying *stylistic* linting rules, feel free to [change them](https://eslint.org/docs/rules/) in [`.eslintrc.js`](.eslintrc.js) as part of your pull request, providing they don't cause an adverse effect on existing code.
 
 Many linting issues can be automatically fixed by running `yarn fix`.
+
+## Local docker setup
+This bot comes shipped with possibility to run it in docker.
+
+ 1. Copy the example.env to .env
+ 2. Fill the .env file
+ 3. docker-compose up -d
+ 4. (on the first time setup) ssh into nodejs container run `node src/database-setup.js` to prepare the database structure.
+ 5. Visit http://${PROJECT_NAME}.localhost:4551/ to get the ngrok url
+ 6. Paste the url into slack api Event subscriptions.
