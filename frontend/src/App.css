@@ -13,8 +13,31 @@ body {
   font-family: 'Nunito', sans-serif;
 }
 
-.podium {
+.table .podium {
   padding-left: 8px !important;
+}
+
+.card-deck {
+  color: #FFFFFF;
+}
+
+.card-deck .podium {
+  font-size: 60px;
+  margin-top: 20px;
+}
+
+.card-footer {
+  margin-top: 20px;
+}
+
+.first {
+  background: #E0BD3F;
+}
+.second {
+  background: #D4CDC7;
+}
+.third {
+  background: #A85008;
 }
 
 .navbar {
@@ -32,20 +55,26 @@ body {
 .navbar-nav {
   width: 100%;
   display: flex;
-  justify-content: center;
+  justify-content: flex-end;
 }
 
 .form-control {
   border-radius: 0;
-  height: 50px;
+  width: 200px;
+  margin-left: auto;
 }
 
-.card {
+/*.card {
   border-radius: 0;
-  box-shadow: 2px 4px 20px rgba(26, 26, 26, 0.04);
+  border: 0;
+  //box-shadow: 2px 4px 20px rgba(26, 26, 26, 0.04);
+}*/
+
+.btn {
+  font-size: 14px;
 }
 
-@media (max-width: 991px) {
+@media (max-width: 767px) {
   .navbar-collapse {
     margin-top: 15px;
   }
