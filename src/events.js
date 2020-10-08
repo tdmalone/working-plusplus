@@ -39,7 +39,7 @@ const usersList = [];
  * @param {string} item      The Slack user ID (if user) or name (if thing) of the item being
  *                           operated on.
  * @param {string} operation The mathematical operation performed on the item's score.
- * @param {object} channel   The ID of the channel (Cxxxxxxxx for public channels or Gxxxxxxxx for
+ * @param {string} channel   The ID of the channel (Cxxxxxxxx for public channels or Gxxxxxxxx for
  *                           private channels - aka groups) that the message was sent from.
  * @param {string} userVoting     The User voting.
  * @return {Promise} A Promise to send a Slack message back to the requesting channel after the
@@ -52,23 +52,31 @@ const handlePlusMinus = async( item, operation, channel, userVoting ) => {
     } else if ( '+' === operation ) {
 
       // TODO: implement check for ban.
-      const dbUserTo = await points.checkUser( item );
-      const dbUserFrom = await points.checkUser( userVoting );
-      const checkChannel = await points.checkChannel( channel );
-      const score = await points.updateScore( dbUserTo, dbUserFrom, checkChannel, null ),
-            operationName = operations.getOperationName( operation ),
-            message = messages.getRandomMessage( operationName, item, score );
+      // TODO: move to separate function to clearup the code.
+      let message;
+      const userLimit = await points.getDailyUserScore( userVoting );
+      if ( userLimit.operation ) {
+        const dbUserTo = await points.checkUser( item );
+        const dbUserFrom = await points.checkUser( userVoting );
+        const checkChannel = await points.checkChannel( channel );
+        const score = await points.updateScore( dbUserTo, dbUserFrom, checkChannel, null ),
+              operationName = operations.getOperationName( operation );
+        message = messages.getRandomMessage( operationName, item, score );
 
-      const findVoter = usersList.find( ( user ) => user.voter === userVoting );
+        const findVoter = usersList.find( ( user ) => user.voter === userVoting );
 
-      if ( findVoter ) {
-        const location = usersList.indexOf( userVoting );
-        usersList.splice( location, 1 );
+        // eslint-disable-next-line max-depth
+        if ( findVoter ) {
+          const location = usersList.indexOf( userVoting );
+          usersList.splice( location, 1 );
+        }
+        usersList.push({
+          voter: userVoting,
+          user: item
+        });
+      } else {
+        return slack.sendEphemeral( userLimit.message, channel, userVoting );
       }
-      usersList.push({
-        voter: userVoting,
-        user: item
-      });
 
       return slack.sendMessage( message, channel );
     }

@@ -269,6 +269,38 @@ function getAllScores( channelId ) {
 }
 
 /**
+ * Gets the count of user scores for day.
+ *
+ * @param {string} fromUserId
+ *   Voting user  slack id.
+ * @returns {Promise<{message: string, operation: boolean}|{message: null, operation: boolean}>}
+ *   Returns promise with message and operation.
+ */
+const getDailyUserScore = async( fromUserId ) => {
+  const limit = 3;
+  let scoreCount;
+  await getDayilyVotesByUser( fromUserId ).then( function( result ) {
+    scoreCount = result;
+  });
+  if ( 'undefined' !== scoreCount && limit >= scoreCount[0].daily_votes + 1 ) {
+    return {
+      operation: true,
+      message: null
+    };
+  } else if ( 'undefined' !== scoreCount && limit < scoreCount[0].daily_votes + 1 ) {
+    return {
+      operation: false,
+      message: 'You have reached your daily voting limit!'
+    };
+  } else {
+    return {
+      operation: true,
+      message: null
+    };
+  }
+};
+
+/**
  * Inserts or updates score for item.
  *
  * @param {string}  toUserId
@@ -462,11 +494,41 @@ function removeLast( scoreId ) {
   });
 }
 
+/**
+ * Gets the count of daily scores by user.
+ *
+ * @param {string} fromUserId
+ *   The voting user slack id.
+ * @returns {Promise}
+ *   Returned promise.
+ */
+function getDayilyVotesByUser( fromUserId ) {
+
+  //SELECT COUNT(score_id) from score where DAY(`timestamp`) = 7 and from_user_id = 'U01AC62PBC7';
+  return new Promise( function( resolve, reject ) {
+    const day = new Date().getDate();
+    console.log( day );
+    const db = mysql.createConnection( mysqlConfig );
+    const str = 'SELECT COUNT(score_id) as daily_votes from score where DAY(`timestamp`) = ? AND from_user_id = ?;';
+    const inserts = [ day, fromUserId ];
+    const query = mysql.format( str, inserts );
+    db.query( query, function( err, result ) {
+      if ( err ) {
+        console.log( db.sql );
+        reject( err );
+      } else {
+        resolve( result );
+      }
+    });
+  });
+}
+
 module.exports = {
   retrieveTopScores,
   updateScore,
   checkUser,
   checkChannel,
   undoScore,
-  getNewScore
+  getNewScore,
+  getDailyUserScore
 };
