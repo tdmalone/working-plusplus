@@ -504,7 +504,6 @@ function removeLast( scoreId ) {
  */
 function getDayilyVotesByUser( fromUserId ) {
 
-  //SELECT COUNT(score_id) from score where DAY(`timestamp`) = 7 and from_user_id = 'U01AC62PBC7';
   return new Promise( function( resolve, reject ) {
     const day = new Date().getDate();
     console.log( day );
