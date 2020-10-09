@@ -16,6 +16,7 @@ const mysql = require( 'mysql' );
 const uuid = require ( 'uuid' );
 const slack = require( './slack' );
 const scoresTableName = 'score';
+const moment = require ( 'moment' );
 
 /* eslint-disable no-process-env */
 /* eslint-enable no-process-env */
@@ -319,7 +320,7 @@ function insertScore( toUserId, fromUserId, channelId, description = null ) {
   return new Promise( function( resolve, reject ) {
     const db = mysql.createConnection( mysqlConfig );
     // eslint-disable-next-line no-magic-numbers
-    const ts = new Date().toISOString().slice( 0, 19 ).replace( 'T', ' ' );
+    const ts = moment( Date.now() ).format( 'YYYY-MM-DD HH:mm:ss' );
     const inserts = [ 'score', 'timestamp', uuid.v4(), ts, toUserId, fromUserId, channelId, description ];
     const str = 'INSERT INTO ?? (score_id, ??, to_user_id, from_user_id, channel_id, description) VALUES (?,?,?,?,?,?);';
     const query = mysql.format( str, inserts );
@@ -449,14 +450,11 @@ function insertChannel( channelId, channelName ) {
  */
 function getLast( fromUserId, channelId ) {
   return new Promise( function( resolve, reject ) {
+    const timeLimit = 5;
     const db = mysql.createConnection( mysqlConfig );
-    const date = new Date();
-    // eslint-disable-next-line no-magic-numbers
-    const newDate = new Date( date.getTime() - 5 * 60000 );
-    // eslint-disable-next-line no-magic-numbers
-    const rangedTs = newDate.toISOString().slice( 0, 19 ).replace( 'T', ' ' );
-    const str = 'SELECT `score_id`, `timestamp` FROM `score` WHERE `from_user_id` = ? AND `timestamp` >= ? AND `channel_id` = ? ORDER BY `timestamp` DESC LIMIT 1;';
-    const inserts = [ fromUserId, rangedTs, channelId ];
+    const timestamp = moment( Date.now() ).add( timeLimit, 'minutes' ).format( 'YYYY-MM-DD HH:mm:ss' );
+    const str = 'SELECT `score_id`, `timestamp` FROM `score` WHERE `from_user_id` = ? AND `timestamp` <= ? AND `channel_id` = ? ORDER BY `timestamp` DESC LIMIT 1;';
+    const inserts = [ fromUserId, timestamp, channelId ];
     const query = mysql.format( str, inserts );
     db.query( query, function( err, result ) {
       if ( err ) {
