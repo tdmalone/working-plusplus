@@ -520,6 +520,29 @@ function getDayilyVotesByUser( fromUserId ) {
   });
 }
 
+/**
+ * Retrieves all channels for leaderboard.
+ *
+ * @returns {Promise}
+ *   The promise.
+ */
+const getAllChannels = () => {
+  return new Promise( function( resolve, reject ) {
+    const db = mysql.createConnection( mysqlConfig );
+    let str = 'SELECT * FROM channel';
+
+    const query = mysql.format( str );
+    db.query( query, function( err, result ) {
+      if ( err ) {
+        console.log( db.sql );
+        reject( err );
+      } else {
+        resolve( result );
+      }
+    });
+  });
+}
+
 module.exports = {
   retrieveTopScores,
   updateScore,
@@ -527,5 +550,6 @@ module.exports = {
   checkChannel,
   undoScore,
   getNewScore,
-  getDailyUserScore
+  getDailyUserScore,
+  getAllChannels
 };

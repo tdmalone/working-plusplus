@@ -215,6 +215,21 @@ const getForWeb = async( request ) => {
 }; // GetForWeb.
 
 /**
+ * Retrieves and returns all channels, for displaying on the web.
+ *
+ * @param {object} request The Express request object that resulted in this handler being run.
+ * @returns {string} JSON for the browser.
+ */
+const getForChannels = async( request ) => {
+
+  const channels = await points.getAllChannels();
+
+  console.log( 'Sending all Channels!' );
+  return channels;
+
+}; // GetForChannels.
+
+/**
  * The default handler for this command when invoked over Slack.
  *
  * @param {*} event   See the documentation for getForSlack.
@@ -230,5 +245,6 @@ module.exports = {
   rankItems,
   getForSlack,
   getForWeb,
-  handler
+  handler,
+  getForChannels
 };

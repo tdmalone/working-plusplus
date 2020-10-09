@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+// import queryString from 'query-string';
 import logo from '../logo.svg';
 import {
   Collapse,
@@ -15,124 +16,75 @@ import {
   DropdownToggle
 } from 'reactstrap';
 
-
 const Chart = (props) => {
 
+  // const parsedQuery = queryString.parse(props.location.search);
+
   // id | user_receive | user_give | timestamp | channel
-  const [users, setUsers] = useState([
-    {id: 3, user_receive: "Klemen Brodej", user_give: "Martin Kenjic", timestamp: "1600527600", channel: "#dev" },
-    {id: 4, user_receive: "Bostjan Kovac", user_give: "Martin Kenjic", timestamp: "1600527600", channel: "#dev" },
-    {id: 5, user_receive: "Klemen Brodej", user_give: "Martin Kenjic", timestamp: "1600527600", channel: "#dev" },
-    {id: 6, user_receive: "Bostjan Kovac", user_give: "Martin Kenjic", timestamp: "1601337600", channel: "#dev" },
-    {id: 7, user_receive: "Klemen Brodej", user_give: "Martin Kenjic", timestamp: "1600527600", channel: "#dev" },
-    {id: 8, user_receive: "Klemen Brodej", user_give: "Martin Kenjic", timestamp: "1600527600", channel: "#dev" },
-    {id: 9, user_receive: "Klemen Brodej", user_give: "Martin Kenjic", timestamp: "1600527600", channel: "#dev" },
-    {id: 10, user_receive: "Klemen Brodej", user_give: "Martin Kenjic", timestamp: "1601337600", channel: "#dev" },
-    {id: 11, user_receive: "Janez Novak", user_give: "Martin Kenjic", timestamp: "1601337600", channel: "#dev" },
-    {id: 12, user_receive: "Janez Novak", user_give: "Martin Kenjic", timestamp: "1601337600", channel: "#dev" },
-    {id: 13, user_receive: "Janez Novak", user_give: "Martin Kenjic", timestamp: "1600527600", channel: "#dev" },
-    {id: 14, user_receive: "Lena Gregorcic", user_give: "Martin Kenjic", timestamp: "1601596800", channel: "#dev" },
-    {id: 15, user_receive: "Lena Gregorcic", user_give: "Martin Kenjic", timestamp: "1601596800", channel: "#dev" },
-    {id: 14, user_receive: "Lena Gregorcic", user_give: "Martin Kenjic", timestamp: "1601596800", channel: "#dev" },
-    {id: 16, user_receive: "Lena Gregorcic", user_give: "Martin Kenjic", timestamp: "1601596800", channel: "#dev" },
-    {id: 17, user_receive: "John Smith", user_give: "Martin Kenjic", timestamp: "1601596800", channel: "#random" },
-    {id: 18, user_receive: "John Smith", user_give: "Martin Kenjic", timestamp: "1601596800", channel: "#random" },
-    {id: 19, user_receive: "John Smith", user_give: "Martin Kenjic", timestamp: "1601596800", channel: "#random" },
-    {id: 20, user_receive: "John Smith", user_give: "Martin Kenjic", timestamp: "1601596800", channel: "#random" },
-  ]);
+  // const [users, setUsers] = useState([
+  //   {id: 3, user_receive: "Klemen Brodej", user_give: "Martin Kenjic", timestamp: "1600527600", channel: "#dev" },
+  //   {id: 4, user_receive: "Bostjan Kovac", user_give: "Martin Kenjic", timestamp: "1600527600", channel: "#dev" },
+  //   {id: 5, user_receive: "Klemen Brodej", user_give: "Martin Kenjic", timestamp: "1600527600", channel: "#dev" },
+  //   {id: 6, user_receive: "Bostjan Kovac", user_give: "Martin Kenjic", timestamp: "1601337600", channel: "#dev" },
+  //   {id: 7, user_receive: "Klemen Brodej", user_give: "Martin Kenjic", timestamp: "1600527600", channel: "#dev" },
+  //   {id: 8, user_receive: "Klemen Brodej", user_give: "Martin Kenjic", timestamp: "1600527600", channel: "#dev" },
+  //   {id: 9, user_receive: "Klemen Brodej", user_give: "Martin Kenjic", timestamp: "1600527600", channel: "#dev" },
+  //   {id: 10, user_receive: "Klemen Brodej", user_give: "Martin Kenjic", timestamp: "1601337600", channel: "#dev" },
+  //   {id: 11, user_receive: "Janez Novak", user_give: "Martin Kenjic", timestamp: "1601337600", channel: "#dev" },
+  //   {id: 12, user_receive: "Janez Novak", user_give: "Martin Kenjic", timestamp: "1601337600", channel: "#dev" },
+  //   {id: 13, user_receive: "Janez Novak", user_give: "Martin Kenjic", timestamp: "1600527600", channel: "#dev" },
+  //   {id: 14, user_receive: "Lena Gregorcic", user_give: "Martin Kenjic", timestamp: "1601596800", channel: "#dev" },
+  //   {id: 15, user_receive: "Lena Gregorcic", user_give: "Martin Kenjic", timestamp: "1601596800", channel: "#dev" },
+  //   {id: 14, user_receive: "Lena Gregorcic", user_give: "Martin Kenjic", timestamp: "1601596800", channel: "#dev" },
+  //   {id: 16, user_receive: "Lena Gregorcic", user_give: "Martin Kenjic", timestamp: "1601596800", channel: "#dev" },
+  //   {id: 17, user_receive: "John Smith", user_give: "Martin Kenjic", timestamp: "1601596800", channel: "#random" },
+  //   {id: 18, user_receive: "John Smith", user_give: "Martin Kenjic", timestamp: "1601596800", channel: "#random" },
+  //   {id: 19, user_receive: "John Smith", user_give: "Martin Kenjic", timestamp: "1601596800", channel: "#random" },
+  //   {id: 20, user_receive: "John Smith", user_give: "Martin Kenjic", timestamp: "1601596800", channel: "#random" },
+  // ]);
 
-  // const apiURL = 'https://04933df8c7b9.eu.ngrok.io/leaderboard' + props.location.search;
+  const botUser = "U01ASBLRRNZ";
+  const [channel, setChannel] = useState('C01C75LPV6W');
+  const token = "716c2e435e9291eb526939abcb63891323691b7558c42ca9b45f982c321b8462";
+  const ts = "1602226835";
 
-  // useEffect(() => {
-  //   const getChart = async() => {
-  //     await axios.get(apiURL)
-  //       .then(res => {
-  //         setUsers(res.data);
-  //       })
-  //       .catch(err => console.error(err.message))
-  //   }
-  //   getChart();
+  // const apiURL = 'https://a564aa475f76.eu.ngrok.io/leaderboard' + props.location.search;
+  const apiURL = 'https://a564aa475f76.eu.ngrok.io/leaderboard?token=' + token + '&ts=' + ts + '&botUser=' + botUser + '&channel=' + channel;
+  const [users, setUsers] = useState('');
 
-  //   // eslint-disable-next-line
-  // }, []);
+  const channelURL = 'https://a564aa475f76.eu.ngrok.io/channels?token=' + token + '&ts=' + ts + '&botUser=' + botUser + '&channel=' + channel;
+  const [listChannels, setListChannels] = useState('');
 
-  const inRange = (mapArray, range = 'allTime', channel) => {
-    const date = new Date();
-    let ranks = {};
-    let first;
-    let last;
-
-    if (range === 'allTime') {
-      first = new Date(0).getTime() / 1000;
-      last = new Date().getTime() / 1000;
-    } else if (range === 'lastMonth') {
-      first = new Date(date.getFullYear(), date.getMonth()-1, 1).getTime() / 1000;
-      last = new Date(date.getFullYear(), date.getMonth(), 0).getTime() / 1000;
-    } else if (range === 'lastWeek') {
-      const firstDay = date.getDate() - date.getDay() - 7 + 1;
-      const lastDay = firstDay + 7;
-      first = new Date( date.getFullYear(), date.getMonth(), firstDay ).getTime() / 1000;
-      last = new Date( date.getFullYear(), date.getMonth(), lastDay ).getTime() / 1000;
-    } else if (range === 'thisMonth') {
-      first = new Date(date.getFullYear(), date.getMonth(), 1).getTime() / 1000;
-      last = new Date().getTime() / 1000;
-    } else if (range === 'thisWeek') {
-      const firstDay = date.getDate() - date.getDay() + 1;
-      first = new Date( date.getFullYear(), date.getMonth(), firstDay ).getTime() / 1000;
-      last = new Date().getTime() / 1000;
+  useEffect(() => {
+    const getChart = async() => {
+      await axios.get(apiURL)
+        .then(res => {
+          setUsers(res.data);
+        })
+        .catch(err => console.error(err.message))
     }
-    
-    const results = mapArray.filter(user => {
-      if(user.timestamp >= first && user.timestamp <= last) {
-          if(user.channel === channel) {
-            return user;
-          }
-        }
-    })
+    getChart();
 
-    results.forEach(el => {
-      ranks[el.user_receive] = (ranks[el.user_receive] || 0) + 1;
-    })
+    const getChannels = async() => {
+      await axios.get(channelURL)
+        .then(res => {
+          setListChannels(res.data);
+        })
+        .catch(err => console.error(err.message))
+    }
+    getChannels();
 
-    let rangeresult = Object.keys(ranks).map(e => ({user_receive: e, score: ranks[e]}));
+    // eslint-disable-next-line
+  }, [apiURL, channelURL, channel]);
 
-    rangeresult.sort((a, b) => {
-      return b.score - a.score;
-    });
-
-    rangeresult.forEach((item, i) => {
-      item.rank = i + 1;
-    });
-
-    return rangeresult;
-
-  }
-
-
-  const channels = users.map(el => {
-    return el.channel;
-  })
-  const distinctChannels = [ ...new Set(channels) ];
+  // console.log(parsedQuery);
 
   const [searchTerm, setSearchTerm] = useState('');
-  const [isActive, setIsActive] = useState('allTime');
-
-  const [filterChannel, setFilterChannel] = useState('#dev');
-  const [range, setRange] = useState(inRange(users, isActive, filterChannel));
-
   const handleChange = e => setSearchTerm(e.target.value);
-
-  const filterDates = (dates, channel) => {
-    setRange(inRange(users, dates, channel));
-    setIsActive(dates);
-    setSearchTerm('');
-  }
-
-  const results = !searchTerm ? range : range.filter(user =>
-    user.user_receive.toLowerCase().includes(searchTerm.toLocaleLowerCase())
+  const results = !searchTerm ? users : users.filter(user =>
+    user.item.toLowerCase().includes(searchTerm.toLocaleLowerCase())
   );
 
-  const pluralize = (count, noun, suffix = 's') => `${count} ${noun}${count !== 1 ? suffix : ''}`;
 
   const [isOpen, setIsOpen] = useState(false);
   const toggle = () => setIsOpen(!isOpen);
@@ -150,20 +102,17 @@ const Chart = (props) => {
           <Nav className="mr-auto" navbar>
 
             <ButtonGroup>
-              <Button className={`${isActive === 'thisWeek' ? 'active' : ''} btn btn-light`} onClick={() => filterDates('thisWeek', filterChannel)}>This Week</Button>
-              <Button className={`${isActive === 'thisMonth' ? 'active' : ''} btn btn-light`} onClick={() => filterDates('thisMonth', filterChannel)}>This Month</Button>
-              <Button className={`${isActive === 'lastWeek' ? 'active' : ''} btn btn-light`} onClick={() => filterDates('lastWeek', filterChannel)}>Last Week</Button>
-              <Button className={`${isActive === 'lastMonth' ? 'active' : ''} btn btn-light`} onClick={() => filterDates('lastMonth', filterChannel)}>Last Month</Button>
-              <Button className={`${isActive === 'allTime' ? 'active' : ''} btn btn-light`} onClick={() => filterDates('allTime', filterChannel)}>All Time</Button>
+              <Button>Btn #1</Button>
+              <Button>Btn #2</Button>
               <ButtonDropdown isOpen={dropdownOpen} toggle={toggleDropDown}>
                 <DropdownToggle caret>
                   Channels
                 </DropdownToggle>
                 <DropdownMenu>
-                  {distinctChannels ? (distinctChannels.map((el, index) => (
-                    <DropdownItem key={index} onClick={() => { setFilterChannel(el); filterDates(isActive, el) }}>{el}</DropdownItem>
+                  {listChannels ? (listChannels.map((el, index) => (
+                    <DropdownItem key={index} onClick={() => setChannel(el.channel_id)}>#{el.channel_name}</DropdownItem>
                     )
-                  )) : null}
+                  )) : <DropdownItem>No Channels</DropdownItem>}
                 </DropdownMenu>
               </ButtonDropdown>
             </ButtonGroup>
@@ -176,16 +125,16 @@ const Chart = (props) => {
         <div className="row">
         <div className="col">
           <div className="card-deck">
-            {range ? (range.slice(0, 3).map(user => (
+            {users ? (users.slice(0, 3).map(user => (
                 <div className={`${user.rank === 1 ? 'first' : user.rank === 2 ? 'second' : user.rank === 3 ? 'third' : ''} card text-center`} key={user.rank}>
                     { user.rank === 1 ? <div className="podium"><span role="img" aria-label="1">🥇</span></div> :
                       user.rank === 2 ? <div className="podium"><span role="img" aria-label="2">🥈</span></div> :
                       user.rank === 3 ? <div className="podium"><span role="img" aria-label="3">🥉</span></div> :
                       null
                     }
-                    <h4>{user.user_receive}</h4>
+                    <h4>{user.item}</h4>
                     <div className="card-footer score">
-                      {pluralize(user.score, 'Point')}
+                      {user.score}
                     </div>
                 </div>
               ))) : null }
@@ -231,8 +180,8 @@ const Chart = (props) => {
                {(results.map(user => (
                   <tr key={user.rank}>
                     <th className="text-left" scope="row">{user.rank}</th>
-                    <td className="text-center">{user.user_receive}</td>
-                    <td className="text-right">{pluralize(user.score, 'Point')}</td>
+                    <td className="text-center">{user.item}</td>
+                    <td className="text-right">{user.score}</td>
                   </tr>
                 )))}
               </tbody>

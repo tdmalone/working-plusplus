@@ -9,6 +9,7 @@
     "@wojtekmaj/react-daterange-picker": "^3.0.0",
     "axios": "^0.20.0",
     "bootstrap": "^4.5.2",
+    "query-string": "^6.13.5",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
     "react-router-dom": "^5.2.0",
