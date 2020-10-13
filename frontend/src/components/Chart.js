@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-// import queryString from 'query-string';
+import queryString from 'query-string';
+import moment from 'moment';
 import logo from '../logo.svg';
 import {
   Collapse,
@@ -18,46 +19,68 @@ import {
 
 const Chart = (props) => {
 
-  // const parsedQuery = queryString.parse(props.location.search);
+  const apiURL = process.env.REACT_APP_API_URL;
 
-  // id | user_receive | user_give | timestamp | channel
-  // const [users, setUsers] = useState([
-  //   {id: 3, user_receive: "Klemen Brodej", user_give: "Martin Kenjic", timestamp: "1600527600", channel: "#dev" },
-  //   {id: 4, user_receive: "Bostjan Kovac", user_give: "Martin Kenjic", timestamp: "1600527600", channel: "#dev" },
-  //   {id: 5, user_receive: "Klemen Brodej", user_give: "Martin Kenjic", timestamp: "1600527600", channel: "#dev" },
-  //   {id: 6, user_receive: "Bostjan Kovac", user_give: "Martin Kenjic", timestamp: "1601337600", channel: "#dev" },
-  //   {id: 7, user_receive: "Klemen Brodej", user_give: "Martin Kenjic", timestamp: "1600527600", channel: "#dev" },
-  //   {id: 8, user_receive: "Klemen Brodej", user_give: "Martin Kenjic", timestamp: "1600527600", channel: "#dev" },
-  //   {id: 9, user_receive: "Klemen Brodej", user_give: "Martin Kenjic", timestamp: "1600527600", channel: "#dev" },
-  //   {id: 10, user_receive: "Klemen Brodej", user_give: "Martin Kenjic", timestamp: "1601337600", channel: "#dev" },
-  //   {id: 11, user_receive: "Janez Novak", user_give: "Martin Kenjic", timestamp: "1601337600", channel: "#dev" },
-  //   {id: 12, user_receive: "Janez Novak", user_give: "Martin Kenjic", timestamp: "1601337600", channel: "#dev" },
-  //   {id: 13, user_receive: "Janez Novak", user_give: "Martin Kenjic", timestamp: "1600527600", channel: "#dev" },
-  //   {id: 14, user_receive: "Lena Gregorcic", user_give: "Martin Kenjic", timestamp: "1601596800", channel: "#dev" },
-  //   {id: 15, user_receive: "Lena Gregorcic", user_give: "Martin Kenjic", timestamp: "1601596800", channel: "#dev" },
-  //   {id: 14, user_receive: "Lena Gregorcic", user_give: "Martin Kenjic", timestamp: "1601596800", channel: "#dev" },
-  //   {id: 16, user_receive: "Lena Gregorcic", user_give: "Martin Kenjic", timestamp: "1601596800", channel: "#dev" },
-  //   {id: 17, user_receive: "John Smith", user_give: "Martin Kenjic", timestamp: "1601596800", channel: "#random" },
-  //   {id: 18, user_receive: "John Smith", user_give: "Martin Kenjic", timestamp: "1601596800", channel: "#random" },
-  //   {id: 19, user_receive: "John Smith", user_give: "Martin Kenjic", timestamp: "1601596800", channel: "#random" },
-  //   {id: 20, user_receive: "John Smith", user_give: "Martin Kenjic", timestamp: "1601596800", channel: "#random" },
-  // ]);
+  const parsedQuery = queryString.parse(props.location.search);
+  const botUser = parsedQuery.botUser;
+  const token = parsedQuery.token;
+  const ts = parsedQuery.ts;
 
-  const botUser = "U01ASBLRRNZ";
-  const [channel, setChannel] = useState('C01C75LPV6W');
-  const token = "716c2e435e9291eb526939abcb63891323691b7558c42ca9b45f982c321b8462";
-  const ts = "1602226835";
+  const [channel, setChannel] = useState(parsedQuery.channel);
+  const [startDate, setStartDate] = useState(moment(0).unix());
+  const [endDate, setEndDate] = useState(moment().unix());
+  const today = moment().unix();
 
   // const apiURL = 'https://a564aa475f76.eu.ngrok.io/leaderboard' + props.location.search;
-  const apiURL = 'https://a564aa475f76.eu.ngrok.io/leaderboard?token=' + token + '&ts=' + ts + '&botUser=' + botUser + '&channel=' + channel;
+  const leaderboardURL = apiURL + '/leaderboard?token=' + token + '&ts=' + ts + '&botUser=' + botUser + '&channel=' + channel + '&startDate=' + startDate + '&endDate=' + endDate;
   const [users, setUsers] = useState('');
 
-  const channelURL = 'https://a564aa475f76.eu.ngrok.io/channels?token=' + token + '&ts=' + ts + '&botUser=' + botUser + '&channel=' + channel;
+  const channelsURL = apiURL + '/channels?token=' + token + '&ts=' + ts + '&botUser=' + botUser + '&channel=' + channel;
   const [listChannels, setListChannels] = useState('');
+
+  const [isActive, setIsActive] = useState('allTime');
+
+  const filterDates = (active = 'allTime') => {
+
+    if (active === 'allTime') {
+
+      setIsActive(active);
+      setStartDate(moment(0).unix());
+      setEndDate(moment().unix());
+      
+    } else if (active === 'lastMonth') {
+
+      setIsActive(active);
+      setStartDate(moment.unix( today ).subtract(1,'months').startOf('month').unix());
+      setEndDate(moment.unix( today ).subtract(1,'months').endOf('month').unix());
+
+    } else if (active === 'lastWeek') {
+
+      setIsActive(active);
+      setStartDate(moment.unix( today ).subtract(1,'week').startOf('week').add(1, 'day').unix());
+      setEndDate(moment.unix( today ).subtract(1,'week').endOf('week').add(1, 'day').unix());
+
+    } else if (active === 'thisMonth') {
+
+      setIsActive(active);
+      setStartDate(moment.unix( today ).startOf('month').unix());
+      setEndDate(moment.unix( today ).unix());
+
+    } else if (active === 'thisWeek') {
+
+      setIsActive(active);
+      setStartDate(moment.unix( today ).startOf('week').add(1, 'day').unix());
+      setEndDate(moment.unix( today ).endOf('week').add(1, 'day').unix());
+
+    }
+
+    setSearchTerm('');
+    
+  }
 
   useEffect(() => {
     const getChart = async() => {
-      await axios.get(apiURL)
+      await axios.get(leaderboardURL)
         .then(res => {
           setUsers(res.data);
         })
@@ -66,7 +89,7 @@ const Chart = (props) => {
     getChart();
 
     const getChannels = async() => {
-      await axios.get(channelURL)
+      await axios.get(channelsURL)
         .then(res => {
           setListChannels(res.data);
         })
@@ -75,9 +98,7 @@ const Chart = (props) => {
     getChannels();
 
     // eslint-disable-next-line
-  }, [apiURL, channelURL, channel]);
-
-  // console.log(parsedQuery);
+  }, [leaderboardURL, channelsURL, channel]);
 
   const [searchTerm, setSearchTerm] = useState('');
   const handleChange = e => setSearchTerm(e.target.value);
@@ -96,14 +117,17 @@ const Chart = (props) => {
     <>
     <Navbar light expand="md">
       <div className="container">
-        <NavbarBrand href="/"><img src={logo} alt="Agiledrop" /></NavbarBrand>
+        <NavbarBrand><img src={logo} alt="Agiledrop" /></NavbarBrand>
         <NavbarToggler onClick={toggle} />
         <Collapse isOpen={isOpen} navbar>
           <Nav className="mr-auto" navbar>
 
             <ButtonGroup>
-              <Button>Btn #1</Button>
-              <Button>Btn #2</Button>
+              <Button className={`${isActive === 'thisWeek' ? 'active' : ''} btn btn-light`} onClick={() => filterDates('thisWeek')}>This Week</Button>
+              <Button className={`${isActive === 'thisMonth' ? 'active' : ''} btn btn-light`} onClick={() => filterDates('thisMonth')}>This Month</Button>
+              <Button className={`${isActive === 'lastWeek' ? 'active' : ''} btn btn-light`} onClick={() => filterDates('lastWeek')}>Last Week</Button>
+              <Button className={`${isActive === 'lastMonth' ? 'active' : ''} btn btn-light`} onClick={() => filterDates('lastMonth')}>Last Month</Button>
+              <Button className={`${isActive === 'allTime' ? 'active' : ''} btn btn-light`} onClick={() => filterDates('allTime')}>All Time</Button>
               <ButtonDropdown isOpen={dropdownOpen} toggle={toggleDropDown}>
                 <DropdownToggle caret>
                   Channels
@@ -125,8 +149,8 @@ const Chart = (props) => {
         <div className="row">
         <div className="col">
           <div className="card-deck">
-            {users ? (users.slice(0, 3).map(user => (
-                <div className={`${user.rank === 1 ? 'first' : user.rank === 2 ? 'second' : user.rank === 3 ? 'third' : ''} card text-center`} key={user.rank}>
+            {users ? (users.slice(0, 3).map((user, index) => (
+                <div className={`${user.rank === 1 ? 'first' : user.rank === 2 ? 'second' : user.rank === 3 ? 'third' : ''} card text-center`} key={index}>
                     { user.rank === 1 ? <div className="podium"><span role="img" aria-label="1">🥇</span></div> :
                       user.rank === 2 ? <div className="podium"><span role="img" aria-label="2">🥈</span></div> :
                       user.rank === 3 ? <div className="podium"><span role="img" aria-label="3">🥉</span></div> :
@@ -145,6 +169,12 @@ const Chart = (props) => {
         
         <div className="row mt-5">
           <div className="col text-center">
+            <p>{listChannels ? (listChannels.map(el => {
+              if (el.channel_id === channel) 
+                return '#' + el.channel_name
+              else
+                return null
+            })) : null }</p>
             <h1>No karma given yet!</h1>
             <p>Be the first to give some karma points on slack.</p>
           </div>
@@ -154,7 +184,14 @@ const Chart = (props) => {
         
         <div className="row mt-5">
         <div className="col-6">
-          <h3 className="pb-3">Karma List</h3>
+          <h3 className="pb-3">
+            {listChannels ? (listChannels.map(el => {
+              if (el.channel_id === channel) 
+                return '#' + el.channel_name
+              else
+                return null
+            })) : null }
+          </h3>
         </div>
         <div className="col-6">
             <input
@@ -177,8 +214,8 @@ const Chart = (props) => {
                 </tr>
               </thead>
               <tbody>
-               {(results.map(user => (
-                  <tr key={user.rank}>
+               {(results.map((user, index) => (
+                  <tr key={index}>
                     <th className="text-left" scope="row">{user.rank}</th>
                     <td className="text-center">{user.item}</td>
                     <td className="text-right">{user.score}</td>

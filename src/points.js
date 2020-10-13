@@ -45,9 +45,9 @@ const mysqlConfig = {
  * @return {array} An array of entries, each an object containing 'item' (string) and 'score'
  *                (integer) properties.
  */
-const retrieveTopScores = async( channelId ) => {
+const retrieveTopScores = async( channelId, startDate, endDate ) => {
   let scores = '';
-  await getAllScores( channelId ).then( function( result ) {
+  await getAllScores( channelId, startDate, endDate ).then( function( result ) {
     scores = result;
   });
   return scores;
@@ -245,16 +245,28 @@ function getUserScore( item, channelId ) {
  * @returns {Promise}
  *   The promise.
  */
-function getAllScores( channelId ) {
+function getAllScores( channelId, startDate, endDate ) {
   return new Promise( function( resolve, reject ) {
     const db = mysql.createConnection( mysqlConfig );
     let str = '';
-    const inserts = [ channelId ];
+    let start;
+    let end;
+
+    if ( 'undefined' !== typeof startDate || 'undefined' !== typeof endDate) {
+      start = moment.unix( startDate ).format( 'YYYY-MM-DD HH:mm:ss' );
+      end = moment.unix( endDate ).format( 'YYYY-MM-DD HH:mm:ss' );
+    } else {
+      start = moment( Date.now() ).startOf('month').format( 'YYYY-MM-DD HH:mm:ss' );
+      end = moment( Date.now() ).format( 'YYYY-MM-DD HH:mm:ss' );
+    }
+
+    const inserts = [ channelId, start, end ];
+
     // eslint-disable-next-line no-negated-condition
     if ( 'undefined' !== typeof channelId ) {
-      str = 'SELECT to_user_id  as item,  COUNT(score_id) as score FROM `score` WHERE `channel_id` = ? GROUP BY to_user_id ORDER BY score DESC';
+      str = 'SELECT to_user_id  as item, COUNT(score_id) as score FROM `score` WHERE `channel_id` = ? AND (`timestamp` > ? AND `timestamp` < ?) GROUP BY to_user_id ORDER BY score DESC';
     } else {
-      str = 'SELECT to_user_id  as item,  COUNT(score_id) as score FROM `score` GROUP BY to_user_id ORDER BY score DESC';
+      str = 'SELECT to_user_id  as item, COUNT(score_id) as score FROM `score` GROUP BY to_user_id ORDER BY score DESC';
     }
 
     const query = mysql.format( str, inserts );

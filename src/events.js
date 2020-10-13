@@ -191,9 +191,7 @@ const sendHelp = async( event ) => {
     '• `<@Someone> ++`: Add points to a user\n' +
     '• `<@' + userName + '> leaderboard`: Display the leaderboard\n' +
     '• `<@' + userName + '> help`: Display this message\n' +
-    '• `<@' + userName + '> undo`: Undo last added points\n\n' +
-    'You\'ll need to invite me to a channel before I can recognise ' +
-    '`++` command in it.'
+    '• `<@' + userName + '> undo`: Undo last added points\n\n'
   );
 
   return slack.sendMessage( message, event.channel );
