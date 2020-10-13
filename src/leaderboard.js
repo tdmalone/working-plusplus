@@ -37,7 +37,7 @@ const getLeaderboardUrl = ( request, channelId ) => {
 
 }; // GetLeaderboardUrl.
 
-const getLeaderboardLocalhost = ( request, channelId ) => {
+const getLeaderboardWeb = ( request, channelId ) => {
 
   const ts = helpers.getTimestamp();
 
@@ -48,9 +48,11 @@ const getLeaderboardLocalhost = ( request, channelId ) => {
     channel: channelId
   };
   // eslint-disable-next-line no-process-env,no-negated-condition,yoda
-  return 'http://localhost:3000?' + querystring.stringify( params );
+  const protocol = process.env.SCOREBOT_USE_SSL !== '1' ? 'http://' : 'https://';
+  const frontendUrl = process.env.SCOREBOT_LEADERBOARD_URL;
+  return protocol + frontendUrl + '?' + querystring.stringify( params );
 
-}; // GetLeaderboardLocalhost.
+}; // GetLeaderboardWeb.
 
 /**
  * Ranks items by their scores, returning them in a human readable list complete with emoji for the
@@ -146,44 +148,47 @@ const rankItems = async( topScores, itemType = 'users', format = 'slack' ) => {
  */
 const getForSlack = async( event, request ) => {
 
-  const limit = 5;
+  try {
+    const limit = 5;
 
-  const scores = await points.retrieveTopScores( event.channel ),
-        users = await rankItems( scores, 'users' );
+    const scores = await points.retrieveTopScores( event.channel ),
+          users = await rankItems( scores, 'users' );
 
-  // Things = await rankItems( scores, 'things' );
+    // Things = await rankItems( scores, 'things' );
 
-  const messageText = (
-    'Here you go. Best people in channel <#' + event.channel + '|' +
-     await slack.getChannelName( event.channel ) + '>. ' +
-    'Or see the <' + getLeaderboardUrl( request, event.channel ) + '|whole list>. ' +
-    'or localhost <' + getLeaderboardLocalhost( request ) + '|react list>.'
-  );
+    const messageText = (
+      'Here you go. Best people this month in channel <#' + event.channel + '|' +
+       await slack.getChannelName( event.channel ) + '>. ' +
+      'Or see the <' + getLeaderboardWeb( request, event.channel ) + '|whole list>. '
+    );
 
-  const message = {
-    attachments: [
-      {
-        text: messageText,
-        color: 'good', // Slack's 'green' colour.
-        fields: [
-          {
-            title: 'Users',
-            value: users.slice( 0, limit ).join( '\n' ),
-            short: true
-          }
+    const message = {
+      attachments: [
+        {
+          text: messageText,
+          color: 'good', // Slack's 'green' colour.
+          fields: [
+            {
+              title: 'Users',
+              value: users.slice( 0, limit ).join( '\n' ),
+              short: true
+            }
 
-          // {
-          //   title: 'Things',
-          //   value: things.slice( 0, limit ).join( '\n' ),
-          //   short: true
-          // }
-        ]
-      }
-    ]
-  };
+            // {
+            //   title: 'Things',
+            //   value: things.slice( 0, limit ).join( '\n' ),
+            //   short: true
+            // }
+          ]
+        }
+      ]
+    };
 
-  console.log( 'Sending the leaderboard.' );
-  return slack.sendMessage( message, event.channel );
+    console.log( 'Sending the leaderboard.' );
+    return slack.sendMessage( message, event.channel );
+  } catch ( err ) {
+    console.error( err.message );
+  }
 
 }; // GetForSlack.
 
@@ -196,8 +201,10 @@ const getForSlack = async( event, request ) => {
 const getForWeb = async( request ) => {
 
   try {
+    const startDate = request.query.startDate;
+    const endDate = request.query.endDate;
     const channelId = request.query.channel;
-    const scores = await points.retrieveTopScores( channelId ),
+    const scores = await points.retrieveTopScores( channelId, startDate, endDate ),
           users = await rankItems( scores, 'users', 'object' );
 
     const data = {
@@ -215,6 +222,25 @@ const getForWeb = async( request ) => {
 }; // GetForWeb.
 
 /**
+ * Retrieves and returns all channels, for displaying on the web.
+ *
+ * @param {object} request The Express request object that resulted in this handler being run.
+ * @returns {string} JSON for the browser.
+ */
+const getForChannels = async( request ) => {
+
+  try {
+    const channels = await points.getAllChannels();
+
+    console.log( 'Sending all Channels!' );
+    return channels;
+  } catch ( err ) {
+    console.error( err.message );
+  }
+
+}; // GetForChannels.
+
+/**
  * The default handler for this command when invoked over Slack.
  *
  * @param {*} event   See the documentation for getForSlack.
@@ -230,5 +256,6 @@ module.exports = {
   rankItems,
   getForSlack,
   getForWeb,
-  handler
+  handler,
+  getForChannels
 };

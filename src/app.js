@@ -97,6 +97,16 @@ const handleGet = async( request, response ) => {
       }
       break;
 
+    case '/channels':
+      if ( helpers.isTimeBasedTokenStillValid( request.query.token, request.query.ts ) ) {
+        response.json( await leaderboard.getForChannels( request ) );
+      } else {
+        response
+          .status( HTTP_403 )
+          .send( 'Sorry, this link is no longer valid. Please request a new link in Slack.' );
+      }
+      break;
+
     // A simple default GET response is sometimes useful for troubleshooting.
     default:
       response.send( 'It works! However, this app only accepts POST requests for now.' );

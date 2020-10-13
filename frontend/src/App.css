@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&family=Nunito&display=swap');
+
 body, html {
   height: 100%;
   padding: 0;
@@ -5,63 +7,75 @@ body, html {
 }
 
 body {
-  background: url("/bg.jpg") no-repeat fixed center;
+  background: #FFFFFF;
   background-size: cover;
-  color: #FFFFFF;
+  color: #032633;
+  font-family: 'Nunito', sans-serif;
 }
 
-body::before {
-  content: "";
-  background: #032633;
-  opacity: 0.9;
-  position: fixed;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  z-index: -1;
-}
-
-#root {
-  padding: 50px 0;
-}
-
-.table {
-  color: #FFFFFF;
-}
-
-.table-hover tbody tr:hover {
-  color: #FFFFFF;
-  background-color: rgba(3,38,51, 0.8);
-}
-
-.podium {
+.table .podium {
   padding-left: 8px !important;
 }
 
-.input-wrapper {
+.card-deck {
+  color: #FFFFFF;
+}
+
+.card-deck .podium {
+  font-size: 60px;
+  margin-top: 20px;
+}
+
+.card-footer {
+  margin-top: 20px;
+}
+
+.first {
+  background: #E0BD3F;
+}
+.second {
+  background: #D4CDC7;
+}
+.third {
+  background: #A85008;
+}
+
+.navbar {
+  border-bottom: 1px solid rgba(160, 175, 181, 0.3);
+  /*min-height: 80px;*/
+  font-family: 'Montserrat', sans-serif;
+  font-size: 15px;
+  padding: 15px 15px;
+}
+
+.nav-link {
+  font-weight: 600;
+}
+
+.navbar-nav {
+  width: 100%;
   display: flex;
-  align-items: center;
   justify-content: flex-end;
 }
 
-.input-wrapper input {
-  height: 40px;
-  border-radius: 20px;
-  padding: 0px 20px;
-  box-sizing: border-box;
-  background: rgba(3,38,51, 1);
+.form-control {
+  border-radius: 0;
+  width: 200px;
+  margin-left: auto;
+}
+
+/*.card {
+  border-radius: 0;
   border: 0;
+  //box-shadow: 2px 4px 20px rgba(26, 26, 26, 0.04);
+}*/
+
+.btn {
+  font-size: 14px;
 }
 
-.input-wrapper input:focus {
-  outline: none;
-  background: #ffffff;
-}
-
-@media (max-width: 575.98px) {
-  .logo-wrapper, .input-wrapper {
-    text-align: center !important;
-    justify-content: center !important;
+@media (max-width: 767px) {
+  .navbar-collapse {
+    margin-top: 15px;
   }
 }
