@@ -157,7 +157,7 @@ const getForSlack = async( event, request ) => {
     // Things = await rankItems( scores, 'things' );
 
     const messageText = (
-      'Here you go. Best people in channel <#' + event.channel + '|' +
+      'Here you go. Best people this month in channel <#' + event.channel + '|' +
        await slack.getChannelName( event.channel ) + '>. ' +
       'Or see the <' + getLeaderboardWeb( request, event.channel ) + '|whole list>. '
     );
