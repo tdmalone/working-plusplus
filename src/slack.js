@@ -177,7 +177,8 @@ const getChannelName = async( channelId ) => {
   const channelList = await slack.conversations.list({
     // eslint-disable-next-line camelcase
     exclude_archived: true,
-    types: 'public_channel'
+    types: 'public_channel',
+    limit: 1000
   });
   const channel = channelList.channels.filter( channelFilter, channelId );
 
