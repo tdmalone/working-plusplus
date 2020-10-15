@@ -181,6 +181,36 @@ const Chart = (props) => {
         </div>
 
         :
+
+        (results === undefined || results.length === 0) ?
+
+        <div className="row mt-5">
+        <div className="col-6">
+          <h3 className="pb-3">
+            {listChannels ? (listChannels.map(el => {
+              if (el.channel_id === channel) 
+                return '#' + el.channel_name
+              else
+                return null
+            })) : null }
+          </h3>
+        </div>
+        <div className="col-6">
+            <input
+              className="form-control"
+              type="text"
+              placeholder="Search"
+              aria-label="Search"
+              value={searchTerm}
+              onChange={handleChange}
+            />
+        </div>
+        <div className="col text-center mt-5">
+          <h3>No Results</h3>
+        </div>
+        </div>
+
+        :
         
         <div className="row mt-5">
         <div className="col-6">
