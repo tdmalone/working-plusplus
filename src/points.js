@@ -33,6 +33,9 @@ const mysqlConfig = {
   database: process.env.DATABASE_NAME
 };
 
+const dbErrorHandler = err => err && console.log(err);
+const votingLimit = process.env.USER_LIMIT_VOTING_MAX;
+
 /**
  * Retrieves all scores from the database, ordered from highest to lowest per channel.
  *
@@ -234,6 +237,9 @@ function getUserScore( item, channelId ) {
         resolve( result );
       }
     });
+    
+    db.end(dbErrorHandler);
+
   });
 }
 
@@ -278,6 +284,9 @@ function getAllScores( channelId, startDate, endDate ) {
         resolve( result );
       }
     });
+
+    db.end(dbErrorHandler);
+
   });
 }
 
@@ -290,7 +299,7 @@ function getAllScores( channelId, startDate, endDate ) {
  *   Returns promise with message and operation.
  */
 const getDailyUserScore = async( fromUserId ) => {
-  const limit = 3;
+  const limit = votingLimit;
   let scoreCount;
   await getDayilyVotesByUser( fromUserId ).then( function( result ) {
     scoreCount = result;
@@ -344,6 +353,9 @@ function insertScore( toUserId, fromUserId, channelId, description = null ) {
         resolve( result );
       }
     });
+
+    db.end(dbErrorHandler);
+
   });
 }
 
@@ -369,6 +381,9 @@ function getUser( userId ) {
         resolve( result );
       }
     });
+
+    db.end(dbErrorHandler);
+
   });
 }
 
@@ -395,6 +410,9 @@ function insertUser( userId ) {
         resolve( result );
       }
     });
+
+    db.end(dbErrorHandler);
+
   });
 }
 
@@ -420,6 +438,9 @@ function getChannel( channelId ) {
         resolve( result );
       }
     });
+
+    db.end(dbErrorHandler);
+
   });
 }
 
@@ -447,6 +468,9 @@ function insertChannel( channelId, channelName ) {
         resolve( result );
       }
     });
+
+    db.end(dbErrorHandler);
+
   });
 }
 
@@ -476,6 +500,9 @@ function getLast( fromUserId, channelId ) {
         resolve( result );
       }
     });
+
+    db.end(dbErrorHandler);
+
   });
 }
 
@@ -501,6 +528,9 @@ function removeLast( scoreId ) {
         resolve( result );
       }
     });
+
+    db.end(dbErrorHandler);
+
   });
 }
 
@@ -529,6 +559,9 @@ function getDayilyVotesByUser( fromUserId ) {
         resolve( result );
       }
     });
+
+    db.end(dbErrorHandler);
+
   });
 }
 
@@ -552,6 +585,9 @@ const getAllChannels = () => {
         resolve( result );
       }
     });
+
+    db.end(dbErrorHandler);
+
   });
 }
 
