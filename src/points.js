@@ -33,7 +33,8 @@ const mysqlConfig = {
   database: process.env.DATABASE_NAME
 };
 
-const dbErrorHandler = err => err ? console.log(err) : null;
+const dbErrorHandler = err => err && console.log(err);
+const votingLimit = process.env.USER_LIMIT_VOTING_MAX;
 
 /**
  * Retrieves all scores from the database, ordered from highest to lowest per channel.
@@ -298,7 +299,7 @@ function getAllScores( channelId, startDate, endDate ) {
  *   Returns promise with message and operation.
  */
 const getDailyUserScore = async( fromUserId ) => {
-  const limit = 200;
+  const limit = votingLimit;
   let scoreCount;
   await getDayilyVotesByUser( fromUserId ).then( function( result ) {
     scoreCount = result;
