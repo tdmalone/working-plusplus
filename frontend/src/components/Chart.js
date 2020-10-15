@@ -182,9 +182,8 @@ const Chart = (props) => {
 
         :
 
-        (results === undefined || results.length === 0) ?
-
         <div className="row mt-5">
+
         <div className="col-6">
           <h3 className="pb-3">
             {listChannels ? (listChannels.map(el => {
@@ -205,35 +204,13 @@ const Chart = (props) => {
               onChange={handleChange}
             />
         </div>
-        <div className="col text-center mt-5">
-          <h3>No Results</h3>
-        </div>
-        </div>
 
-        :
-        
-        <div className="row mt-5">
-        <div className="col-6">
-          <h3 className="pb-3">
-            {listChannels ? (listChannels.map(el => {
-              if (el.channel_id === channel) 
-                return '#' + el.channel_name
-              else
-                return null
-            })) : null }
-          </h3>
-        </div>
-        <div className="col-6">
-            <input
-              className="form-control"
-              type="text"
-              placeholder="Search"
-              aria-label="Search"
-              value={searchTerm}
-              onChange={handleChange}
-            />
-        </div>
-        <div className="col">
+        {(results === undefined || results.length === 0) ?
+            <div className="col text-center mt-5">
+              <h3>No Results</h3>
+            </div>
+          :
+          <div className="col">
           <div className="table-responsive">
             <table className="table table-borderless table-striped">
               <thead>
@@ -255,6 +232,7 @@ const Chart = (props) => {
             </table>
           </div>
         </div>
+        }
         </div>
         }
       </div>
