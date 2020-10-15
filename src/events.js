@@ -211,12 +211,15 @@ const handlers = {
    * @return {bool|Promise} Either `false` if the event cannot be handled, or a Promise to send a
    *                        Slack message back to the requesting channel.
    */
-  message: ( event ) => {
+  message: async( event ) => {
 
     // Extract the relevant data from the message text.
     const { item, operation } = helpers.extractPlusMinusEventData( event.text );
 
-    if ( ! item || ! operation ) {
+    const userList = await slack.getUserList();
+    const userIsBot = Boolean(Object.values(userList).find(user => user.id === item && user.is_bot === true));
+
+    if ( ! item || ! operation || userIsBot ) {
       return false;
     }
 
@@ -259,6 +262,10 @@ const handlers = {
 
     if ( appCommand ) {
       return appCommandHandlers[appCommand]( event, request );
+    }
+
+    if ( '++' ) {
+      return null;
     }
 
     const defaultMessage = (

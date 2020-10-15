@@ -166,7 +166,7 @@ const isTimeBasedTokenStillValid = ( token, ts ) => {
  * @see ::extractUserID()
  */
 const isUser = ( item ) => {
-  return item.match( /U[A-Z0-9]{8}/ ) ? true : false;
+  return item.match( /U[A-Z0-9]+/ ) ? true : false;
 };
 
 /**
