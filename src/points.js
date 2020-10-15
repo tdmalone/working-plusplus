@@ -234,6 +234,11 @@ function getUserScore( item, channelId ) {
         resolve( result );
       }
     });
+    
+    db.end(function(err) {
+      console.log("The connection is terminated now");
+    });
+
   });
 }
 
@@ -278,6 +283,11 @@ function getAllScores( channelId, startDate, endDate ) {
         resolve( result );
       }
     });
+
+    db.end(function(err) {
+      console.log("The connection is terminated now");
+    });
+
   });
 }
 
@@ -290,7 +300,7 @@ function getAllScores( channelId, startDate, endDate ) {
  *   Returns promise with message and operation.
  */
 const getDailyUserScore = async( fromUserId ) => {
-  const limit = 3;
+  const limit = 200;
   let scoreCount;
   await getDayilyVotesByUser( fromUserId ).then( function( result ) {
     scoreCount = result;
@@ -344,6 +354,11 @@ function insertScore( toUserId, fromUserId, channelId, description = null ) {
         resolve( result );
       }
     });
+
+    db.end(function(err) {
+      console.log("The connection is terminated now");
+    });
+
   });
 }
 
@@ -369,6 +384,11 @@ function getUser( userId ) {
         resolve( result );
       }
     });
+
+    db.end(function(err) {
+      console.log("The connection is terminated now");
+    });
+
   });
 }
 
@@ -395,6 +415,11 @@ function insertUser( userId ) {
         resolve( result );
       }
     });
+
+    db.end(function(err) {
+      console.log("The connection is terminated now");
+    });
+
   });
 }
 
@@ -420,6 +445,11 @@ function getChannel( channelId ) {
         resolve( result );
       }
     });
+
+    db.end(function(err) {
+      console.log("The connection is terminated now");
+    });
+
   });
 }
 
@@ -447,6 +477,11 @@ function insertChannel( channelId, channelName ) {
         resolve( result );
       }
     });
+
+    db.end(function(err) {
+      console.log("The connection is terminated now");
+    });
+
   });
 }
 
@@ -476,6 +511,11 @@ function getLast( fromUserId, channelId ) {
         resolve( result );
       }
     });
+
+    db.end(function(err) {
+      console.log("The connection is terminated now");
+    });
+
   });
 }
 
@@ -501,6 +541,11 @@ function removeLast( scoreId ) {
         resolve( result );
       }
     });
+
+    db.end(function(err) {
+      console.log("The connection is terminated now");
+    });
+
   });
 }
 
@@ -529,6 +574,11 @@ function getDayilyVotesByUser( fromUserId ) {
         resolve( result );
       }
     });
+
+    db.end(function(err) {
+      console.log("The connection is terminated now");
+    });
+
   });
 }
 
@@ -552,6 +602,11 @@ const getAllChannels = () => {
         resolve( result );
       }
     });
+
+    db.end(function(err) {
+      console.log("The connection is terminated now");
+    });
+
   });
 }
 
