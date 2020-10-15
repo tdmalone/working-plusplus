@@ -165,7 +165,7 @@ const Chart = (props) => {
           </div>
         </div>
         </div>
-        {(results === undefined || results.length === 0) ?
+        {(users === undefined || users.length === 0) ?
         
         <div className="row mt-5">
           <div className="col text-center">
