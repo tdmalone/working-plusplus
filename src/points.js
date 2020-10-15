@@ -33,6 +33,8 @@ const mysqlConfig = {
   database: process.env.DATABASE_NAME
 };
 
+const dbErrorHandler = err => err ? console.log(err) : null;
+
 /**
  * Retrieves all scores from the database, ordered from highest to lowest per channel.
  *
@@ -235,9 +237,7 @@ function getUserScore( item, channelId ) {
       }
     });
     
-    db.end(function(err) {
-      console.log("The connection is terminated now");
-    });
+    db.end(dbErrorHandler);
 
   });
 }
@@ -284,9 +284,7 @@ function getAllScores( channelId, startDate, endDate ) {
       }
     });
 
-    db.end(function(err) {
-      console.log("The connection is terminated now");
-    });
+    db.end(dbErrorHandler);
 
   });
 }
@@ -355,9 +353,7 @@ function insertScore( toUserId, fromUserId, channelId, description = null ) {
       }
     });
 
-    db.end(function(err) {
-      console.log("The connection is terminated now");
-    });
+    db.end(dbErrorHandler);
 
   });
 }
@@ -385,9 +381,7 @@ function getUser( userId ) {
       }
     });
 
-    db.end(function(err) {
-      console.log("The connection is terminated now");
-    });
+    db.end(dbErrorHandler);
 
   });
 }
@@ -416,9 +410,7 @@ function insertUser( userId ) {
       }
     });
 
-    db.end(function(err) {
-      console.log("The connection is terminated now");
-    });
+    db.end(dbErrorHandler);
 
   });
 }
@@ -446,9 +438,7 @@ function getChannel( channelId ) {
       }
     });
 
-    db.end(function(err) {
-      console.log("The connection is terminated now");
-    });
+    db.end(dbErrorHandler);
 
   });
 }
@@ -478,9 +468,7 @@ function insertChannel( channelId, channelName ) {
       }
     });
 
-    db.end(function(err) {
-      console.log("The connection is terminated now");
-    });
+    db.end(dbErrorHandler);
 
   });
 }
@@ -512,9 +500,7 @@ function getLast( fromUserId, channelId ) {
       }
     });
 
-    db.end(function(err) {
-      console.log("The connection is terminated now");
-    });
+    db.end(dbErrorHandler);
 
   });
 }
@@ -542,9 +528,7 @@ function removeLast( scoreId ) {
       }
     });
 
-    db.end(function(err) {
-      console.log("The connection is terminated now");
-    });
+    db.end(dbErrorHandler);
 
   });
 }
@@ -575,9 +559,7 @@ function getDayilyVotesByUser( fromUserId ) {
       }
     });
 
-    db.end(function(err) {
-      console.log("The connection is terminated now");
-    });
+    db.end(dbErrorHandler);
 
   });
 }
@@ -603,9 +585,7 @@ const getAllChannels = () => {
       }
     });
 
-    db.end(function(err) {
-      console.log("The connection is terminated now");
-    });
+    db.end(dbErrorHandler);
 
   });
 }
