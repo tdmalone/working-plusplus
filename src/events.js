@@ -219,6 +219,11 @@ const handlers = {
     const userList = await slack.getUserList();
     const userIsBot = Boolean(Object.values(userList).find(user => user.id === item && user.is_bot === true));
 
+    if ( userIsBot && 'undo' === operation ) {
+      undoPlus( event );
+      return false;
+    }
+
     if ( ! item || ! operation || userIsBot ) {
       return false;
     }
@@ -253,8 +258,7 @@ const handlers = {
       help: sendHelp,
       thx: sayThankyou,
       thanks: sayThankyou,
-      thankyou: sayThankyou,
-      undo: undoPlus
+      thankyou: sayThankyou
     };
 
     const validCommands = Object.keys( appCommandHandlers ),
