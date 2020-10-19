@@ -48,11 +48,11 @@ const usersList = [];
  * @param {string} userVoting     The User voting.
  * @return {Promise<string>} Returns random message.
  */
-const processUserData = async( item, operation, channel, userVoting ) => {
+const processUserData = async( item, operation, channel, userVoting, description ) => {
   const dbUserTo = await points.checkUser( item );
   const dbUserFrom = await points.checkUser( userVoting );
   const checkChannel = await points.checkChannel( channel );
-  const score = await points.updateScore( dbUserTo, dbUserFrom, checkChannel, null ),
+  const score = await points.updateScore( dbUserTo, dbUserFrom, checkChannel, description ),
         operationName = operations.getOperationName( operation );
 
   const findVoter = usersList.find( ( user ) => user.voter === userVoting );
@@ -81,7 +81,7 @@ const processUserData = async( item, operation, channel, userVoting ) => {
  * @return {Promise} A Promise to send a Slack message back to the requesting channel after the
  *                   points have been updated.
  */
-const handlePlusMinus = async( item, operation, channel, userVoting ) => {
+const handlePlusMinus = async( item, operation, channel, userVoting, description ) => {
   try {
     if ( '-' === operation ) {
       return slack.sendMessage( 'NO SOUP FOR YOU!', channel );
@@ -91,7 +91,7 @@ const handlePlusMinus = async( item, operation, channel, userVoting ) => {
       let message;
       const userLimit = await points.getDailyUserScore( userVoting );
       if ( userLimit.operation ) {
-        message = await processUserData( item, operation, channel, userVoting );
+        message = await processUserData( item, operation, channel, userVoting, description );
       } else {
         return slack.sendEphemeral( userLimit.message, channel, userVoting );
       }
@@ -188,7 +188,7 @@ const sendHelp = async( event ) => {
 
   const message = (
     'Sure, here\'s what I can do:\n\n' +
-    '• `<@Someone> ++`: Add points to a user\n' +
+    '• `<@Someone> ++ [reason]`: Add points to a user\n' +
     '• `<@' + userName + '> leaderboard`: Display the leaderboard\n' +
     '• `<@' + userName + '> help`: Display this message\n' +
     '• `<@' + userName + '> undo`: Undo last added points\n\n'
@@ -214,7 +214,7 @@ const handlers = {
   message: async( event ) => {
 
     // Extract the relevant data from the message text.
-    const { item, operation } = helpers.extractPlusMinusEventData( event.text );
+    const { item, operation, description } = helpers.extractPlusMinusEventData( event.text );
 
     const userList = await slack.getUserList();
     const userIsBot = Boolean(Object.values(userList).find(user => user.id === item && user.is_bot === true));
@@ -235,7 +235,7 @@ const handlers = {
     }
 
     // Otherwise, let's go!
-    return handlePlusMinus( item, operation, event.channel, event.user );
+    return handlePlusMinus( item, operation, event.channel, event.user, description );
 
   }, // Message event.
 
