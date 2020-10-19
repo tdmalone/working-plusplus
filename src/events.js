@@ -214,10 +214,24 @@ const handlers = {
   message: async( event ) => {
 
     // Extract the relevant data from the message text.
-    const { item, operation } = helpers.extractPlusMinusEventData( event.text );
+    let { item, operation } = helpers.extractPlusMinusEventData( event.text );
 
     const userList = await slack.getUserList();
+
+    // Get user_id in the message
+    if ( event.blocks ) {
+      item = event.blocks[0].elements[0].elements[0].user_id;
+    }
+
     const userIsBot = Boolean(Object.values(userList).find(user => user.id === item && user.is_bot === true));
+
+    const eventText = event.text;
+    const command = eventText.includes("undo");
+
+    if ( userIsBot && command ) {
+      undoPlus( event );
+      return false;
+    }
 
     if ( ! item || ! operation || userIsBot ) {
       return false;
@@ -253,8 +267,7 @@ const handlers = {
       help: sendHelp,
       thx: sayThankyou,
       thanks: sayThankyou,
-      thankyou: sayThankyou,
-      undo: undoPlus
+      thankyou: sayThankyou
     };
 
     const validCommands = Object.keys( appCommandHandlers ),
