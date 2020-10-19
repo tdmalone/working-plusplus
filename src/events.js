@@ -214,21 +214,12 @@ const handlers = {
   message: async( event ) => {
 
     // Extract the relevant data from the message text.
-    let { item, operation } = helpers.extractPlusMinusEventData( event.text );
+    const { item, operation } = helpers.extractPlusMinusEventData( event.text );
 
     const userList = await slack.getUserList();
-
-    // Get user_id in the message
-    if ( event.blocks ) {
-      item = event.blocks[0].elements[0].elements[0].user_id;
-    }
-
     const userIsBot = Boolean(Object.values(userList).find(user => user.id === item && user.is_bot === true));
 
-    const eventText = event.text;
-    const command = eventText.includes("undo");
-
-    if ( userIsBot && command ) {
+    if ( userIsBot && 'undo' === operation ) {
       undoPlus( event );
       return false;
     }
