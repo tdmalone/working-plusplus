@@ -75,7 +75,7 @@ const extractUserID = ( text ) => {
  */
 const extractPlusMinusEventData = ( text ) => {
   let usernameID;
-  const data = text.match( /<@([A-Za-z0-9]+?)>?\s*((\+{2}|-{2}|—{1})|(undo))/ );
+  const data = text.match( /<@([A-Za-z0-9]+)>+\s*(\+{2}|-{2}|—{1}|undo)\s*(.+)?/ );
   if ( null !== data && 'undefined' !== typeof data[1] && null !== data[1]) {
     usernameID = extractUserID( data[1]);
   }
@@ -92,7 +92,8 @@ const extractPlusMinusEventData = ( text ) => {
 
   return {
     item: data[1],
-    operation: operation
+    operation: operation,
+    description: data[3]
   };
 
 }; // ExtractPlusMinusEventData.
