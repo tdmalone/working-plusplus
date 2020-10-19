@@ -35,6 +35,7 @@ const mysqlConfig = {
 
 const dbErrorHandler = err => err && console.log(err);
 const votingLimit = process.env.USER_LIMIT_VOTING_MAX;
+const timeLimit = process.env.UNDO_TIME_LIMIT;
 
 /**
  * Retrieves all scores from the database, ordered from highest to lowest per channel.
@@ -486,10 +487,9 @@ function insertChannel( channelId, channelName ) {
  */
 function getLast( fromUserId, channelId ) {
   return new Promise( function( resolve, reject ) {
-    const timeLimit = 5;
     const db = mysql.createConnection( mysqlConfig );
-    const timestamp = moment( Date.now() ).add( timeLimit, 'minutes' ).format( 'YYYY-MM-DD HH:mm:ss' );
-    const str = 'SELECT `score_id`, `timestamp` FROM `score` WHERE `from_user_id` = ? AND `timestamp` <= ? AND `channel_id` = ? ORDER BY `timestamp` DESC LIMIT 1;';
+    const timestamp = moment( Date.now() ).subtract( timeLimit, 'seconds' ).format( 'YYYY-MM-DD HH:mm:ss' );
+    const str = 'SELECT `score_id`, `timestamp` FROM `score` WHERE `from_user_id` = ? AND `timestamp` >= ? AND `channel_id` = ? ORDER BY `timestamp` DESC LIMIT 1;';
     const inserts = [ fromUserId, timestamp, channelId ];
     const query = mysql.format( str, inserts );
     db.query( query, function( err, result ) {
