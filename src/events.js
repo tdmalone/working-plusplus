@@ -52,7 +52,10 @@ const processUserData = async( item, operation, channel, userVoting, description
   const dbUserTo = await points.checkUser( item );
   const dbUserFrom = await points.checkUser( userVoting );
   const checkChannel = await points.checkChannel( channel );
-  const score = await points.updateScore( dbUserTo, dbUserFrom, checkChannel, description ),
+  const toUserName = await slack.getUserName( dbUserTo );
+  const fromUserName = await slack.getUserName( dbUserFrom );
+  const channelName = await slack.getChannelName( checkChannel );
+  const score = await points.updateScore( dbUserTo, dbUserFrom, checkChannel, description, toUserName, fromUserName, channelName ),
         operationName = operations.getOperationName( operation );
 
   const findVoter = usersList.find( ( user ) => user.voter === userVoting );

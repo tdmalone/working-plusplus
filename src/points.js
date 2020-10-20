@@ -76,10 +76,10 @@ const retrieveTopScores = async( channelId, startDate, endDate ) => {
  * @param {string} description
  *   Optional description. To be implemented.
  */
-const updateScore = async( toUserId, fromUserId, channelId, description ) => {
+const updateScore = async( toUserId, fromUserId, channelId, description, toUserName, fromUserName, channelName ) => {
 
   // Connect to the DB, and create a table if it's not yet there.
-  await insertScore( toUserId, fromUserId, channelId, description );
+  await insertScore( toUserId, fromUserId, channelId, description, toUserName, fromUserName, channelName );
   let finalResult = '';
   await getUserScore( toUserId, channelId ).then( function( result ) {
     finalResult = result[0].score;
@@ -336,14 +336,14 @@ const getDailyUserScore = async( fromUserId ) => {
  * @returns {Promise}
  *   The promise.
  */
-function insertScore( toUserId, fromUserId, channelId, description = null ) {
+function insertScore( toUserId, fromUserId, channelId, description = null, toUserName, fromUserName, channelName ) {
 
   return new Promise( function( resolve, reject ) {
     const db = mysql.createConnection( mysqlConfig );
     // eslint-disable-next-line no-magic-numbers
     const ts = moment( Date.now() ).format( 'YYYY-MM-DD HH:mm:ss' );
-    const inserts = [ 'score', 'timestamp', uuid.v4(), ts, toUserId, fromUserId, channelId, description ];
-    const str = 'INSERT INTO ?? (score_id, ??, to_user_id, from_user_id, channel_id, description) VALUES (?,?,?,?,?,?);';
+    const inserts = [ 'score', 'timestamp', uuid.v4(), ts, toUserId, fromUserId, channelId, description, toUserName, fromUserName, channelName ];
+    const str = 'INSERT INTO ?? (score_id, ??, to_user_id, from_user_id, channel_id, description, to_user_name, from_user_name, channel_name) VALUES (?,?,?,?,?,?,?,?,?);';
     const query = mysql.format( str, inserts );
     db.query( query, function( err, result ) {
       if ( err ) {
