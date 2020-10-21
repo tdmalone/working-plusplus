@@ -16,6 +16,8 @@ const slack = require( './slack' ),
 
 const camelCase = require( 'lodash.camelcase' );
 
+const timeLimit = Math.floor(process.env.UNDO_TIME_LIMIT / 60);
+
 /**
  * Handles an attempt by a user to 'self plus' themselves, which includes both logging the attempt
  * and letting the user know it wasn't successful.
@@ -123,7 +125,7 @@ const undoPlus = async( event ) => {
         const operationName = operations.getOperationName( '-' );
         message = messages.getRandomMessage( operationName, findVoter.user, score );
       } else {
-        message = 'You can undo only for duration of 5 minutes after up voting!';
+        message = 'You can undo only for duration of ' + timeLimit + ' minutes after up voting!';
         return slack.sendEphemeral( message, event.channel, event.user );
       }
 
@@ -188,10 +190,10 @@ const sendHelp = async( event ) => {
 
   const message = (
     'Sure, here\'s what I can do:\n\n' +
-    '• `<@Someone> ++ [reason]`: Add points to a user\n' +
-    '• `<@' + userName + '> leaderboard`: Display the leaderboard\n' +
-    '• `<@' + userName + '> help`: Display this message\n' +
-    '• `<@' + userName + '> undo`: Undo last added points\n\n'
+    '• `<@Someone> ++ [reason]`: Add points to a user, optionally you can add a reason.\n' +
+    '• `<@' + userName + '> undo`: Undo last added points (only works ' + timeLimit + ' minutes after you gave ++).\n' +
+    '• `<@' + userName + '> leaderboard`: Display the leaderboard.\n' +
+    '• `<@' + userName + '> help`: Display this message.\n\n'
   );
 
   return slack.sendMessage( message, event.channel );
