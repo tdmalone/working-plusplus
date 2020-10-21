@@ -76,10 +76,10 @@ const retrieveTopScores = async( channelId, startDate, endDate ) => {
  * @param {string} description
  *   Optional description. To be implemented.
  */
-const updateScore = async( toUserId, fromUserId, channelId, description, toUserName, fromUserName, channelName ) => {
+const updateScore = async( toUserId, fromUserId, channelId, description ) => {
 
   // Connect to the DB, and create a table if it's not yet there.
-  await insertScore( toUserId, fromUserId, channelId, description, toUserName, fromUserName, channelName );
+  await insertScore( toUserId, fromUserId, channelId, description );
   let finalResult = '';
   await getUserScore( toUserId, channelId ).then( function( result ) {
     finalResult = result[0].score;
@@ -169,6 +169,7 @@ const getNewScore = async( toUserId, channelId ) => {
  */
 const checkUser = async( userId ) => {
   let user = '';
+  const userName = await slack.getUserName( userId );
   await getUser( userId ).then( function( result ) {
     user = result[0];
     if ( 'undefined' === typeof user ) {
@@ -181,7 +182,7 @@ const checkUser = async( userId ) => {
   })
   );
   if ( null === user ) {
-    await insertUser( userId );
+    await insertUser( userId, userName );
   }
 
   return userId;
@@ -336,14 +337,14 @@ const getDailyUserScore = async( fromUserId ) => {
  * @returns {Promise}
  *   The promise.
  */
-function insertScore( toUserId, fromUserId, channelId, description = null, toUserName, fromUserName, channelName ) {
+function insertScore( toUserId, fromUserId, channelId, description = null ) {
 
   return new Promise( function( resolve, reject ) {
     const db = mysql.createConnection( mysqlConfig );
     // eslint-disable-next-line no-magic-numbers
     const ts = moment( Date.now() ).format( 'YYYY-MM-DD HH:mm:ss' );
-    const inserts = [ 'score', 'timestamp', uuid.v4(), ts, toUserId, fromUserId, channelId, description, toUserName, fromUserName, channelName ];
-    const str = 'INSERT INTO ?? (score_id, ??, to_user_id, from_user_id, channel_id, description, to_user_name, from_user_name, channel_name) VALUES (?,?,?,?,?,?,?,?,?);';
+    const inserts = [ 'score', 'timestamp', uuid.v4(), ts, toUserId, fromUserId, channelId, description ];
+    const str = 'INSERT INTO ?? (score_id, ??, to_user_id, from_user_id, channel_id, description) VALUES (?,?,?,?,?,?);';
     const query = mysql.format( str, inserts );
     db.query( query, function( err, result ) {
       if ( err ) {
@@ -396,11 +397,11 @@ function getUser( userId ) {
  * @returns {Promise}
  *   Returned promise.
  */
-function insertUser( userId ) {
+function insertUser( userId, userName ) {
   return new Promise( function( resolve, reject ) {
     const db = mysql.createConnection( mysqlConfig );
-    const str = 'INSERT INTO ?? (user_id, banned_until) VALUES (?, NULL);';
-    const inserts = [ 'user', userId ];
+    const str = 'INSERT INTO ?? (user_id, user_name, banned_until) VALUES (?, ?, NULL);';
+    const inserts = [ 'user', userId, userName ];
     const query = mysql.format( str, inserts );
     db.query( query, function( err, result ) {
       if ( err ) {
