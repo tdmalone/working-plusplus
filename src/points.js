@@ -170,6 +170,7 @@ const getNewScore = async( toUserId, channelId ) => {
  */
 const checkUser = async( userId ) => {
   let user = '';
+  const userName = await slack.getUserName( userId );
   await getUser( userId ).then( function( result ) {
     user = result[0];
     if ( 'undefined' === typeof user ) {
@@ -182,7 +183,7 @@ const checkUser = async( userId ) => {
   })
   );
   if ( null === user ) {
-    await insertUser( userId );
+    await insertUser( userId, userName );
   }
 
   return userId;
@@ -397,11 +398,11 @@ function getUser( userId ) {
  * @returns {Promise}
  *   Returned promise.
  */
-function insertUser( userId ) {
+function insertUser( userId, userName ) {
   return new Promise( function( resolve, reject ) {
     const db = mysql.createConnection( mysqlConfig );
-    const str = 'INSERT INTO ?? (user_id, banned_until) VALUES (?, NULL);';
-    const inserts = [ 'user', userId ];
+    const str = 'INSERT INTO ?? (user_id, user_name, banned_until) VALUES (?, ?, NULL);';
+    const inserts = [ 'user', userId, userName ];
     const query = mysql.format( str, inserts );
     db.query( query, function( err, result ) {
       if ( err ) {
