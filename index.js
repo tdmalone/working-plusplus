@@ -66,6 +66,8 @@ const bootstrap = ( options = {}) => {
   // Additional routes.
   server.get( '/leaderboard', app.handleGet );
   server.get( '/channels', app.handleGet );
+  server.get( '/fromusers', app.handleGet );
+  server.get( '/karmafeed', app.handleGet );
 
   return server.listen( PORT, () => {
     console.log( 'Listening on port ' + PORT + '.' );

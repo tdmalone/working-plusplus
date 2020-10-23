@@ -81,6 +81,7 @@ const rankItems = async( topScores, itemType = 'users', format = 'slack' ) => {
   for ( const score of topScores ) {
 
     let item = score.item;
+    
     const isUser = helpers.isUser( score.item ) ? true : false;
 
     // Skip if this item is not the item type we're ranking.
@@ -135,6 +136,42 @@ const rankItems = async( topScores, itemType = 'users', format = 'slack' ) => {
   return items;
 
 }; // RankItems.
+
+const userScores = async( topScores ) => {
+
+  const items = [];
+  let output;
+
+  for ( const score of topScores ) {
+
+    let toUser = score.item;
+    let fromUser = score.from_user_id;
+    let userScore = score.score;
+    let channel = score.channel_id;
+
+    const isUser = helpers.isUser( toUser ) ? true : false;
+
+    if (isUser) {
+      toUser = await slack.getUserName( toUser );
+      fromUser = await slack.getUserName( fromUser );
+      channel = await slack.getChannelName( channel )
+    }
+
+    output = {
+      toUser: toUser,
+      fromUser: fromUser,
+      score: userScore,
+      channel: '#' + channel
+    }
+
+    items.push( output );
+    console.log("OUTPUT: " + JSON.stringify(output));
+
+  }
+
+  return items;
+
+}
 
 /**
  * Retrieves and sends the current partial leaderboard (top scores only) to the requesting Slack
@@ -213,6 +250,8 @@ const getForWeb = async( request ) => {
     };
 
     // Return helpers.render( 'src/html/leaderboard.html', data, request );
+    // console.log("SCORES: " + JSON.stringify(scores));
+    // console.log("USERS: " + JSON.stringify(users));
     return users;
 
   } catch ( err ) {
@@ -241,6 +280,59 @@ const getForChannels = async( request ) => {
 }; // GetForChannels.
 
 /**
+ * Retrieves all scores from_user_id, for displaying on the web.
+ *
+ * @param {object} request The Express request object that resulted in this handler being run.
+ * @returns {string} JSON for the browser.
+ */
+const getAllScoresFromUser = async( request ) => {
+
+  try {
+    const startDate = request.query.startDate;
+    const endDate = request.query.endDate;
+    const channelId = request.query.channel;
+    // console.log(request.query);
+    const fromUsers = await points.getAllScoresFromUser( channelId, startDate, endDate );
+    // console.log("FROMUSERS: " + JSON.stringify(fromUsers));
+
+    const users = await userScores( fromUsers );
+    // console.log("USERS: " + JSON.stringify(users));
+    // const users = await userScores( fromUsers );
+
+    console.log( 'Sending all From Users Scores!');
+    // console.log("FROM USERS: " + JSON.stringify(users));
+
+    return users;
+  } catch ( err ) {
+    console.error( err.message );
+  }
+
+}; // getAllScoresFromUser.
+
+/**
+ * Retrieves all added karma with descriptions, for displaying on the web.
+ *
+ * @param {object} request The Express request object that resulted in this handler being run.
+ * @returns {string} JSON for the browser.
+ */
+const getKarmaFeed = async( request ) => {
+
+  try {
+
+    const itemsPerPage = request.query.itemsPerPage;
+    const page = request.query.page;
+    const feed = await points.getKarmaFeed(itemsPerPage, page);
+    console.log( 'Sending Karma Feed!' );
+
+    return feed;
+
+  } catch ( err ) {
+    console.error( err.message );
+  }
+
+}; // getKarmaFeed.
+
+/**
  * The default handler for this command when invoked over Slack.
  *
  * @param {*} event   See the documentation for getForSlack.
@@ -257,5 +349,7 @@ module.exports = {
   getForSlack,
   getForWeb,
   handler,
-  getForChannels
+  getForChannels,
+  getAllScoresFromUser,
+  getKarmaFeed
 };

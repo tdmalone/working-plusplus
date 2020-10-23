@@ -107,6 +107,30 @@ const handleGet = async( request, response ) => {
       }
       break;
 
+    case '/fromusers':
+      if ( helpers.isTimeBasedTokenStillValid( request.query.token, request.query.ts ) ) {
+        response.json( await leaderboard.getAllScoresFromUser( request ) );
+      } else {
+        response
+          .status( HTTP_403 )
+          .send( 'Sorry, this link is no longer valid. Please request a new link in Slack.' );
+      }
+      break;
+
+    case '/karmafeed':
+      if ( helpers.isTimeBasedTokenStillValid( request.query.token, request.query.ts ) ) {
+        try {
+          response.json( await leaderboard.getKarmaFeed( request ));
+        } catch(err) {
+          console.log(err.message);
+        }
+      } else {
+        response
+          .status( HTTP_403 )
+          .send( 'Sorry, this link is no longer valid. Please request a new link in Slack.' );
+      }
+      break;
+
     // A simple default GET response is sometimes useful for troubleshooting.
     default:
       response.send( 'It works! However, this app only accepts POST requests for now.' );

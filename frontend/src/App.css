@@ -48,6 +48,15 @@ body {
   padding: 15px 15px;
 }
 
+.page-link {
+  color: #ee4732;
+}
+
+.page-item.active .page-link {
+  background-color: #ee4732;
+  border-color: #ee4732;
+}
+
 .nav-link {
   font-weight: 600;
 }
@@ -72,6 +81,16 @@ body {
 
 .btn {
   font-size: 14px;
+}
+
+.tab-content {
+  width: 100%;
+  padding-left: 15px;
+  padding-right: 15px;
+}
+
+td.description {
+  width: 30%;
 }
 
 @media (max-width: 767px) {

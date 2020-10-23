@@ -38,6 +38,9 @@ const Chart = (props) => {
   const channelsURL = apiURL + '/channels?token=' + token + '&ts=' + ts + '&botUser=' + botUser + '&channel=' + channel;
   const [listChannels, setListChannels] = useState();
 
+  const fromUsersURL = apiURL + '/fromusers?token=' + token + '&ts=' + ts + '&botUser=' + botUser + '&channel=' + channel + '&startDate=' + startDate + '&endDate=' + endDate;
+  const [fromUsers, setFromUsers] = useState();
+
   const [isActive, setIsActive] = useState('allTime');
 
   const filterDates = (active = 'allTime') => {
@@ -97,8 +100,19 @@ const Chart = (props) => {
     }
     getChannels();
 
+    const fromUsers = async() => {
+      await axios.get(fromUsersURL)
+        .then(res => {
+          setFromUsers(res.data);
+        })
+        .catch(err => console.error(err.message))
+    }
+    fromUsers();
+
     // eslint-disable-next-line
-  }, [leaderboardURL, channelsURL, channel]);
+  }, [leaderboardURL, channelsURL, channel, fromUsersURL]);
+
+  console.log(fromUsers);
 
   const [searchTerm, setSearchTerm] = useState('');
   const handleChange = e => setSearchTerm(e.target.value);
