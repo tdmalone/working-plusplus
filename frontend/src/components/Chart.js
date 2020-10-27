@@ -118,6 +118,7 @@ const Chart = props => {
         <div className="row mt-5">
           <div className="col">
             <h3 className="mb-0">
+              { (channel === 'all') ? 'All Channels' : null }
               {listChannels ? (listChannels.map(el => {
                 if (el.channel_id === channel) 
                   return '#' + el.channel_name
@@ -138,6 +139,7 @@ const Chart = props => {
                   Channels
                 </DropdownToggle>
                 <DropdownMenu>
+                  {listChannels ? <DropdownItem onClick={ e => { setChannel('all'); props.onClick(''); } }>All Channels</DropdownItem> : null}
                   {listChannels ? (listChannels.map((el, index) => (
                     <DropdownItem key={index} onClick={e => { setChannel(el.channel_id); props.onClick(''); }}>#{el.channel_name}</DropdownItem>
                     )
@@ -202,6 +204,7 @@ const Chart = props => {
         
         <div className="row mt-5">
           <div className="col text-center">
+            { (channel === 'all') ? <p>All Channels</p> : null }
             <p>{listChannels ? (listChannels.map(el => {
               if (el.channel_id === channel) 
                 return '#' + el.channel_name
