@@ -30,7 +30,7 @@ const timeLimit = Math.floor(process.env.UNDO_TIME_LIMIT / 60);
 const handleSelfPlus = ( user, channel ) => {
   console.log( user + ' tried to alter their own score.' );
   const message = messages.getRandomMessage( operations.operations.SELF, user );
-  return slack.sendMessage( message, channel );
+  return slack.sendEphemeral( message, channel, user );
 };
 
 const usersList = [];
@@ -86,7 +86,7 @@ const processUserData = async( item, operation, channel, userVoting, description
 const handlePlusMinus = async( item, operation, channel, userVoting, description ) => {
   try {
     if ( '-' === operation ) {
-      return slack.sendMessage( 'NO SOUP FOR YOU!', channel );
+      return null;
     } else if ( '+' === operation ) {
 
       // TODO: implement check for ban.
@@ -98,7 +98,7 @@ const handlePlusMinus = async( item, operation, channel, userVoting, description
         return slack.sendEphemeral( userLimit.message, channel, userVoting );
       }
 
-      return slack.sendMessage( message, channel );
+      return slack.sendEphemeral( message, channel, userVoting );
     }
   } catch ( err ) {
     console.error( err.message );
@@ -134,7 +134,7 @@ const undoPlus = async( event ) => {
       return slack.sendEphemeral( message, event.channel, event.user );
     }
 
-    return slack.sendMessage( message, event.channel );
+    return slack.sendEphemeral( message, event.channel, event.user );
 
   } catch ( err ) {
     console.log( err.message );
@@ -166,7 +166,7 @@ const sayThankyou = ( event ) => {
   const randomKey = Math.floor( Math.random() * thankyouMessages.length ),
         message = '<@' + event.user + '> ' + thankyouMessages[ randomKey ];
 
-  return slack.sendMessage( message, event.channel );
+  return slack.sendEphemeral( message, event.channel, event.user );
 
 }; // SayThankyou.
 
@@ -196,7 +196,7 @@ const sendHelp = async( event ) => {
     '• `<@' + userName + '> help`: Display this message.\n\n'
   );
 
-  return slack.sendMessage( message, event.channel );
+  return slack.sendEphemeral( message, event.channel, event.user );
 
 }; // SendHelp.
 
@@ -279,7 +279,7 @@ const handlers = {
       'few things I\'ve been trained to do. Send me `help` for more details.'
     );
 
-    return slack.sendMessage( defaultMessage, event.channel );
+    return slack.sendEphemeral( defaultMessage, event.channel, event.user );
 
   } // AppMention event.
 }; // Handlers.

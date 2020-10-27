@@ -206,7 +206,7 @@ const getForSlack = async( event, request ) => {
     }
 
     console.log( 'Sending the leaderboard.' );
-    return slack.sendMessage( message, event.channel );
+    return slack.sendEphemeral( message, event.channel, event.user );
   } catch ( err ) {
     console.error( err.message );
   }
