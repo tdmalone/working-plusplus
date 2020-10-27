@@ -61,12 +61,6 @@ body {
   font-weight: 600;
 }
 
-.navbar-nav {
-  width: 100%;
-  display: flex;
-  justify-content: flex-end;
-}
-
 .form-control {
   border-radius: 0;
   width: 200px;

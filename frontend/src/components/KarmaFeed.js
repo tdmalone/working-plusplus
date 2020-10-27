@@ -3,7 +3,7 @@ import axios from 'axios';
 import queryString from 'query-string';
 import ReactPaginate from 'react-paginate';
 
-const KarmaFeed = (props) => {
+const KarmaFeed = props => {
 
   const apiURL = process.env.REACT_APP_API_URL;
 
@@ -40,8 +40,9 @@ const KarmaFeed = (props) => {
 
       const itemsPerPage = pagination.perPage;
       const page = pagination.currentPage + 1;
+      const searchString = props.search;
 
-      await axios.get(fromUsersURL, {params: {itemsPerPage: itemsPerPage, page: page}})
+      await axios.get(fromUsersURL, {params: {itemsPerPage: itemsPerPage, page: page, searchString: searchString}})
         .then(res => {
           setFromUsers(res.data.results);
 
@@ -58,7 +59,9 @@ const KarmaFeed = (props) => {
     fromUsers();
 
     // eslint-disable-next-line
-  }, [fromUsersURL, pagination.currentPage]);
+  }, [fromUsersURL, pagination.currentPage, props.search]);
+
+  console.log(fromUsers);
 
   return(
     <>
@@ -91,57 +94,57 @@ const KarmaFeed = (props) => {
 
     :
 
-    <div>
-    <div className="row mt-5">
-      <div className="col">
-        <div className="table-responsive">
-          <table className="table table-borderless table-striped">
-            <thead>
-              <tr>
-                <th scope="col" className="text-left">From</th>
-                <th scope="col" className="text-left">To</th>
-                <th scope="col" className="text-left">Description</th>
-                <th scope="col" className="text-left">Channel</th>
-                <th scope="col" className="text-left">Timestamp</th>
-              </tr>
-            </thead>
-            <tbody>
-            {(fromUsers && fromUsers.map((el, index) => (
-              <tr key={index}>
-                <td className="text-left">{el.fromUser}</td>
-                <td className="text-left">{el.toUser}</td>
-                <td className="text-left description">{el.description}</td>
-                <td className="text-left">#{el.channel_name}</td>
-                <td className="text-left">{(new Date(el.timestamp).toLocaleDateString('en-gb')) + ' - ' + (new Date(el.timestamp).toLocaleTimeString('en-gb'))}</td>
-              </tr>
-            )))}
-            </tbody>
-          </table>
+    <div className="container pt-5 pb-5">
+      <div className="row mt-5">
+        <div className="col">
+          <div className="table-responsive">
+            <table className="table table-borderless table-striped">
+              <thead>
+                <tr>
+                  <th scope="col" className="text-left">From</th>
+                  <th scope="col" className="text-left">To</th>
+                  <th scope="col" className="text-left">Description</th>
+                  <th scope="col" className="text-left">Channel</th>
+                  <th scope="col" className="text-left">Timestamp</th>
+                </tr>
+              </thead>
+              <tbody>
+              {(fromUsers && fromUsers.map((el, index) => (
+                <tr key={index}>
+                  <td className="text-left">{el.fromUser}</td>
+                  <td className="text-left">{el.toUser}</td>
+                  <td className="text-left description">{el.description}</td>
+                  <td className="text-left">#{el.channel_name}</td>
+                  <td className="text-left">{(new Date(el.timestamp).toLocaleDateString('en-gb')) + ' - ' + (new Date(el.timestamp).toLocaleTimeString('en-gb'))}</td>
+                </tr>
+              )))}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
-    </div>
-    <div className="row mt-5">
-      <div className="col">
-        <ReactPaginate
-          previousLabel={"PREV"}
-          nextLabel={"NEXT"}
-          breakLabel={"..."}
-          breakClassName={"break-me"}
-          pageCount={pagination.pageCount}
-          marginPagesDisplayed={2}
-          pageRangeDisplayed={2}
-          onPageChange={handlePageClick}
-          containerClassName={"pagination justify-content-center"}
-          subContainerClassName={"pages pagination"}
-          activeClassName={"active"}
-          pageClassName={"page-item"}
-          pageLinkClassName={"page-link"}
-          previousClassName={"page-item"}
-          nextClassName={"page-item"}
-          previousLinkClassName={"page-link"}
-          nextLinkClassName={"page-link"} />
+      <div className="row mt-5">
+        <div className="col">
+          <ReactPaginate
+            previousLabel={"PREV"}
+            nextLabel={"NEXT"}
+            breakLabel={"..."}
+            breakClassName={"break-me"}
+            pageCount={pagination.pageCount}
+            marginPagesDisplayed={2}
+            pageRangeDisplayed={2}
+            onPageChange={handlePageClick}
+            containerClassName={"pagination justify-content-center"}
+            subContainerClassName={"pages pagination"}
+            activeClassName={"active"}
+            pageClassName={"page-item"}
+            pageLinkClassName={"page-link"}
+            previousClassName={"page-item"}
+            nextClassName={"page-item"}
+            previousLinkClassName={"page-link"}
+            nextLinkClassName={"page-link"} />
+        </div>
       </div>
-    </div>
     </div>
     }
     </>

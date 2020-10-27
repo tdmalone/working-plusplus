@@ -2,13 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import queryString from 'query-string';
 import moment from 'moment';
-import logo from '../logo.svg';
 import {
-  Collapse,
-  Navbar,
-  NavbarToggler,
-  NavbarBrand,
-  Nav,
   Button,
   ButtonGroup,
   ButtonDropdown,
@@ -17,7 +11,7 @@ import {
   DropdownToggle
 } from 'reactstrap';
 
-const Chart = (props) => {
+const Chart = props => {
 
   const apiURL = process.env.REACT_APP_API_URL;
 
@@ -38,8 +32,8 @@ const Chart = (props) => {
   const channelsURL = apiURL + '/channels?token=' + token + '&ts=' + ts + '&botUser=' + botUser + '&channel=' + channel;
   const [listChannels, setListChannels] = useState();
 
-  const fromUsersURL = apiURL + '/fromusers?token=' + token + '&ts=' + ts + '&botUser=' + botUser + '&channel=' + channel + '&startDate=' + startDate + '&endDate=' + endDate;
-  const [fromUsers, setFromUsers] = useState();
+  // const fromUsersURL = apiURL + '/fromusers?token=' + token + '&ts=' + ts + '&botUser=' + botUser + '&channel=' + channel + '&startDate=' + startDate + '&endDate=' + endDate;
+  // const [fromUsers, setFromUsers] = useState();
 
   const [isActive, setIsActive] = useState('allTime');
 
@@ -76,8 +70,6 @@ const Chart = (props) => {
       setEndDate(moment.unix( today ).endOf('week').add(1, 'day').unix());
 
     }
-
-    setSearchTerm('');
     
   }
 
@@ -100,65 +92,62 @@ const Chart = (props) => {
     }
     getChannels();
 
-    const fromUsers = async() => {
-      await axios.get(fromUsersURL)
-        .then(res => {
-          setFromUsers(res.data);
-        })
-        .catch(err => console.error(err.message))
-    }
-    fromUsers();
+
+    // const fromUsers = async() => {
+    //   await axios.get(fromUsersURL)
+    //     .then(res => {
+    //       setFromUsers(res.data);
+    //     })
+    //     .catch(err => console.error(err.message))
+    // }
+    // fromUsers();
 
     // eslint-disable-next-line
-  }, [leaderboardURL, channelsURL, channel, fromUsersURL]);
+  }, [leaderboardURL, channelsURL, channel]);
 
-  console.log(fromUsers);
-
-  const [searchTerm, setSearchTerm] = useState('');
-  const handleChange = e => setSearchTerm(e.target.value);
-  const results = !searchTerm ? users : users.filter(user =>
-    user.item.toLowerCase().includes(searchTerm.toLocaleLowerCase())
+  const results = !props.search ? users : users.filter(user =>
+    user.item.toLowerCase().includes(props.search.toLocaleLowerCase())
   );
-
-
-  const [isOpen, setIsOpen] = useState(false);
-  const toggle = () => setIsOpen(!isOpen);
 
   const [dropdownOpen, setOpen] = useState(false);
   const toggleDropDown = () => setOpen(!dropdownOpen);
 
   return(
     <>
-    <Navbar light expand="md">
       <div className="container">
-        <NavbarBrand><img src={logo} alt="Agiledrop" /></NavbarBrand>
-        <NavbarToggler onClick={toggle} />
-        <Collapse isOpen={isOpen} navbar>
-          <Nav className="mr-auto" navbar>
-
+        <div className="row mt-5">
+          <div className="col">
+            <h3 className="mb-0">
+              {listChannels ? (listChannels.map(el => {
+                if (el.channel_id === channel) 
+                  return '#' + el.channel_name
+                else
+                  return null
+              })) : null }
+            </h3>
+          </div>
+          <div className="col-8 text-right">
             <ButtonGroup>
-              <Button className={`${isActive === 'thisWeek' ? 'active' : ''} btn btn-light`} onClick={() => filterDates('thisWeek')}>This Week</Button>
-              <Button className={`${isActive === 'thisMonth' ? 'active' : ''} btn btn-light`} onClick={() => filterDates('thisMonth')}>This Month</Button>
-              <Button className={`${isActive === 'lastWeek' ? 'active' : ''} btn btn-light`} onClick={() => filterDates('lastWeek')}>Last Week</Button>
-              <Button className={`${isActive === 'lastMonth' ? 'active' : ''} btn btn-light`} onClick={() => filterDates('lastMonth')}>Last Month</Button>
-              <Button className={`${isActive === 'allTime' ? 'active' : ''} btn btn-light`} onClick={() => filterDates('allTime')}>All Time</Button>
+              <Button className={`${isActive === 'thisWeek' ? 'active ' : ''}btn btn-light`} onClick={e => { filterDates('thisWeek'); props.onClick(''); } }>This Week</Button>
+              <Button className={`${isActive === 'thisMonth' ? 'active ' : ''}btn btn-light`} onClick={e => { filterDates('thisMonth'); props.onClick(''); } }>This Month</Button>
+              <Button className={`${isActive === 'lastWeek' ? 'active ' : ''}btn btn-light`} onClick={e => { filterDates('lastWeek'); props.onClick(''); } }>Last Week</Button>
+              <Button className={`${isActive === 'lastMonth' ? 'active ' : ''}btn btn-light`} onClick={e => { filterDates('lastMonth'); props.onClick(''); } }>Last Month</Button>
+              <Button className={`${isActive === 'allTime' ? 'active ' : ''}btn btn-light`} onClick={e => { filterDates('allTime'); props.onClick(''); } }>All Time</Button>
               <ButtonDropdown isOpen={dropdownOpen} toggle={toggleDropDown}>
                 <DropdownToggle caret>
                   Channels
                 </DropdownToggle>
                 <DropdownMenu>
                   {listChannels ? (listChannels.map((el, index) => (
-                    <DropdownItem key={index} onClick={() => setChannel(el.channel_id)}>#{el.channel_name}</DropdownItem>
+                    <DropdownItem key={index} onClick={e => { setChannel(el.channel_id); props.onClick(''); }}>#{el.channel_name}</DropdownItem>
                     )
                   )) : <DropdownItem>No Channels</DropdownItem>}
                 </DropdownMenu>
               </ButtonDropdown>
             </ButtonGroup>
-
-          </Nav>
-        </Collapse>
+          </div>
         </div>
-      </Navbar>
+      </div>
 
       {(users === undefined) ?
 
@@ -227,26 +216,6 @@ const Chart = (props) => {
         :
 
         <div className="row mt-5">
-        <div className="col-6">
-          <h3 className="pb-3">
-            {listChannels ? (listChannels.map(el => {
-              if (el.channel_id === channel) 
-                return '#' + el.channel_name
-              else
-                return null
-            })) : null }
-          </h3>
-        </div>
-        <div className="col-6">
-            <input
-              className="form-control"
-              type="text"
-              placeholder="Search"
-              aria-label="Search"
-              value={searchTerm}
-              onChange={handleChange}
-            />
-        </div>
 
         {(results === undefined || results.length === 0) ?
             <div className="col text-center mt-5">

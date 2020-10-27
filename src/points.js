@@ -341,17 +341,26 @@ function getAllScoresFromUser( channelId, startDate, endDate ) {
  * @returns {Promise}
  *   The promise.
  */
-const getKarmaFeed = (itemsPerPage, page) => {
+const getKarmaFeed = (itemsPerPage, page, searchString) => {
   return new Promise( function( resolve, reject ) {
     const db = mysql.createConnection( mysqlConfig );
 
-    let countScores = 'SELECT COUNT(*) AS scores FROM score';
+    let searchForm = '';
+    if (searchString) {
+      searchForm = 'WHERE uFrom.user_name LIKE \'%' + searchString + '%\' ';
+    }
+
+    let countScores = 'SELECT COUNT(*) AS scores ' +
+                      'FROM score ' +
+                      'INNER JOIN user uFrom ON score.from_user_id = uFrom.user_id ' +
+                      searchForm;
 
     let str = 'SELECT score.timestamp, uTo.user_name as toUser, uFrom.user_name as fromUser, channel.channel_name, score.description ' +
               'FROM score ' +
               'INNER JOIN channel ON score.channel_id = channel.channel_id ' +
               'INNER JOIN user uTo ON score.to_user_id = uTo.user_id ' +
               'INNER JOIN user uFrom ON score.from_user_id = uFrom.user_id ' +
+              searchForm + 
               'ORDER BY score.timestamp DESC LIMIT ' + itemsPerPage + ' OFFSET ' + (page - 1) * itemsPerPage;
 
     const query = mysql.format( str );
