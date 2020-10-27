@@ -259,6 +259,7 @@ function getAllScores( channelId, startDate, endDate ) {
     let str = '';
     let start;
     let end;
+    let inserts;
 
     if ( 'undefined' !== typeof startDate || 'undefined' !== typeof endDate) {
       start = moment.unix( startDate ).format( 'YYYY-MM-DD HH:mm:ss' );
@@ -268,13 +269,14 @@ function getAllScores( channelId, startDate, endDate ) {
       end = moment( Date.now() ).format( 'YYYY-MM-DD HH:mm:ss' );
     }
 
-    const inserts = [ channelId, start, end ];
-
-    // eslint-disable-next-line no-negated-condition
-    if ( 'undefined' !== typeof channelId ) {
-      str = 'SELECT to_user_id  as item, COUNT(score_id) as score FROM `score` WHERE `channel_id` = ? AND (`timestamp` > ? AND `timestamp` < ?) GROUP BY to_user_id ORDER BY score DESC';
+    if ( 'all' === channelId ) {
+      inserts = [ start, end ];
+      str = 'SELECT to_user_id as item, COUNT(score_id) as score FROM `score` WHERE (`timestamp` > ? AND `timestamp` < ?) GROUP BY to_user_id ORDER BY score DESC';
+    } else if ( 'undefined' !== typeof channelId ) {
+      inserts = [ channelId, start, end ];
+      str = 'SELECT to_user_id as item, COUNT(score_id) as score FROM `score` WHERE `channel_id` = ? AND (`timestamp` > ? AND `timestamp` < ?) GROUP BY to_user_id ORDER BY score DESC';
     } else {
-      str = 'SELECT to_user_id  as item, COUNT(score_id) as score FROM `score` GROUP BY to_user_id ORDER BY score DESC';
+      str = 'SELECT to_user_id as item, COUNT(score_id) as score FROM `score` GROUP BY to_user_id ORDER BY score DESC';
     }
 
     const query = mysql.format( str, inserts );
