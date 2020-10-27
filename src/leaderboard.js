@@ -158,31 +158,52 @@ const getForSlack = async( event, request ) => {
 
     const messageText = (
       'Here you go. Best people this month in channel <#' + event.channel + '|' +
-       await slack.getChannelName( event.channel ) + '>. ' +
+       await slack.getChannelName( event.channel ) + '>.'
+    );
+
+    const bottomMessageText = (
       'Or see the <' + getLeaderboardWeb( request, event.channel ) + '|whole list>. '
     );
 
-    const message = {
-      attachments: [
-        {
-          text: messageText,
-          color: 'good', // Slack's 'green' colour.
-          fields: [
-            {
-              title: 'Users',
-              value: users.slice( 0, limit ).join( '\n' ),
-              short: true
-            }
+    const noUsers = (
+      'No Users on Leaderboard.'
+    );
 
-            // {
-            //   title: 'Things',
-            //   value: things.slice( 0, limit ).join( '\n' ),
-            //   short: true
-            // }
-          ]
-        }
-      ]
-    };
+    let message;
+    if (users === undefined || users.length == 0) {
+      message = {
+        attachments: [
+          {
+            text: noUsers,
+            color: 'danger'
+          }
+        ]
+      }
+    } else {
+      message = {
+        attachments: [
+          {
+            text: messageText,
+            color: 'good', // Slack's 'green' colour.
+            fields: [
+              {
+                value: users.slice( 0, limit ).join( '\n' ),
+                short: true
+              },
+              {
+                value: '\n' + bottomMessageText
+              }
+
+              // {
+              //   title: 'Things',
+              //   value: things.slice( 0, limit ).join( '\n' ),
+              //   short: true
+              // }
+            ]
+          }
+        ]
+      };
+    }
 
     console.log( 'Sending the leaderboard.' );
     return slack.sendMessage( message, event.channel );

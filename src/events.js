@@ -190,8 +190,8 @@ const sendHelp = async( event ) => {
 
   const message = (
     'Sure, here\'s what I can do:\n\n' +
-    '• `<@Someone> ++ [reason]`: Add points to a user, optionally you can add a reason.\n' +
-    '• `<@' + userName + '> undo`: Undo last added points (only works ' + timeLimit + ' minutes after you gave ++).\n' +
+    '• `<@Someone> ++ [reason]`: Add a point to user, optionally you can add a reason.\n' +
+    '• `<@' + userName + '> undo`: Undo last added point (only works ' + timeLimit + ' minutes after you gave ++).\n' +
     '• `<@' + userName + '> leaderboard`: Display the leaderboard.\n' +
     '• `<@' + userName + '> help`: Display this message.\n\n'
   );
