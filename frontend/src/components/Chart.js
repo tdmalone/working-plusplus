@@ -2,14 +2,8 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import queryString from 'query-string';
 import moment from 'moment';
-import {
-  Button,
-  ButtonGroup,
-  ButtonDropdown,
-  DropdownMenu,
-  DropdownItem,
-  DropdownToggle
-} from 'reactstrap';
+
+import DateFilter from './DateFilter';
 
 const Chart = props => {
 
@@ -23,7 +17,6 @@ const Chart = props => {
   const [channel, setChannel] = useState(parsedQuery.channel);
   const [startDate, setStartDate] = useState(moment(0).unix());
   const [endDate, setEndDate] = useState(moment().unix());
-  const today = moment().unix();
 
   // const apiURL = 'https://a564aa475f76.eu.ngrok.io/leaderboard' + props.location.search;
   const leaderboardURL = apiURL + '/leaderboard?token=' + token + '&ts=' + ts + '&botUser=' + botUser + '&channel=' + channel + '&startDate=' + startDate + '&endDate=' + endDate;
@@ -31,47 +24,6 @@ const Chart = props => {
 
   const channelsURL = apiURL + '/channels?token=' + token + '&ts=' + ts + '&botUser=' + botUser + '&channel=' + channel;
   const [listChannels, setListChannels] = useState();
-
-  // const fromUsersURL = apiURL + '/fromusers?token=' + token + '&ts=' + ts + '&botUser=' + botUser + '&channel=' + channel + '&startDate=' + startDate + '&endDate=' + endDate;
-  // const [fromUsers, setFromUsers] = useState();
-
-  const [isActive, setIsActive] = useState('allTime');
-
-  const filterDates = (active = 'allTime') => {
-
-    if (active === 'allTime') {
-
-      setIsActive(active);
-      setStartDate(moment(0).unix());
-      setEndDate(moment().unix());
-      
-    } else if (active === 'lastMonth') {
-
-      setIsActive(active);
-      setStartDate(moment.unix( today ).subtract(1,'months').startOf('month').unix());
-      setEndDate(moment.unix( today ).subtract(1,'months').endOf('month').unix());
-
-    } else if (active === 'lastWeek') {
-
-      setIsActive(active);
-      setStartDate(moment.unix( today ).subtract(1,'week').startOf('week').add(1, 'day').unix());
-      setEndDate(moment.unix( today ).subtract(1,'week').endOf('week').add(1, 'day').unix());
-
-    } else if (active === 'thisMonth') {
-
-      setIsActive(active);
-      setStartDate(moment.unix( today ).startOf('month').unix());
-      setEndDate(moment.unix( today ).unix());
-
-    } else if (active === 'thisWeek') {
-
-      setIsActive(active);
-      setStartDate(moment.unix( today ).startOf('week').add(1, 'day').unix());
-      setEndDate(moment.unix( today ).endOf('week').add(1, 'day').unix());
-
-    }
-    
-  }
 
   useEffect(() => {
     const getChart = async() => {
@@ -92,16 +44,6 @@ const Chart = props => {
     }
     getChannels();
 
-
-    // const fromUsers = async() => {
-    //   await axios.get(fromUsersURL)
-    //     .then(res => {
-    //       setFromUsers(res.data);
-    //     })
-    //     .catch(err => console.error(err.message))
-    // }
-    // fromUsers();
-
     // eslint-disable-next-line
   }, [leaderboardURL, channelsURL, channel]);
 
@@ -109,47 +51,16 @@ const Chart = props => {
     user.item.toLowerCase().includes(props.search.toLocaleLowerCase())
   );
 
-  const [dropdownOpen, setOpen] = useState(false);
-  const toggleDropDown = () => setOpen(!dropdownOpen);
-
   return(
     <>
-      <div className="container">
-        <div className="row mt-5">
-          <div className="col">
-            <h3 className="mb-0">
-              { (channel === 'all') ? 'All Channels' : null }
-              {listChannels ? (listChannels.map(el => {
-                if (el.channel_id === channel) 
-                  return '#' + el.channel_name
-                else
-                  return null
-              })) : null }
-            </h3>
-          </div>
-          <div className="col-8 text-right">
-            <ButtonGroup>
-              <Button className={`${isActive === 'thisWeek' ? 'active ' : ''}btn btn-light`} onClick={e => { filterDates('thisWeek'); props.onClick(''); } }>This Week</Button>
-              <Button className={`${isActive === 'thisMonth' ? 'active ' : ''}btn btn-light`} onClick={e => { filterDates('thisMonth'); props.onClick(''); } }>This Month</Button>
-              <Button className={`${isActive === 'lastWeek' ? 'active ' : ''}btn btn-light`} onClick={e => { filterDates('lastWeek'); props.onClick(''); } }>Last Week</Button>
-              <Button className={`${isActive === 'lastMonth' ? 'active ' : ''}btn btn-light`} onClick={e => { filterDates('lastMonth'); props.onClick(''); } }>Last Month</Button>
-              <Button className={`${isActive === 'allTime' ? 'active ' : ''}btn btn-light`} onClick={e => { filterDates('allTime'); props.onClick(''); } }>All Time</Button>
-              <ButtonDropdown isOpen={dropdownOpen} toggle={toggleDropDown}>
-                <DropdownToggle caret>
-                  Channels
-                </DropdownToggle>
-                <DropdownMenu>
-                  {listChannels ? <DropdownItem onClick={ e => { setChannel('all'); props.onClick(''); } }>All Channels</DropdownItem> : null}
-                  {listChannels ? (listChannels.map((el, index) => (
-                    <DropdownItem key={index} onClick={e => { setChannel(el.channel_id); props.onClick(''); }}>#{el.channel_name}</DropdownItem>
-                    )
-                  )) : <DropdownItem>No Channels</DropdownItem>}
-                </DropdownMenu>
-              </ButtonDropdown>
-            </ButtonGroup>
-          </div>
-        </div>
-      </div>
+      <DateFilter 
+        listChannels={listChannels} 
+        channel={channel} 
+        onChannelClick={ value => setChannel(value) }
+        onStartDateClick={ value => setStartDate(value) }
+        onEndDateClick={ value => setEndDate(value) }
+        onSearchClick={ value => props.onClick(value) }
+      />
 
       {(users === undefined) ?
 
