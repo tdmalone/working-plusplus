@@ -322,7 +322,10 @@ const getKarmaFeed = async( request ) => {
     const itemsPerPage = request.query.itemsPerPage;
     const page = request.query.page;
     const searchString = request.query.searchString
-    const feed = await points.getKarmaFeed(itemsPerPage, page, searchString);
+    const startDate = request.query.startDate;
+    const endDate = request.query.endDate;
+    const channelId = request.query.channel;
+    const feed = await points.getKarmaFeed(itemsPerPage, page, searchString, channelId, startDate, endDate);
     console.log( 'Sending Karma Feed!' );
 
     return feed;

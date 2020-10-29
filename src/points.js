@@ -343,17 +343,35 @@ function getAllScoresFromUser( channelId, startDate, endDate ) {
  * @returns {Promise}
  *   The promise.
  */
-const getKarmaFeed = (itemsPerPage, page, searchString) => {
+const getKarmaFeed = (itemsPerPage, page, searchString, channelId, startDate, endDate) => {
   return new Promise( function( resolve, reject ) {
     const db = mysql.createConnection( mysqlConfig );
 
+    let start;
+    let end;
+    let inserts;
     let searchForm = '';
-    if (searchString) {
+
+    if ( 'undefined' !== typeof startDate || 'undefined' !== typeof endDate) {
+      start = moment.unix( startDate ).format( 'YYYY-MM-DD HH:mm:ss' );
+      end = moment.unix( endDate ).format( 'YYYY-MM-DD HH:mm:ss' );
+    } else {
+      start = moment( Date.now() ).startOf('month').format( 'YYYY-MM-DD HH:mm:ss' );
+      end = moment( Date.now() ).format( 'YYYY-MM-DD HH:mm:ss' );
+    }
+
+    if ( 'all' === channelId && searchString ) {
       searchForm = 'WHERE uFrom.user_name LIKE \'%' + searchString + '%\' ';
+    } else if ( 'all' !== channelId && !searchString ) {
+      searchForm = 'WHERE channel.channel_id = \'' + channelId + '\' AND (score.timestamp > \'' + start + '\' AND score.timestamp < \'' + end + '\') ';
+    } else if ( 'all' !== channelId && searchString ) {
+      searchForm = 'WHERE channel.channel_id = \'' + channelId + '\' AND (score.timestamp > \'' + start + '\' AND score.timestamp < \'' + end + '\') AND uFrom.user_name LIKE \'%' + searchString + '%\' ';
     }
 
     let countScores = 'SELECT COUNT(*) AS scores ' +
                       'FROM score ' +
+                      'INNER JOIN channel ON score.channel_id = channel.channel_id ' +
+                      'INNER JOIN user uTo ON score.to_user_id = uTo.user_id ' +
                       'INNER JOIN user uFrom ON score.from_user_id = uFrom.user_id ' +
                       searchForm;
 

@@ -3,16 +3,27 @@ import axios from 'axios';
 import queryString from 'query-string';
 import ReactPaginate from 'react-paginate';
 
+import DateFilter from './DateFilter';
+import moment from 'moment';
+
 const KarmaFeed = props => {
 
   const apiURL = process.env.REACT_APP_API_URL;
 
   const parsedQuery = queryString.parse(props.location.search);
+  const botUser = parsedQuery.botUser;
   const token = parsedQuery.token;
   const ts = parsedQuery.ts;
 
-  const fromUsersURL = apiURL + '/karmafeed?token=' + token + '&ts=' + ts;
+  const [channel, setChannel] = useState(parsedQuery.channel);
+  const [startDate, setStartDate] = useState(moment(0).unix());
+  const [endDate, setEndDate] = useState(moment().unix());
+
+  const fromUsersURL = apiURL + '/karmafeed?token=' + token + '&ts=' + ts + '&botUser=' + botUser + '&channel=' + channel + '&startDate=' + startDate + '&endDate=' + endDate;
   const [fromUsers, setFromUsers] = useState();
+
+  const channelsURL = apiURL + '/channels?token=' + token + '&ts=' + ts + '&botUser=' + botUser + '&channel=' + channel;
+  const [listChannels, setListChannels] = useState();
 
   const [pagination, setPagination] = useState({
     pageCount: 0,
@@ -58,13 +69,30 @@ const KarmaFeed = props => {
     }
     fromUsers();
 
-    // eslint-disable-next-line
-  }, [fromUsersURL, pagination.currentPage, props.search]);
+    const getChannels = async() => {
+      await axios.get(channelsURL)
+        .then(res => {
+          setListChannels(res.data);
+        })
+        .catch(err => console.error(err.message))
+    }
+    getChannels();
 
-  console.log(fromUsers);
+    // eslint-disable-next-line
+  }, [fromUsersURL, pagination.currentPage, props.search, channelsURL, channel]);
+
+  console.log(fromUsersURL);
 
   return(
     <>
+    <DateFilter 
+      listChannels={listChannels} 
+      channel={channel} 
+      onChannelClick={ value => setChannel(value) }
+      onStartDateClick={ value => setStartDate(value) }
+      onEndDateClick={ value => setEndDate(value) }
+      onSearchClick={ value => props.onClick(value) }
+    />
     {(fromUsers === undefined) ?
 
     <div className="row mt-5">
@@ -94,7 +122,7 @@ const KarmaFeed = props => {
 
     :
 
-    <div className="container pt-5 pb-5">
+    <div className="container">
       <div className="row mt-5">
         <div className="col">
           <div className="table-responsive">
@@ -123,7 +151,7 @@ const KarmaFeed = props => {
           </div>
         </div>
       </div>
-      <div className="row mt-5">
+      <div className="row mt-5 mb-5">
         <div className="col">
           <ReactPaginate
             previousLabel={"PREV"}
