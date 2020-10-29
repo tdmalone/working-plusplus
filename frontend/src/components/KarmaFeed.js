@@ -81,8 +81,6 @@ const KarmaFeed = props => {
     // eslint-disable-next-line
   }, [fromUsersURL, pagination.currentPage, props.search, channelsURL, channel]);
 
-  console.log(fromUsersURL);
-
   return(
     <>
     <DateFilter 
