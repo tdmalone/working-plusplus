@@ -121,7 +121,6 @@ const Chart = (props) => {
         <NavbarToggler onClick={toggle} />
         <Collapse isOpen={isOpen} navbar>
           <Nav className="mr-auto" navbar>
-
             <ButtonGroup>
               <Button className={`${isActive === 'thisWeek' ? 'active' : ''} btn btn-light`} onClick={() => filterDates('thisWeek')}>This Week</Button>
               <Button className={`${isActive === 'thisMonth' ? 'active' : ''} btn btn-light`} onClick={() => filterDates('thisMonth')}>This Month</Button>
@@ -133,6 +132,7 @@ const Chart = (props) => {
                   Channels
                 </DropdownToggle>
                 <DropdownMenu>
+                  {listChannels ? <DropdownItem onClick={ () => setChannel('all') }>All Channels</DropdownItem> : null}
                   {listChannels ? (listChannels.map((el, index) => (
                     <DropdownItem key={index} onClick={() => setChannel(el.channel_id)}>#{el.channel_name}</DropdownItem>
                     )
@@ -199,6 +199,7 @@ const Chart = (props) => {
         
         <div className="row mt-5">
           <div className="col text-center">
+            { (channel === 'all') ? <p>All Channels</p> : null }
             <p>{listChannels ? (listChannels.map(el => {
               if (el.channel_id === channel) 
                 return '#' + el.channel_name
@@ -215,6 +216,7 @@ const Chart = (props) => {
         <div className="row mt-5">
         <div className="col-6">
           <h3 className="pb-3">
+            { (channel === 'all') ? 'All Channels' : null }
             {listChannels ? (listChannels.map(el => {
               if (el.channel_id === channel) 
                 return '#' + el.channel_name
