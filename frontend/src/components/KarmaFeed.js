@@ -121,7 +121,18 @@ const KarmaFeed = props => {
     :
 
     <div className="container">
+
+    {(fromUsers === undefined || fromUsers.length === 0) ?
       <div className="row mt-5">
+        <div className="col text-center mt-5">
+          <h3>No Results</h3>
+        </div>
+      </div>
+
+      :
+      <>
+      <div className="row mt-5">
+
         <div className="col">
           <div className="table-responsive">
             <table className="table table-borderless table-striped">
@@ -148,7 +159,9 @@ const KarmaFeed = props => {
             </table>
           </div>
         </div>
+
       </div>
+
       <div className="row mt-5 mb-5">
         <div className="col">
           <ReactPaginate
@@ -171,7 +184,10 @@ const KarmaFeed = props => {
             nextLinkClassName={"page-link"} />
         </div>
       </div>
+      </>
+      }
     </div>
+
     }
     </>
   )
