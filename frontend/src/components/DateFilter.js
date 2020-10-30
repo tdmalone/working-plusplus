@@ -22,6 +22,7 @@ const DateFilter = props => {
       props.onStartDateClick(moment(0).unix());
       props.onEndDateClick(moment().unix());
       props.onSearchClick('');
+      props.onFilterClick(0);
       
     } else if (active === 'lastMonth') {
 
@@ -29,6 +30,7 @@ const DateFilter = props => {
       props.onStartDateClick(moment.unix( today ).subtract(1,'months').startOf('month').unix());
       props.onEndDateClick(moment.unix( today ).subtract(1,'months').endOf('month').unix());
       props.onSearchClick('');
+      props.onFilterClick(0);
 
     } else if (active === 'lastWeek') {
 
@@ -36,6 +38,7 @@ const DateFilter = props => {
       props.onStartDateClick(moment.unix( today ).subtract(1,'week').startOf('week').add(1, 'day').unix());
       props.onEndDateClick(moment.unix( today ).subtract(1,'week').endOf('week').add(1, 'day').unix());
       props.onSearchClick('');
+      props.onFilterClick(0);
 
     } else if (active === 'thisMonth') {
 
@@ -43,6 +46,7 @@ const DateFilter = props => {
       props.onStartDateClick(moment.unix( today ).startOf('month').unix());
       props.onEndDateClick(moment.unix( today ).unix());
       props.onSearchClick('');
+      props.onFilterClick(0);
 
     } else if (active === 'thisWeek') {
 
@@ -50,6 +54,7 @@ const DateFilter = props => {
       props.onStartDateClick(moment.unix( today ).startOf('week').add(1, 'day').unix());
       props.onEndDateClick(moment.unix( today ).endOf('week').add(1, 'day').unix());
       props.onSearchClick('');
+      props.onFilterClick(0);
 
     }
     

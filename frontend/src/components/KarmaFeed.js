@@ -32,6 +32,8 @@ const KarmaFeed = props => {
     currentPage: 0
   });
 
+  const [paginationSearch, setPaginationSearch] = useState(pagination.currentPage);
+
   const handlePageClick = async e => {
     const selectedPage = e.selected;
     const offset = selectedPage * pagination.perPage;
@@ -44,14 +46,31 @@ const KarmaFeed = props => {
       }
     });
 
+    setPaginationSearch(pagination.currentPage);
+
   }
+
+  console.log(pagination);
 
   useEffect(() => {
     const fromUsers = async() => {
 
+      let page;
       const itemsPerPage = pagination.perPage;
-      const page = pagination.currentPage + 1;
       const searchString = props.search;
+
+      if (searchString) {
+
+        page = 1;
+        handlePageClick({selected: 0});
+        setPaginationSearch(pagination.currentPage);
+
+      } else {
+
+        page = pagination.currentPage + 1;
+        setPaginationSearch(pagination.currentPage);
+
+      }
 
       await axios.get(fromUsersURL, {params: {itemsPerPage: itemsPerPage, page: page, searchString: searchString}})
         .then(res => {
@@ -81,6 +100,8 @@ const KarmaFeed = props => {
     // eslint-disable-next-line
   }, [fromUsersURL, pagination.currentPage, props.search, channelsURL, channel]);
 
+  //console.log(fromUsersURL);
+
   return(
     <>
     <DateFilter 
@@ -90,6 +111,7 @@ const KarmaFeed = props => {
       onStartDateClick={ value => setStartDate(value) }
       onEndDateClick={ value => setEndDate(value) }
       onSearchClick={ value => props.onClick(value) }
+      onFilterClick={ value => handlePageClick({selected: value}) }
     />
     {(fromUsers === undefined) ?
 
@@ -121,18 +143,15 @@ const KarmaFeed = props => {
     :
 
     <div className="container">
-
     {(fromUsers === undefined || fromUsers.length === 0) ?
       <div className="row mt-5">
         <div className="col text-center mt-5">
           <h3>No Results</h3>
         </div>
       </div>
-
       :
       <>
       <div className="row mt-5">
-
         <div className="col">
           <div className="table-responsive">
             <table className="table table-borderless table-striped">
@@ -159,9 +178,7 @@ const KarmaFeed = props => {
             </table>
           </div>
         </div>
-
       </div>
-
       <div className="row mt-5 mb-5">
         <div className="col">
           <ReactPaginate
@@ -181,13 +198,13 @@ const KarmaFeed = props => {
             previousClassName={"page-item"}
             nextClassName={"page-item"}
             previousLinkClassName={"page-link"}
-            nextLinkClassName={"page-link"} />
+            nextLinkClassName={"page-link"}
+            forcePage={paginationSearch} />
         </div>
       </div>
       </>
       }
     </div>
-
     }
     </>
   )

@@ -360,8 +360,10 @@ const getKarmaFeed = (itemsPerPage, page, searchString, channelId, startDate, en
       end = moment( Date.now() ).format( 'YYYY-MM-DD HH:mm:ss' );
     }
 
-    if ( 'all' === channelId && searchString ) {
-      searchForm = 'WHERE uFrom.user_name LIKE \'%' + searchString + '%\' ';
+    if ( 'all' === channelId && !searchString ) {
+      searchForm = 'WHERE (score.timestamp > \'' + start + '\' AND score.timestamp < \'' + end + '\') ';
+    } else if ( 'all' === channelId && searchString ) {
+      searchForm = 'WHERE (score.timestamp > \'' + start + '\' AND score.timestamp < \'' + end + '\') AND uFrom.user_name LIKE \'%' + searchString + '%\' ';
     } else if ( 'all' !== channelId && !searchString ) {
       searchForm = 'WHERE channel.channel_id = \'' + channelId + '\' AND (score.timestamp > \'' + start + '\' AND score.timestamp < \'' + end + '\') ';
     } else if ( 'all' !== channelId && searchString ) {
@@ -383,6 +385,8 @@ const getKarmaFeed = (itemsPerPage, page, searchString, channelId, startDate, en
               searchForm + 
               'ORDER BY score.timestamp DESC LIMIT ' + itemsPerPage + ' OFFSET ' + (page - 1) * itemsPerPage;
 
+    console.log("SEARCH STRING: " + searchString + "\n" + "CHANNEL ID: " + channelId + "\n" + "START DATE: " + start + "\n" + "END DATE: " + end);
+
     const query = mysql.format( str );
     const queryCount = mysql.format( countScores );
 
@@ -400,6 +404,9 @@ const getKarmaFeed = (itemsPerPage, page, searchString, channelId, startDate, en
           reject( errCount );
         }
 
+        console.log({count: JSON.stringify(resultCount)});
+        console.log(JSON.stringify(result));
+        // resolve({results: result})
         resolve({count: resultCount[0].scores, results: result});
 
         db.end(dbErrorHandler);

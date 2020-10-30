@@ -25,6 +25,8 @@ const Chart = props => {
   const channelsURL = apiURL + '/channels?token=' + token + '&ts=' + ts + '&botUser=' + botUser + '&channel=' + channel;
   const [listChannels, setListChannels] = useState();
 
+  const [paginationSearch, setPaginationSearch] = useState(0);
+
   useEffect(() => {
     const getChart = async() => {
       await axios.get(leaderboardURL)
@@ -60,6 +62,7 @@ const Chart = props => {
         onStartDateClick={ value => setStartDate(value) }
         onEndDateClick={ value => setEndDate(value) }
         onSearchClick={ value => props.onClick(value) }
+        onFilterClick={ value => setPaginationSearch(value) }
       />
 
       {(users === undefined) ?
