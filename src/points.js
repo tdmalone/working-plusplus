@@ -385,8 +385,6 @@ const getKarmaFeed = (itemsPerPage, page, searchString, channelId, startDate, en
               searchForm + 
               'ORDER BY score.timestamp DESC LIMIT ' + itemsPerPage + ' OFFSET ' + (page - 1) * itemsPerPage;
 
-    console.log("SEARCH STRING: " + searchString + "\n" + "CHANNEL ID: " + channelId + "\n" + "START DATE: " + start + "\n" + "END DATE: " + end);
-
     const query = mysql.format( str );
     const queryCount = mysql.format( countScores );
 
@@ -404,9 +402,6 @@ const getKarmaFeed = (itemsPerPage, page, searchString, channelId, startDate, en
           reject( errCount );
         }
 
-        console.log({count: JSON.stringify(resultCount)});
-        console.log(JSON.stringify(result));
-        // resolve({results: result})
         resolve({count: resultCount[0].scores, results: result});
 
         db.end(dbErrorHandler);
