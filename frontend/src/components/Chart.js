@@ -2,22 +2,10 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import queryString from 'query-string';
 import moment from 'moment';
-import logo from '../logo.svg';
-import {
-  Collapse,
-  Navbar,
-  NavbarToggler,
-  NavbarBrand,
-  Nav,
-  Button,
-  ButtonGroup,
-  ButtonDropdown,
-  DropdownMenu,
-  DropdownItem,
-  DropdownToggle
-} from 'reactstrap';
 
-const Chart = (props) => {
+import DateFilter from './DateFilter';
+
+const Chart = props => {
 
   const apiURL = process.env.REACT_APP_API_URL;
 
@@ -29,7 +17,6 @@ const Chart = (props) => {
   const [channel, setChannel] = useState(parsedQuery.channel);
   const [startDate, setStartDate] = useState(moment(0).unix());
   const [endDate, setEndDate] = useState(moment().unix());
-  const today = moment().unix();
 
   // const apiURL = 'https://a564aa475f76.eu.ngrok.io/leaderboard' + props.location.search;
   const leaderboardURL = apiURL + '/leaderboard?token=' + token + '&ts=' + ts + '&botUser=' + botUser + '&channel=' + channel + '&startDate=' + startDate + '&endDate=' + endDate;
@@ -38,45 +25,7 @@ const Chart = (props) => {
   const channelsURL = apiURL + '/channels?token=' + token + '&ts=' + ts + '&botUser=' + botUser + '&channel=' + channel;
   const [listChannels, setListChannels] = useState();
 
-  const [isActive, setIsActive] = useState('allTime');
-
-  const filterDates = (active = 'allTime') => {
-
-    if (active === 'allTime') {
-
-      setIsActive(active);
-      setStartDate(moment(0).unix());
-      setEndDate(moment().unix());
-      
-    } else if (active === 'lastMonth') {
-
-      setIsActive(active);
-      setStartDate(moment.unix( today ).subtract(1,'months').startOf('month').unix());
-      setEndDate(moment.unix( today ).subtract(1,'months').endOf('month').unix());
-
-    } else if (active === 'lastWeek') {
-
-      setIsActive(active);
-      setStartDate(moment.unix( today ).subtract(1,'week').startOf('week').add(1, 'day').unix());
-      setEndDate(moment.unix( today ).subtract(1,'week').endOf('week').add(1, 'day').unix());
-
-    } else if (active === 'thisMonth') {
-
-      setIsActive(active);
-      setStartDate(moment.unix( today ).startOf('month').unix());
-      setEndDate(moment.unix( today ).unix());
-
-    } else if (active === 'thisWeek') {
-
-      setIsActive(active);
-      setStartDate(moment.unix( today ).startOf('week').add(1, 'day').unix());
-      setEndDate(moment.unix( today ).endOf('week').add(1, 'day').unix());
-
-    }
-
-    setSearchTerm('');
-    
-  }
+  const [paginationSearch, setPaginationSearch] = useState(0);
 
   useEffect(() => {
     const getChart = async() => {
@@ -100,51 +49,21 @@ const Chart = (props) => {
     // eslint-disable-next-line
   }, [leaderboardURL, channelsURL, channel]);
 
-  const [searchTerm, setSearchTerm] = useState('');
-  const handleChange = e => setSearchTerm(e.target.value);
-  const results = !searchTerm ? users : users.filter(user =>
-    user.item.toLowerCase().includes(searchTerm.toLocaleLowerCase())
+  const results = !props.search ? users : users.filter(user =>
+    user.item.toLowerCase().includes(props.search.toLocaleLowerCase())
   );
-
-
-  const [isOpen, setIsOpen] = useState(false);
-  const toggle = () => setIsOpen(!isOpen);
-
-  const [dropdownOpen, setOpen] = useState(false);
-  const toggleDropDown = () => setOpen(!dropdownOpen);
 
   return(
     <>
-    <Navbar light expand="md">
-      <div className="container">
-        <NavbarBrand><img src={logo} alt="Agiledrop" /></NavbarBrand>
-        <NavbarToggler onClick={toggle} />
-        <Collapse isOpen={isOpen} navbar>
-          <Nav className="mr-auto" navbar>
-            <ButtonGroup>
-              <Button className={`${isActive === 'thisWeek' ? 'active' : ''} btn btn-light`} onClick={() => filterDates('thisWeek')}>This Week</Button>
-              <Button className={`${isActive === 'thisMonth' ? 'active' : ''} btn btn-light`} onClick={() => filterDates('thisMonth')}>This Month</Button>
-              <Button className={`${isActive === 'lastWeek' ? 'active' : ''} btn btn-light`} onClick={() => filterDates('lastWeek')}>Last Week</Button>
-              <Button className={`${isActive === 'lastMonth' ? 'active' : ''} btn btn-light`} onClick={() => filterDates('lastMonth')}>Last Month</Button>
-              <Button className={`${isActive === 'allTime' ? 'active' : ''} btn btn-light`} onClick={() => filterDates('allTime')}>All Time</Button>
-              <ButtonDropdown isOpen={dropdownOpen} toggle={toggleDropDown}>
-                <DropdownToggle caret>
-                  Channels
-                </DropdownToggle>
-                <DropdownMenu>
-                  {listChannels ? <DropdownItem onClick={ () => setChannel('all') }>All Channels</DropdownItem> : null}
-                  {listChannels ? (listChannels.map((el, index) => (
-                    <DropdownItem key={index} onClick={() => setChannel(el.channel_id)}>#{el.channel_name}</DropdownItem>
-                    )
-                  )) : <DropdownItem>No Channels</DropdownItem>}
-                </DropdownMenu>
-              </ButtonDropdown>
-            </ButtonGroup>
-
-          </Nav>
-        </Collapse>
-        </div>
-      </Navbar>
+      <DateFilter 
+        listChannels={listChannels} 
+        channel={channel} 
+        onChannelClick={ value => setChannel(value) }
+        onStartDateClick={ value => setStartDate(value) }
+        onEndDateClick={ value => setEndDate(value) }
+        onSearchClick={ value => props.onClick(value) }
+        onFilterClick={ value => setPaginationSearch(value) }
+      />
 
       {(users === undefined) ?
 
@@ -214,27 +133,6 @@ const Chart = (props) => {
         :
 
         <div className="row mt-5">
-        <div className="col-6">
-          <h3 className="pb-3">
-            { (channel === 'all') ? 'All Channels' : null }
-            {listChannels ? (listChannels.map(el => {
-              if (el.channel_id === channel) 
-                return '#' + el.channel_name
-              else
-                return null
-            })) : null }
-          </h3>
-        </div>
-        <div className="col-6">
-            <input
-              className="form-control"
-              type="text"
-              placeholder="Search"
-              aria-label="Search"
-              value={searchTerm}
-              onChange={handleChange}
-            />
-        </div>
 
         {(results === undefined || results.length === 0) ?
             <div className="col text-center mt-5">
