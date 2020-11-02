@@ -68,6 +68,7 @@ const bootstrap = ( options = {}) => {
   server.get( '/channels', app.handleGet );
   server.get( '/fromusers', app.handleGet );
   server.get( '/karmafeed', app.handleGet );
+  server.get( '/userprofile', app.handleGet );
 
   return server.listen( PORT, () => {
     console.log( 'Listening on port ' + PORT + '.' );

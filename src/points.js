@@ -285,6 +285,7 @@ function getAllScores( channelId, startDate, endDate ) {
         console.log( db.sql );
         reject( err );
       } else {
+        console.log(JSON.stringify(result));
         resolve( result );
       }
     });
@@ -512,6 +513,34 @@ function getUser( userId ) {
 }
 
 /**
+ *  Gets the Name from 'username' from the db.
+ *
+ * @param {string} username
+ *   Slack user id.
+ * @returns {Promise}
+ *  Returned promise.
+ */
+function getName( username ) {
+  return new Promise( function( resolve, reject ) {
+    const db = mysql.createConnection( mysqlConfig );
+    const str = 'SELECT user_name FROM ?? WHERE user_username = ?';
+    const inserts = [ 'user', username ];
+    const query = mysql.format( str, inserts );
+    db.query( query, function( err, result ) {
+      if ( err ) {
+        console.log( db.sql );
+        reject( err );
+      } else {
+        resolve( result );
+      }
+    });
+
+    db.end(dbErrorHandler);
+
+  });
+}
+
+/**
  *
  * Inserts user into db.
  *
@@ -523,8 +552,9 @@ function getUser( userId ) {
 function insertUser( userId, userName ) {
   return new Promise( function( resolve, reject ) {
     const db = mysql.createConnection( mysqlConfig );
-    const str = 'INSERT INTO ?? (user_id, user_name, banned_until) VALUES (?, ?, NULL);';
-    const inserts = [ 'user', userId, userName ];
+    const lowcaseUserName = userName.split(" ").join("").toLocaleLowerCase();
+    const str = 'INSERT INTO ?? (user_id, user_name, user_username, banned_until) VALUES (?, ?, ?, NULL);';
+    const inserts = [ 'user', userId, userName, lowcaseUserName ];
     const query = mysql.format( str, inserts );
     db.query( query, function( err, result ) {
       if ( err ) {
@@ -724,5 +754,6 @@ module.exports = {
   getDailyUserScore,
   getAllChannels,
   getAllScoresFromUser,
-  getKarmaFeed
+  getKarmaFeed,
+  getName
 };

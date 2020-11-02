@@ -121,7 +121,8 @@ const rankItems = async( topScores, itemType = 'users', format = 'slack' ) => {
         output = {
           rank,
           item: itemTitleCase,
-          score: score.score + ' point' + plural
+          score: score.score + ' point' + plural,
+          item_id: score.item
         };
         break;
     }
@@ -259,20 +260,15 @@ const getForSlack = async( event, request ) => {
 const getForWeb = async( request ) => {
 
   try {
+
     const startDate = request.query.startDate;
     const endDate = request.query.endDate;
     const channelId = request.query.channel;
-    const scores = await points.retrieveTopScores( channelId, startDate, endDate ),
-          users = await rankItems( scores, 'users', 'object' );
 
-    const data = {
-      users,
-      title: 'Leaderboard'
-    };
+    const scores = await points.retrieveTopScores( channelId, startDate, endDate );
+    const users = await rankItems( scores, 'users', 'object' );
 
-    // Return helpers.render( 'src/html/leaderboard.html', data, request );
-    // console.log("SCORES: " + JSON.stringify(scores));
-    // console.log("USERS: " + JSON.stringify(users));
+    console.log(users);
     return users;
 
   } catch ( err ) {
@@ -357,6 +353,25 @@ const getKarmaFeed = async( request ) => {
 
 }; // getKarmaFeed.
 
+
+
+const getUserProfile = async( request ) => {
+
+  try {
+    const username = request.query.username;
+    const nameSurname = await points.getName( username );
+    console.log('Sending user name and surname.');
+
+    console.log(request.query.username);
+
+    return nameSurname;
+    
+  } catch (err) {
+    console.error(err.message);
+  }
+
+} // getUserProfile
+
 /**
  * The default handler for this command when invoked over Slack.
  *
@@ -376,5 +391,6 @@ module.exports = {
   handler,
   getForChannels,
   getAllScoresFromUser,
-  getKarmaFeed
+  getKarmaFeed,
+  getUserProfile
 };
