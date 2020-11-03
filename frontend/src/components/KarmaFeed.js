@@ -50,7 +50,7 @@ const KarmaFeed = props => {
 
   }
 
-  console.log(pagination);
+  // console.log(pagination);
 
   useEffect(() => {
     const fromUsers = async() => {
@@ -106,12 +106,14 @@ const KarmaFeed = props => {
     <>
     <DateFilter 
       listChannels={listChannels} 
-      channel={channel} 
+      channel={channel}
+      history={props.history}
       onChannelClick={ value => setChannel(value) }
       onStartDateClick={ value => setStartDate(value) }
       onEndDateClick={ value => setEndDate(value) }
-      onSearchClick={ value => props.onClick(value) }
+      onSearchClick={ value => props.onSearchClick(value) }
       onFilterClick={ value => handlePageClick({selected: value}) }
+      onParamsClick={ value =>  props.onParamsClick(value) }
     />
     {(fromUsers === undefined) ?
 

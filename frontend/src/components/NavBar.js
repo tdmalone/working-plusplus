@@ -1,12 +1,9 @@
 import React, { useState } from 'react';
-import { BrowserRouter as Router, Link, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Link } from 'react-router-dom';
 import logo from '../logo.svg';
 import { Collapse, Navbar, NavbarToggler, NavbarBrand, Nav, NavItem } from 'reactstrap';
 
 const NavBar = props => {
-
-  let location = useLocation();
-  const urlParams = location.search;
 
   const [isOpen, setIsOpen] = useState(false);
   const toggle = () => setIsOpen(!isOpen);
@@ -19,10 +16,10 @@ const NavBar = props => {
         <Collapse isOpen={isOpen} navbar>
           <Nav className="mr-auto" navbar>
             <NavItem>
-              <Link to={"/" + urlParams} onClick={ e => props.onClick('') } className="nav-link">Top Chart</Link>
+              <Link to={`/${props.history.location.search}`} onClick={ e => props.onClick('') } className="nav-link">Top Chart</Link>
             </NavItem>
             <NavItem>
-              <Link to={"/feed" + urlParams} onClick={ e => props.onClick('') } className="nav-link">Feed</Link>
+              <Link to={`/feed${props.history.location.search}`} onClick={ e => props.onClick('') } className="nav-link">Feed</Link>
             </NavItem>
           </Nav>
           

@@ -58,11 +58,13 @@ const Chart = props => {
       <DateFilter 
         listChannels={listChannels} 
         channel={channel} 
+        history={props.history}
         onChannelClick={ value => setChannel(value) }
         onStartDateClick={ value => setStartDate(value) }
         onEndDateClick={ value => setEndDate(value) }
-        onSearchClick={ value => props.onClick(value) }
+        onSearchClick={ value => props.onSearchClick(value) }
         onFilterClick={ value => setPaginationSearch(value) }
+        onParamsClick={ value =>  props.onParamsClick(value) }
       />
 
       {(users === undefined) ?
