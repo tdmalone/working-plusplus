@@ -50,7 +50,7 @@ const KarmaFeed = props => {
 
   }
 
-  console.log(pagination);
+  // console.log(pagination);
 
   useEffect(() => {
     const fromUsers = async() => {

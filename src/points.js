@@ -531,7 +531,7 @@ function getName( username ) {
         console.log( db.sql );
         reject( err );
       } else {
-        resolve( result );
+        resolve( result[0].user_name );
       }
     });
 
@@ -539,6 +539,103 @@ function getName( username ) {
 
   });
 }
+
+/**
+ *  Gets the Name from 'username' from the db.
+ *
+ * @param {string} username
+ *   Slack user id.
+ * @returns {Promise}
+ *  Returned promise.
+ */
+function getUserId( username ) {
+  return new Promise( function( resolve, reject ) {
+    const db = mysql.createConnection( mysqlConfig );
+    const str = 'SELECT user_id FROM ?? WHERE user_username = ?';
+    const inserts = [ 'user', username ];
+    const query = mysql.format( str, inserts );
+    db.query( query, function( err, result ) {
+      if ( err ) {
+        console.log( db.sql );
+        reject( err );
+      } else {
+        resolve( result[0].user_id );
+      }
+    });
+
+    db.end(dbErrorHandler);
+
+  });
+}
+
+const getAll = async( username, fromTo, itemsPerPage, page, searchString ) => {
+
+  const userId = await getUserId( username );
+
+  return new Promise( function( resolve, reject ) {
+    const db = mysql.createConnection( mysqlConfig );
+
+    let whereUser = '';
+
+    if (fromTo === 'to') {
+      whereUser = 'WHERE to_user_id = \'' + userId + '\'';
+    } else if (fromTo === 'from') {
+      whereUser = 'WHERE from_user_id = \'' + userId + '\'';
+    } else if (fromTo === 'all') {
+      whereUser = 'WHERE to_user_id = \'' + userId + '\' OR from_user_id = \'' + userId + '\'';
+    } else {
+      whereUser = 'WHERE to_user_id = \'' + userId + '\' OR from_user_id = \'' + userId + '\'';
+    }
+
+    const countScores = 'SELECT COUNT(*) AS scores ' +
+    'FROM score ' +
+    'INNER JOIN channel ON score.channel_id = channel.channel_id ' +
+    'INNER JOIN user uTo ON score.to_user_id = uTo.user_id ' +
+    'INNER JOIN user uFrom ON score.from_user_id = uFrom.user_id ' +
+    whereUser;
+
+    const str = 'SELECT score.timestamp, uTo.user_name as toUser, uFrom.user_name as fromUser, channel.channel_name, score.description ' +
+    'FROM score ' +
+    'INNER JOIN channel ON score.channel_id = channel.channel_id ' +
+    'INNER JOIN user uTo ON score.to_user_id = uTo.user_id ' +
+    'INNER JOIN user uFrom ON score.from_user_id = uFrom.user_id ' +
+    whereUser +
+    'ORDER BY score.timestamp DESC LIMIT ' + itemsPerPage + ' OFFSET ' + (page - 1) * itemsPerPage;
+
+    const query = mysql.format( str );
+    const queryCount = mysql.format( countScores );
+
+    const queryResult = db.query( query, function( err, result ) {
+
+      if ( err ) {
+        console.log( db.sql );
+        reject( err );
+      }
+
+      db.query( queryCount, function( errCount, resultCount ) {
+  
+        if ( errCount ) {
+          console.log( db.sql );
+          reject( errCount );
+        }
+
+        resolve({count: resultCount[0].scores, feed: result});
+        db.end(dbErrorHandler);
+
+      });
+
+    });
+
+  });
+}
+
+// 'SELECT score.timestamp, uTo.user_name as toUser, uFrom.user_name as fromUser, channel.channel_name, score.description ' +
+// 'FROM score ' +
+// 'INNER JOIN channel ON score.channel_id = channel.channel_id ' +
+// 'INNER JOIN user uTo ON score.to_user_id = uTo.user_id ' +
+// 'INNER JOIN user uFrom ON score.from_user_id = uFrom.user_id ' +
+// 'WHERE channel.channel_id = \'' + channelId + '\' AND (score.timestamp > \'' + start + '\' AND score.timestamp < \'' + end + '\') AND uFrom.user_name LIKE \'%' + searchString + '%\' ';
+// 'ORDER BY score.timestamp DESC LIMIT ' + itemsPerPage + ' OFFSET ' + (page - 1) * itemsPerPage;
 
 /**
  *
@@ -755,5 +852,6 @@ module.exports = {
   getAllChannels,
   getAllScoresFromUser,
   getKarmaFeed,
-  getName
+  getName,
+  getAll
 };

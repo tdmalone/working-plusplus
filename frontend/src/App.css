@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&family=Nunito&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&family=Nunito:wght@400;700&display=swap');
 
 body, html {
   height: 100%;
@@ -11,6 +11,7 @@ body {
   background-size: cover;
   color: #032633;
   font-family: 'Nunito', sans-serif;
+  font-weight: 400;
 }
 
 .table .podium {
@@ -85,6 +86,36 @@ body {
 
 td.description {
   width: 30%;
+}
+
+th {
+  font-weight: 700;
+}
+
+.flex {
+  display: flex;
+  align-items: center;
+}
+
+.BiArrow {
+  font-size: 24px;
+}
+
+.BiArrow--From {
+  color: #519548;
+}
+
+.BiArrow--To {
+  color: #26ADE4;
+}
+
+.BiArrow--mr {
+  margin-right: 8px;
+}
+
+.fromto-title {
+  background: #fafafa;
+  margin-right: 8px;
 }
 
 @media (max-width: 767px) {

@@ -338,7 +338,7 @@ const getKarmaFeed = async( request ) => {
 
     const itemsPerPage = request.query.itemsPerPage;
     const page = request.query.page;
-    const searchString = request.query.searchString
+    const searchString = request.query.searchString;
     const startDate = request.query.startDate;
     const endDate = request.query.endDate;
     const channelId = request.query.channel;
@@ -359,12 +359,18 @@ const getUserProfile = async( request ) => {
 
   try {
     const username = request.query.username;
+    const fromTo = request.query.fromTo;
+
+    const itemsPerPage = request.query.itemsPerPage;
+    const page = request.query.page;
+    const searchString = request.query.searchString;
+
     const nameSurname = await points.getName( username );
+    const getAll = await points.getAll( username, fromTo, itemsPerPage, page, searchString );
+
     console.log('Sending user name and surname.');
 
-    console.log(request.query.username);
-
-    return nameSurname;
+    return {...getAll, nameSurname};
     
   } catch (err) {
     console.error(err.message);
