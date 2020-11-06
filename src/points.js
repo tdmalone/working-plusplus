@@ -265,9 +265,10 @@ function getAllScores( channelId, startDate, endDate ) {
       start = moment.unix( startDate ).format( 'YYYY-MM-DD HH:mm:ss' );
       end = moment.unix( endDate ).format( 'YYYY-MM-DD HH:mm:ss' );
     } else {
-      start = moment( Date.now() ).startOf('month').format( 'YYYY-MM-DD HH:mm:ss' );
+      start = moment( 0 ).format( 'YYYY-MM-DD HH:mm:ss' );
       end = moment( Date.now() ).format( 'YYYY-MM-DD HH:mm:ss' );
     }
+
 
     if ( 'all' === channelId ) {
       inserts = [ start, end ];
@@ -286,6 +287,8 @@ function getAllScores( channelId, startDate, endDate ) {
         reject( err );
       } else {
         console.log(JSON.stringify(result));
+        console.log(channelId, start, end);
+
         resolve( result );
       }
     });
@@ -568,7 +571,7 @@ function getUserId( username ) {
   });
 }
 
-const getAll = async( username, fromTo, itemsPerPage, page, searchString ) => {
+const getAll = async( username, fromTo, channel, itemsPerPage, page, searchString ) => {
 
   const userId = await getUserId( username );
 
@@ -576,15 +579,36 @@ const getAll = async( username, fromTo, itemsPerPage, page, searchString ) => {
     const db = mysql.createConnection( mysqlConfig );
 
     let whereUser = '';
+    let paginationParams = '';
 
-    if (fromTo === 'to') {
-      whereUser = 'WHERE to_user_id = \'' + userId + '\'';
-    } else if (fromTo === 'from') {
-      whereUser = 'WHERE from_user_id = \'' + userId + '\'';
+    if (fromTo === 'from') {
+      if (channel === 'all' || 'undefined' === channel) {
+        whereUser = 'WHERE to_user_id = \'' + userId + '\'';
+      } else {
+        whereUser = 'WHERE to_user_id = \'' + userId + '\' AND channel.channel_id = \'' + channel + '\'';
+      } 
+    } else if (fromTo === 'to') {
+      if (channel === 'all' || 'undefined' === channel) {
+        whereUser = 'WHERE from_user_id = \'' + userId + '\'';
+      } else {
+        whereUser = 'WHERE from_user_id = \'' + userId + '\' AND channel.channel_id = \'' + channel + '\'';
+      }
     } else if (fromTo === 'all') {
-      whereUser = 'WHERE to_user_id = \'' + userId + '\' OR from_user_id = \'' + userId + '\'';
+      if (channel === 'all' || 'undefined' === channel) {
+        whereUser = 'WHERE to_user_id = \'' + userId + '\' OR from_user_id = \'' + userId + '\'';
+      } else {
+        whereUser = 'WHERE (to_user_id = \'' + userId + '\' OR from_user_id = \'' + userId + '\') AND channel.channel_id = \'' + channel + '\'';
+      }
     } else {
-      whereUser = 'WHERE to_user_id = \'' + userId + '\' OR from_user_id = \'' + userId + '\'';
+      if (channel === 'all' || 'undefined' === channel) {
+        whereUser = 'WHERE to_user_id = \'' + userId + '\' OR from_user_id = \'' + userId + '\'';
+      } else {
+        whereUser = 'WHERE (to_user_id = \'' + userId + '\' OR from_user_id = \'' + userId + '\') AND channel.channel_id = \'' + channel + '\'';
+      }
+    }
+
+    if (itemsPerPage && page) {
+      paginationParams = 'LIMIT ' + itemsPerPage + ' OFFSET ' + (page - 1) * itemsPerPage;
     }
 
     const countScores = 'SELECT COUNT(*) AS scores ' +
@@ -600,7 +624,8 @@ const getAll = async( username, fromTo, itemsPerPage, page, searchString ) => {
     'INNER JOIN user uTo ON score.to_user_id = uTo.user_id ' +
     'INNER JOIN user uFrom ON score.from_user_id = uFrom.user_id ' +
     whereUser +
-    'ORDER BY score.timestamp DESC LIMIT ' + itemsPerPage + ' OFFSET ' + (page - 1) * itemsPerPage;
+    'ORDER BY score.timestamp DESC ' +
+    paginationParams;
 
     const query = mysql.format( str );
     const queryCount = mysql.format( countScores );
@@ -618,7 +643,7 @@ const getAll = async( username, fromTo, itemsPerPage, page, searchString ) => {
           console.log( db.sql );
           reject( errCount );
         }
-
+        
         resolve({count: resultCount[0].scores, feed: result});
         db.end(dbErrorHandler);
 
@@ -628,14 +653,6 @@ const getAll = async( username, fromTo, itemsPerPage, page, searchString ) => {
 
   });
 }
-
-// 'SELECT score.timestamp, uTo.user_name as toUser, uFrom.user_name as fromUser, channel.channel_name, score.description ' +
-// 'FROM score ' +
-// 'INNER JOIN channel ON score.channel_id = channel.channel_id ' +
-// 'INNER JOIN user uTo ON score.to_user_id = uTo.user_id ' +
-// 'INNER JOIN user uFrom ON score.from_user_id = uFrom.user_id ' +
-// 'WHERE channel.channel_id = \'' + channelId + '\' AND (score.timestamp > \'' + start + '\' AND score.timestamp < \'' + end + '\') AND uFrom.user_name LIKE \'%' + searchString + '%\' ';
-// 'ORDER BY score.timestamp DESC LIMIT ' + itemsPerPage + ' OFFSET ' + (page - 1) * itemsPerPage;
 
 /**
  *
@@ -853,5 +870,6 @@ module.exports = {
   getAllScoresFromUser,
   getKarmaFeed,
   getName,
-  getAll
+  getAll,
+  getUserId
 };

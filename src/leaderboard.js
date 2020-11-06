@@ -360,17 +360,34 @@ const getUserProfile = async( request ) => {
   try {
     const username = request.query.username;
     const fromTo = request.query.fromTo;
+    const channel = request.query.channelProfile;
 
     const itemsPerPage = request.query.itemsPerPage;
     const page = request.query.page;
     const searchString = request.query.searchString;
 
+    const scores = await points.retrieveTopScores( channel );
+    const users = await rankItems( scores, 'users', 'object' );
+    const userId = await points.getUserId( username );
+
+    let userRank = 0;
+    for (const el of users) {
+      if (el.item_id === userId) {
+        userRank = el.rank;
+      }
+    }
+
     const nameSurname = await points.getName( username );
-    const getAll = await points.getAll( username, fromTo, itemsPerPage, page, searchString );
+    const karmaScore = await points.getAll( username, 'from', channel );
+    const karmaGiven = await points.getAll( username, 'to', channel );
+    const getAll = await points.getAll( username, fromTo, channel, itemsPerPage, page, searchString );
+
+    let count = [];
+    karmaScore.feed.map(u => u.fromUser).forEach(fromUser => { count[fromUser] = ( count[fromUser] || 0 ) + 1 });
+    let karmaDivided = Object.entries(count).map(([key, value]) => ({ name: key, value})); //: Math.round((value/karmaScore.count) * 100), count: value 
 
     console.log('Sending user name and surname.');
-
-    return {...getAll, nameSurname};
+    return {...getAll, nameSurname, allKarma: karmaScore.count, karmaGiven: karmaGiven.count, userRank: userRank, karmaDivided: karmaDivided};
     
   } catch (err) {
     console.error(err.message);

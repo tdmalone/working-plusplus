@@ -62,7 +62,7 @@ body {
   font-weight: 600;
 }
 
-.form-control {
+.navbar .form-control {
   border-radius: 0;
   width: 200px;
   margin-left: auto;
@@ -116,6 +116,17 @@ th {
 .fromto-title {
   background: #fafafa;
   margin-right: 8px;
+}
+
+.score-item {
+  background: rgba(0, 0, 0, 0.05);
+  padding: 16px;
+  text-align: center;
+  font-weight: 700;
+}
+
+.score-item h3 {
+  margin: 0;
 }
 
 @media (max-width: 767px) {
