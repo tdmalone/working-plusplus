@@ -3,7 +3,9 @@ import { useLocation } from "react-router-dom";
 import axios from "axios";
 import ReactPaginate from "react-paginate";
 import { Input } from "reactstrap";
-import { PieChart, Pie, Legend, Tooltip, LineChart, Line, XAxis, YAxis, CartesianGrid, Sector, Cell } from 'recharts';
+
+import KarmaSentChart from './KarmaSentChart';
+import ActivityChart from './ActivityChart';
 
 import { BiArrowFromRight, BiArrowFromLeft } from "react-icons/bi";
 
@@ -99,59 +101,9 @@ const UserProfile = (props) => {
     getChannels();
   }, [pagination.currentPage, location.search, selectedChannel, fromTo]);
 
-  console.log(getUser);
-
-  const KarmaChart = () => {
-
-    const data01 = getUser && getUser.karmaDivided.map(el => { return el });
-
-    const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
-
-    const RADIAN = Math.PI / 180;
-    const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent, index }) => {
-      const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
-      const x = cx + radius * Math.cos(-midAngle * RADIAN);
-      const y = cy + radius * Math.sin(-midAngle * RADIAN);
-
-      return (
-        <text x={x} y={y} fill="white" textAnchor={x > cx ? 'start' : 'end'} dominantBaseline="central">
-          {`${(percent * 100).toFixed(0)}%`}
-        </text>
-      );
-    };
-
-    const CustomTooltip = ({ active, payload }) => {
-      if (active) {
-        return (
-          <div className="shadow p-3 mb-5 bg-white rounded">
-            {`${payload[0].name} : ${payload[0].value} Karma Points`}
-          </div>
-        );
-      }
-    
-      return null;
-    };
-
-    return (
-      <PieChart width={300} height={200}>
-        <Pie
-          dataKey="value"
-          isAnimationActive={false}
-          data={data01}
-          cx={80}
-          cy={80}
-          outerRadius={80}
-          fill="#8884d8"
-          labelLine={false}
-          label={renderCustomizedLabel}
-        >
-          { data01.map((entry, index) => <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />) }
-        </Pie>
-        <Tooltip content={<CustomTooltip />} />
-      </PieChart>
-    );
+  if (getUser) {
+    console.log(getUser);
   }
-    
 
   return (
     <>
@@ -237,33 +189,55 @@ const UserProfile = (props) => {
                 </div>
               </div>
               <div className="row mt-5">
-                <div className="col-3"></div>
-                <div className="col-2">
+                <div className="col-md-3"></div>
+                <div className="col-sm-4 col-md-2">
                     <div className="score-item">
                       Rank
                       <br />
                       <h3>{getUser === undefined ? null : getUser.userRank}</h3>
                     </div>
                   </div>
-                  <div className="col-2">
+                  <div className="col-sm-4 col-md-2">
                     <div className="score-item">
                       Karma Received
                       <br />
                       <h3>{getUser === undefined ? null : getUser.allKarma}</h3>
                     </div>
                   </div>
-                  <div className="col-2">
+                  <div className="col-sm-4 col-md-2">
                     <div className="score-item">
                       Karma Sent
                       <br />
                       <h3>{getUser === undefined ? null : getUser.karmaGiven}</h3>
                     </div>
                   </div>
-                  <div className="col-3"></div>
+                  <div className="col-md-3"></div>
               </div>
               <div className="row mt-5">
-                <div className="col">
-                  <KarmaChart />
+                <div className="col-sm-12 col-md-6">
+                    {getUser.feed.length === 0 ? 
+                    null 
+                    : 
+                    <div className="score-item">
+                    
+                    {getUser.karmaDivided.length === 0 ? <div className="length0">No Points Received</div>
+                    :
+                    <>
+                      <h5>Points Received</h5>
+                      <KarmaSentChart karma={getUser.karmaDivided} />
+                    </>
+                    }
+                    </div>
+                    }
+                </div>
+                <div className="col-sm-12 col-md-6">
+                    {getUser.feed.length === 0 ? 
+                    null :
+                    <div className="score-item">
+                    <h5>Activity</h5>
+                      <ActivityChart feed={getUser.activity} />
+                    </div>
+                    }
                 </div>
               </div>
             </div>

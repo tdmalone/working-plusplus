@@ -380,14 +380,50 @@ const getUserProfile = async( request ) => {
     const nameSurname = await points.getName( username );
     const karmaScore = await points.getAll( username, 'from', channel );
     const karmaGiven = await points.getAll( username, 'to', channel );
+    const activityChartIn = await points.getAll( username, 'from', channel );
+    const activityChartOut = await points.getAll( username, 'to', channel );
     const getAll = await points.getAll( username, fromTo, channel, itemsPerPage, page, searchString );
 
+
+    // Count Karma Points from users
     let count = [];
     karmaScore.feed.map(u => u.fromUser).forEach(fromUser => { count[fromUser] = ( count[fromUser] || 0 ) + 1 });
     let karmaDivided = Object.entries(count).map(([key, value]) => ({ name: key, value})); //: Math.round((value/karmaScore.count) * 100), count: value 
 
+    // Count All Received Karma Points by Days
+    let countIn = [];
+    activityChartIn.feed.map(d => d.timestamp.toISOString().split('T')[0]).forEach(fromUser => { countIn[fromUser] = ( countIn[fromUser] || 0 ) + 1 });
+    let chartDatesIn = Object.entries(countIn).map(([key, value]) => ({ date: key, received: value, sent: 0}));
+
+    // Count All Sent Karma Points by Days
+    let countOut = [];
+    activityChartOut.feed.map(d => d.timestamp.toISOString().split('T')[0]).forEach(fromUser => { countOut[fromUser] = ( countOut[fromUser] || 0 ) + 1 });
+    let chartDatesOut = Object.entries(countOut).map(([key, value]) => ({ date: key, received: 0, sent: value}));
+
+    // Add Sent & Received Karma by Days Into Array
+    let sentReceived = chartDatesIn.concat(chartDatesOut);
+
+    // Combine Sent & Received Karma by Same Days
+    let b = {};
+    let combineDates = [];
+
+    for (let date in sentReceived) {
+    
+      let oa = sentReceived[date];
+      let ob = b[oa.date];
+    
+      if (!ob) combineDates.push(ob = b[oa.date] = {});
+    
+      for (let k in oa) ob[k] = k==='date' ? oa.date : (ob[k]||0)+oa[k];
+
+    }
+
+    // Sort Dates
+    combineDates.sort((a,b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
     console.log('Sending user name and surname.');
-    return {...getAll, nameSurname, allKarma: karmaScore.count, karmaGiven: karmaGiven.count, userRank: userRank, karmaDivided: karmaDivided};
+
+    return {...getAll, nameSurname, allKarma: karmaScore.count, karmaGiven: karmaGiven.count, userRank: userRank, karmaDivided: karmaDivided, activity: combineDates};
     
   } catch (err) {
     console.error(err.message);

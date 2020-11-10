@@ -582,25 +582,25 @@ const getAll = async( username, fromTo, channel, itemsPerPage, page, searchStrin
     let paginationParams = '';
 
     if (fromTo === 'from') {
-      if (channel === 'all' || 'undefined' === channel) {
+      if (channel === 'all' || undefined === channel) {
         whereUser = 'WHERE to_user_id = \'' + userId + '\'';
       } else {
         whereUser = 'WHERE to_user_id = \'' + userId + '\' AND channel.channel_id = \'' + channel + '\'';
       } 
     } else if (fromTo === 'to') {
-      if (channel === 'all' || 'undefined' === channel) {
+      if (channel === 'all' || undefined === channel) {
         whereUser = 'WHERE from_user_id = \'' + userId + '\'';
       } else {
         whereUser = 'WHERE from_user_id = \'' + userId + '\' AND channel.channel_id = \'' + channel + '\'';
       }
     } else if (fromTo === 'all') {
-      if (channel === 'all' || 'undefined' === channel) {
+      if (channel === 'all' || undefined === channel) {
         whereUser = 'WHERE to_user_id = \'' + userId + '\' OR from_user_id = \'' + userId + '\'';
       } else {
         whereUser = 'WHERE (to_user_id = \'' + userId + '\' OR from_user_id = \'' + userId + '\') AND channel.channel_id = \'' + channel + '\'';
       }
     } else {
-      if (channel === 'all' || 'undefined' === channel) {
+      if (channel === 'all' || undefined === channel) {
         whereUser = 'WHERE to_user_id = \'' + userId + '\' OR from_user_id = \'' + userId + '\'';
       } else {
         whereUser = 'WHERE (to_user_id = \'' + userId + '\' OR from_user_id = \'' + userId + '\') AND channel.channel_id = \'' + channel + '\'';
