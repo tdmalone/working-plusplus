@@ -580,6 +580,7 @@ const getAll = async( username, fromTo, channel, itemsPerPage, page, searchStrin
 
     let whereUser = '';
     let paginationParams = '';
+    let searchForm = '';
 
     if (fromTo === 'from') {
       if (channel === 'all' || undefined === channel) {
@@ -607,9 +608,16 @@ const getAll = async( username, fromTo, channel, itemsPerPage, page, searchStrin
       }
     }
 
+    if (searchString) {
+      whereUser += ' AND (uFrom.user_name LIKE \'%' + searchString + '%\' OR uTo.user_name LIKE \'%' + searchString + '%\') ';
+    }
+    // OR uTo.user_name LIKE \'%' + searchString + '%\')
+
     if (itemsPerPage && page) {
       paginationParams = 'LIMIT ' + itemsPerPage + ' OFFSET ' + (page - 1) * itemsPerPage;
     }
+
+    console.log(searchForm);
 
     const countScores = 'SELECT COUNT(*) AS scores ' +
     'FROM score ' +
@@ -623,7 +631,7 @@ const getAll = async( username, fromTo, channel, itemsPerPage, page, searchStrin
     'INNER JOIN channel ON score.channel_id = channel.channel_id ' +
     'INNER JOIN user uTo ON score.to_user_id = uTo.user_id ' +
     'INNER JOIN user uFrom ON score.from_user_id = uFrom.user_id ' +
-    whereUser +
+    whereUser + searchForm +
     'ORDER BY score.timestamp DESC ' +
     paginationParams;
 

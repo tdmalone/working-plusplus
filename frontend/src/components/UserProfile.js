@@ -9,7 +9,7 @@ import ActivityChart from './ActivityChart';
 
 import { BiArrowFromRight, BiArrowFromLeft } from "react-icons/bi";
 
-const UserProfile = (props) => {
+const UserProfile = props => {
   let location = useLocation();
   const user_username = location.pathname.split("/")[2];
 
@@ -56,14 +56,14 @@ const UserProfile = (props) => {
       const itemsPerPage = pagination.perPage;
       const searchString = props.search;
 
-      if (searchString) {
-        page = 1;
-        handlePageClick({ selected: 0 });
-        setPaginationSearch(pagination.currentPage);
-      } else {
+      // if (searchString) {
+      //   page = 1;
+      //   handlePageClick({ selected: 0 });
+      //   setPaginationSearch(pagination.currentPage);
+      // } else {
         page = pagination.currentPage + 1;
         setPaginationSearch(pagination.currentPage);
-      }
+      // }
 
       await axios
         .get(getUserURL, {
@@ -99,7 +99,7 @@ const UserProfile = (props) => {
         .catch((err) => console.error(err.message));
     };
     getChannels();
-  }, [pagination.currentPage, location.search, selectedChannel, fromTo]);
+  }, [pagination.currentPage, location.search, selectedChannel, fromTo, props.search]);
 
   if (getUser) {
     console.log(getUser);

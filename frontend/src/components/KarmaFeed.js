@@ -59,18 +59,18 @@ const KarmaFeed = props => {
       const itemsPerPage = pagination.perPage;
       const searchString = props.search;
 
-      if (searchString) {
+      // if (searchString) {
 
-        page = 1;
-        handlePageClick({selected: 0});
-        setPaginationSearch(pagination.currentPage);
+      //   page = 1;
+      //   handlePageClick({selected: 0});
+      //   setPaginationSearch(pagination.currentPage);
 
-      } else {
+      // } else {
 
         page = pagination.currentPage + 1;
         setPaginationSearch(pagination.currentPage);
 
-      }
+      // }
 
       await axios.get(fromUsersURL, {params: {itemsPerPage: itemsPerPage, page: page, searchString: searchString}})
         .then(res => {

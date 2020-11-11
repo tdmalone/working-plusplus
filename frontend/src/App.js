@@ -18,7 +18,7 @@ function App() {
         	<Route exact path="/" render={ props => (<Chart {...props} search={searchTerm} onClick={value => setSearchTerm(value)} />) } />
           <Route exact path="/feed" render={ props => (<KarmaFeed {...props} search={searchTerm} onClick={value => setSearchTerm(value)} />) } />
           <Route path="/user/:user">
-            <UserProfile />
+            <UserProfile search={searchTerm} />
           </Route>
       </Switch>
     </Router>
