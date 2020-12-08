@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useCallback, useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import axios from "axios";
 import ReactPaginate from "react-paginate";
@@ -8,6 +8,8 @@ import KarmaSentChart from './KarmaSentChart';
 import ActivityChart from './ActivityChart';
 
 import { BiArrowFromRight, BiArrowFromLeft } from "react-icons/bi";
+
+import _ from "lodash";
 
 const UserProfile = props => {
   let location = useLocation();
@@ -31,10 +33,6 @@ const UserProfile = props => {
     currentPage: 0,
   });
 
-  const [paginationSearch, setPaginationSearch] = useState(
-    pagination.currentPage
-  );
-
   const handlePageClick = async (e) => {
     const selectedPage = e.selected;
     const offset = selectedPage * pagination.perPage;
@@ -47,23 +45,38 @@ const UserProfile = props => {
       };
     });
 
-    setPaginationSearch(pagination.currentPage);
   };
 
   useEffect(() => {
-    const userProfile = async () => {
-      let page;
-      const itemsPerPage = pagination.perPage;
-      const searchString = props.search;
 
-      // if (searchString) {
-      //   page = 1;
-      //   handlePageClick({ selected: 0 });
-      //   setPaginationSearch(pagination.currentPage);
-      // } else {
-        page = pagination.currentPage + 1;
-        setPaginationSearch(pagination.currentPage);
-      // }
+    const getChannels = async () => {
+      await axios
+        .get(channelsURL)
+        .then((res) => {
+          setListChannels(res.data);
+        })
+        .catch((err) => console.error(err.message));
+    };
+    getChannels();
+
+  },[channelsURL]);
+
+  const [searchValue, setSearchValue] = useState("");
+  const debounce = useCallback(
+    _.debounce(_searchVal => {
+      handlePageClick({ selected: 0 });
+      setSearchValue(_searchVal);
+    }, 300),
+    []
+  );
+
+  useEffect(() => {
+    debounce(props.search)
+  }, [props.search]);
+
+  useEffect(() => {
+
+    const userProfile = async () => {
 
       await axios
         .get(getUserURL, {
@@ -71,9 +84,9 @@ const UserProfile = props => {
             username: user_username,
             fromTo: fromTo,
             channelProfile: selectedChannel,
-            itemsPerPage: itemsPerPage,
-            page: page,
-            searchString: searchString,
+            itemsPerPage: pagination.perPage,
+            page: pagination.currentPage + 1,
+            searchString: searchValue
           },
         })
         .then((res) => {
@@ -90,20 +103,7 @@ const UserProfile = props => {
     };
     userProfile();
 
-    const getChannels = async () => {
-      await axios
-        .get(channelsURL)
-        .then((res) => {
-          setListChannels(res.data);
-        })
-        .catch((err) => console.error(err.message));
-    };
-    getChannels();
-  }, [pagination.currentPage, location.search, selectedChannel, fromTo, props.search]);
-
-  if (getUser) {
-    console.log(getUser);
-  }
+  }, [getUserURL, pagination.perPage, user_username, pagination.currentPage, location.search, selectedChannel, fromTo, searchValue]);
 
   return (
     <>
@@ -345,7 +345,7 @@ const UserProfile = props => {
                     nextClassName={"page-item"}
                     previousLinkClassName={"page-link"}
                     nextLinkClassName={"page-link"}
-                    forcePage={paginationSearch}
+                    forcePage={pagination.currentPage}
                   />
                 </div>
               </div>

@@ -4,7 +4,6 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, } from '
 const ActivityChart = props => {
 
   const data = props.feed && props.feed.map(el => { return el });
-  console.log(data);
 
   return (
     <LineChart

@@ -596,13 +596,13 @@ const getAll = async( username, fromTo, channel, itemsPerPage, page, searchStrin
       }
     } else if (fromTo === 'all') {
       if (channel === 'all' || undefined === channel) {
-        whereUser = 'WHERE to_user_id = \'' + userId + '\' OR from_user_id = \'' + userId + '\'';
+        whereUser = 'WHERE (to_user_id = \'' + userId + '\' OR from_user_id = \'' + userId + '\')';
       } else {
         whereUser = 'WHERE (to_user_id = \'' + userId + '\' OR from_user_id = \'' + userId + '\') AND channel.channel_id = \'' + channel + '\'';
       }
     } else {
       if (channel === 'all' || undefined === channel) {
-        whereUser = 'WHERE to_user_id = \'' + userId + '\' OR from_user_id = \'' + userId + '\'';
+        whereUser = 'WHERE (to_user_id = \'' + userId + '\' OR from_user_id = \'' + userId + '\')';
       } else {
         whereUser = 'WHERE (to_user_id = \'' + userId + '\' OR from_user_id = \'' + userId + '\') AND channel.channel_id = \'' + channel + '\'';
       }
@@ -616,8 +616,6 @@ const getAll = async( username, fromTo, channel, itemsPerPage, page, searchStrin
     if (itemsPerPage && page) {
       paginationParams = 'LIMIT ' + itemsPerPage + ' OFFSET ' + (page - 1) * itemsPerPage;
     }
-
-    console.log(searchForm);
 
     const countScores = 'SELECT COUNT(*) AS scores ' +
     'FROM score ' +
