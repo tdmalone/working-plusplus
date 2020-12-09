@@ -22,13 +22,9 @@ const querystring = require( 'querystring' );
  */
 const getLeaderboardUrl = ( request, channelId ) => {
 
-  const hostname = request.headers.host,
-        ts = helpers.getTimestamp();
+  const hostname = request.headers.host;
 
   const params = {
-    token: helpers.getTimeBasedToken( ts ),
-    ts,
-    botUser: helpers.extractUserID( request.body.event.text ),
     channel: channelId
   };
   // eslint-disable-next-line no-process-env,no-negated-condition,yoda
@@ -39,12 +35,7 @@ const getLeaderboardUrl = ( request, channelId ) => {
 
 const getLeaderboardWeb = ( request, channelId ) => {
 
-  const ts = helpers.getTimestamp();
-
   const params = {
-    token: helpers.getTimeBasedToken( ts ),
-    ts,
-    botUser: helpers.extractUserID( request.body.event.text ),
     channel: channelId
   };
   // eslint-disable-next-line no-process-env,no-negated-condition,yoda
