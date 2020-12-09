@@ -89,9 +89,9 @@ const DateFilter = props => {
                 Channels
               </DropdownToggle>
               <DropdownMenu>
-                {props.listChannels ? <DropdownItem onClick={ e => { props.onChannelClick('all'); props.onSearchClick(''); } }>All Channels</DropdownItem> : null}
+                {props.listChannels ? <DropdownItem onClick={ e => { props.onChannelClick('all'); props.onSearchClick(''); props.onFilterClick(0); } }>All Channels</DropdownItem> : null}
                 {props.listChannels ? (props.listChannels.map((el, index) => (
-                  <DropdownItem key={index} onClick={e => { props.onChannelClick(el.channel_id); props.onSearchClick(''); }}>#{el.channel_name}</DropdownItem>
+                  <DropdownItem key={index} onClick={e => { props.onChannelClick(el.channel_id); props.onSearchClick(''); props.onFilterClick(0); }}>#{el.channel_name}</DropdownItem>
                   )
                 )) : <DropdownItem>No Channels</DropdownItem>}
               </DropdownMenu>
