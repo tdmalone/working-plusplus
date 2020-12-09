@@ -265,9 +265,10 @@ function getAllScores( channelId, startDate, endDate ) {
       start = moment.unix( startDate ).format( 'YYYY-MM-DD HH:mm:ss' );
       end = moment.unix( endDate ).format( 'YYYY-MM-DD HH:mm:ss' );
     } else {
-      start = moment( Date.now() ).startOf('month').format( 'YYYY-MM-DD HH:mm:ss' );
+      start = moment( 0 ).format( 'YYYY-MM-DD HH:mm:ss' );
       end = moment( Date.now() ).format( 'YYYY-MM-DD HH:mm:ss' );
     }
+
 
     if ( 'all' === channelId ) {
       inserts = [ start, end ];
@@ -285,6 +286,9 @@ function getAllScores( channelId, startDate, endDate ) {
         console.log( db.sql );
         reject( err );
       } else {
+        console.log(JSON.stringify(result));
+        console.log(channelId, start, end);
+
         resolve( result );
       }
     });
@@ -512,6 +516,152 @@ function getUser( userId ) {
 }
 
 /**
+ *  Gets the Name from 'username' from the db.
+ *
+ * @param {string} username
+ *   Slack user id.
+ * @returns {Promise}
+ *  Returned promise.
+ */
+function getName( username ) {
+  return new Promise( function( resolve, reject ) {
+    const db = mysql.createConnection( mysqlConfig );
+    const str = 'SELECT user_name FROM ?? WHERE user_username = ?';
+    const inserts = [ 'user', username ];
+    const query = mysql.format( str, inserts );
+    db.query( query, function( err, result ) {
+      if ( err ) {
+        console.log( db.sql );
+        reject( err );
+      } else {
+        resolve( result[0].user_name );
+      }
+    });
+
+    db.end(dbErrorHandler);
+
+  });
+}
+
+/**
+ *  Gets the Name from 'username' from the db.
+ *
+ * @param {string} username
+ *   Slack user id.
+ * @returns {Promise}
+ *  Returned promise.
+ */
+function getUserId( username ) {
+  return new Promise( function( resolve, reject ) {
+    const db = mysql.createConnection( mysqlConfig );
+    const str = 'SELECT user_id FROM ?? WHERE user_username = ?';
+    const inserts = [ 'user', username ];
+    const query = mysql.format( str, inserts );
+    db.query( query, function( err, result ) {
+      if ( err ) {
+        console.log( db.sql );
+        reject( err );
+      } else {
+        resolve( result[0].user_id );
+      }
+    });
+
+    db.end(dbErrorHandler);
+
+  });
+}
+
+const getAll = async( username, fromTo, channel, itemsPerPage, page, searchString ) => {
+
+  const userId = await getUserId( username );
+
+  return new Promise( function( resolve, reject ) {
+    const db = mysql.createConnection( mysqlConfig );
+
+    let whereUser = '';
+    let paginationParams = '';
+
+    if (fromTo === 'from') {
+      if (channel === 'all' || undefined === channel) {
+        whereUser = 'WHERE to_user_id = \'' + userId + '\'';
+      } else {
+        whereUser = 'WHERE to_user_id = \'' + userId + '\' AND channel.channel_id = \'' + channel + '\'';
+      } 
+    } else if (fromTo === 'to') {
+      if (channel === 'all' || undefined === channel) {
+        whereUser = 'WHERE from_user_id = \'' + userId + '\'';
+      } else {
+        whereUser = 'WHERE from_user_id = \'' + userId + '\' AND channel.channel_id = \'' + channel + '\'';
+      }
+    } else if (fromTo === 'all') {
+      if (channel === 'all' || undefined === channel) {
+        whereUser = 'WHERE (to_user_id = \'' + userId + '\' OR from_user_id = \'' + userId + '\')';
+      } else {
+        whereUser = 'WHERE (to_user_id = \'' + userId + '\' OR from_user_id = \'' + userId + '\') AND channel.channel_id = \'' + channel + '\'';
+      }
+    } else {
+      if (channel === 'all' || undefined === channel) {
+        whereUser = 'WHERE (to_user_id = \'' + userId + '\' OR from_user_id = \'' + userId + '\')';
+      } else {
+        whereUser = 'WHERE (to_user_id = \'' + userId + '\' OR from_user_id = \'' + userId + '\') AND channel.channel_id = \'' + channel + '\'';
+      }
+    }
+
+    if (searchString) {
+      whereUser += ' AND (uFrom.user_name LIKE \'%' + searchString + '%\' OR uTo.user_name LIKE \'%' + searchString + '%\') ';
+    }
+    // OR uTo.user_name LIKE \'%' + searchString + '%\')
+
+    if (itemsPerPage && page) {
+      paginationParams = 'LIMIT ' + itemsPerPage + ' OFFSET ' + (page - 1) * itemsPerPage;
+    }
+
+    const countScores = 'SELECT COUNT(*) AS scores ' +
+    'FROM score ' +
+    'INNER JOIN channel ON score.channel_id = channel.channel_id ' +
+    'INNER JOIN user uTo ON score.to_user_id = uTo.user_id ' +
+    'INNER JOIN user uFrom ON score.from_user_id = uFrom.user_id ' +
+    whereUser;
+
+    const str = 'SELECT score.timestamp, uTo.user_name as toUser, uFrom.user_name as fromUser, channel.channel_name, score.description ' +
+    'FROM score ' +
+    'INNER JOIN channel ON score.channel_id = channel.channel_id ' +
+    'INNER JOIN user uTo ON score.to_user_id = uTo.user_id ' +
+    'INNER JOIN user uFrom ON score.from_user_id = uFrom.user_id ' +
+    whereUser +
+    'ORDER BY score.timestamp DESC ' +
+    paginationParams;
+
+    console.log("WHERE USER: " + whereUser);
+
+    const query = mysql.format( str );
+    const queryCount = mysql.format( countScores );
+
+    const queryResult = db.query( query, function( err, result ) {
+
+      if ( err ) {
+        console.log( db.sql );
+        reject( err );
+      }
+
+      db.query( queryCount, function( errCount, resultCount ) {
+  
+        if ( errCount ) {
+          console.log( db.sql );
+          reject( errCount );
+        }
+        
+        resolve({count: resultCount[0].scores, feed: result});
+        db.end(dbErrorHandler);
+
+      });
+
+    });
+
+  });
+}
+
+/**
  *
  * Inserts user into db.
  *
@@ -523,8 +673,9 @@ function getUser( userId ) {
 function insertUser( userId, userName ) {
   return new Promise( function( resolve, reject ) {
     const db = mysql.createConnection( mysqlConfig );
-    const str = 'INSERT INTO ?? (user_id, user_name, banned_until) VALUES (?, ?, NULL);';
-    const inserts = [ 'user', userId, userName ];
+    const lowcaseUserName = userName.split(" ").join("").toLocaleLowerCase();
+    const str = 'INSERT INTO ?? (user_id, user_name, user_username, banned_until) VALUES (?, ?, ?, NULL);';
+    const inserts = [ 'user', userId, userName, lowcaseUserName ];
     const query = mysql.format( str, inserts );
     db.query( query, function( err, result ) {
       if ( err ) {
@@ -724,5 +875,8 @@ module.exports = {
   getDailyUserScore,
   getAllChannels,
   getAllScoresFromUser,
-  getKarmaFeed
+  getKarmaFeed,
+  getName,
+  getAll,
+  getUserId
 };

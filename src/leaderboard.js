@@ -112,7 +112,8 @@ const rankItems = async( topScores, itemType = 'users', format = 'slack' ) => {
         output = {
           rank,
           item: itemTitleCase,
-          score: score.score + ' point' + plural
+          score: score.score + ' point' + plural,
+          item_id: score.item
         };
         break;
     }
@@ -250,20 +251,15 @@ const getForSlack = async( event, request ) => {
 const getForWeb = async( request ) => {
 
   try {
+
     const startDate = request.query.startDate;
     const endDate = request.query.endDate;
     const channelId = request.query.channel;
-    const scores = await points.retrieveTopScores( channelId, startDate, endDate ),
-          users = await rankItems( scores, 'users', 'object' );
 
-    const data = {
-      users,
-      title: 'Leaderboard'
-    };
+    const scores = await points.retrieveTopScores( channelId, startDate, endDate );
+    const users = await rankItems( scores, 'users', 'object' );
 
-    // Return helpers.render( 'src/html/leaderboard.html', data, request );
-    // console.log("SCORES: " + JSON.stringify(scores));
-    // console.log("USERS: " + JSON.stringify(users));
+    console.log(users);
     return users;
 
   } catch ( err ) {
@@ -333,7 +329,7 @@ const getKarmaFeed = async( request ) => {
 
     const itemsPerPage = request.query.itemsPerPage;
     const page = request.query.page;
-    const searchString = request.query.searchString
+    const searchString = request.query.searchString;
     const startDate = request.query.startDate;
     const endDate = request.query.endDate;
     const channelId = request.query.channel;
@@ -347,6 +343,84 @@ const getKarmaFeed = async( request ) => {
   }
 
 }; // getKarmaFeed.
+
+
+
+const getUserProfile = async( request ) => {
+
+  try {
+    const username = request.query.username;
+    const fromTo = request.query.fromTo;
+    const channel = request.query.channelProfile;
+
+    const itemsPerPage = request.query.itemsPerPage;
+    const page = request.query.page;
+    const searchString = request.query.searchString;
+
+    const scores = await points.retrieveTopScores( channel );
+    const users = await rankItems( scores, 'users', 'object' );
+    const userId = await points.getUserId( username );
+
+    let userRank = 0;
+    for (const el of users) {
+      if (el.item_id === userId) {
+        userRank = el.rank;
+      }
+    }
+
+    const nameSurname = await points.getName( username );
+    const karmaScore = await points.getAll( username, 'from', channel );
+    const karmaGiven = await points.getAll( username, 'to', channel );
+    const activityChartIn = await points.getAll( username, 'from', channel );
+    const activityChartOut = await points.getAll( username, 'to', channel );
+    const getAll = await points.getAll( username, fromTo, channel, itemsPerPage, page, searchString );
+
+
+    // Count Karma Points from users
+    let count = [];
+    karmaScore.feed.map(u => u.fromUser).forEach(fromUser => { count[fromUser] = ( count[fromUser] || 0 ) + 1 });
+    let karmaDivided = Object.entries(count).map(([key, value]) => ({ name: key, value})); //: Math.round((value/karmaScore.count) * 100), count: value 
+
+    // Count All Received Karma Points by Days
+    let countIn = [];
+    activityChartIn.feed.map(d => d.timestamp.toISOString().split('T')[0]).forEach(fromUser => { countIn[fromUser] = ( countIn[fromUser] || 0 ) + 1 });
+    let chartDatesIn = Object.entries(countIn).map(([key, value]) => ({ date: key, received: value, sent: 0}));
+
+    // Count All Sent Karma Points by Days
+    let countOut = [];
+    activityChartOut.feed.map(d => d.timestamp.toISOString().split('T')[0]).forEach(fromUser => { countOut[fromUser] = ( countOut[fromUser] || 0 ) + 1 });
+    let chartDatesOut = Object.entries(countOut).map(([key, value]) => ({ date: key, received: 0, sent: value}));
+
+    // Add Sent & Received Karma by Days Into Array
+    let sentReceived = chartDatesIn.concat(chartDatesOut);
+
+    // Combine Sent & Received Karma by Same Days
+    let b = {};
+    let combineDates = [];
+
+    for (let date in sentReceived) {
+    
+      let oa = sentReceived[date];
+      let ob = b[oa.date];
+    
+      if (!ob) combineDates.push(ob = b[oa.date] = {});
+    
+      for (let k in oa) ob[k] = k==='date' ? oa.date : (ob[k]||0)+oa[k];
+
+    }
+
+    // Sort Dates
+    combineDates.sort((a,b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+    console.log('Sending user name and surname.');
+
+    return {...getAll, nameSurname, allKarma: karmaScore.count, karmaGiven: karmaGiven.count, userRank: userRank, karmaDivided: karmaDivided, activity: combineDates};
+    
+  } catch (err) {
+    console.error(err.message);
+  }
+
+} // getUserProfile
 
 /**
  * The default handler for this command when invoked over Slack.
@@ -367,5 +441,6 @@ module.exports = {
   handler,
   getForChannels,
   getAllScoresFromUser,
-  getKarmaFeed
+  getKarmaFeed,
+  getUserProfile
 };

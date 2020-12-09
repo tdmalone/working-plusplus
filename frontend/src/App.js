@@ -8,6 +8,7 @@ import './App.css';
 import NavBar from './components/NavBar';
 import Chart from './components/Chart';
 import KarmaFeed from './components/KarmaFeed';
+import UserProfile from './components/UserProfile';
 
 const history = createBrowserHistory();
 
@@ -33,8 +34,11 @@ function App() {
     <Router history={history}>
       <NavBar search={searchTerm} newQuery={newQuery} history={history} onChange={value => setSearchTerm(value)} onClick={value => setSearchTerm(value)} />
       <Switch>
-        <Route exact path="/" render={ props => (<Chart {...props} search={searchTerm} onSearchClick={value => setSearchTerm(value)} onParamsClick={value => changeParams(value)} />) } />
-        <Route exact path="/feed" render={ props => (<KarmaFeed {...props} search={searchTerm} onSearchClick={value => setSearchTerm(value)} onParamsClick={value => changeParams(value)} />) } />
+        	<Route exact path="/" render={ props => (<Chart {...props} search={searchTerm} onClick={value => setSearchTerm(value)} />) } />
+          <Route exact path="/feed" render={ props => (<KarmaFeed {...props} search={searchTerm} onClick={value => setSearchTerm(value)} />) } />
+          <Route path="/user/:user">
+            <UserProfile search={searchTerm} />
+          </Route>
       </Switch>
     </Router>
   );
