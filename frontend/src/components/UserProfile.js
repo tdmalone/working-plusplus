@@ -66,12 +66,12 @@ const UserProfile = props => {
     _.debounce(_searchVal => {
       handlePageClick({ selected: 0 });
       setSearchValue(_searchVal);
-    }, 300),
+    }, 500),
     []
   );
 
   useEffect(() => {
-    debounce(props.search)
+    debounce(props.search);
   }, [props.search]);
 
   useEffect(() => {
@@ -103,7 +103,7 @@ const UserProfile = props => {
     };
     userProfile();
 
-  }, [getUserURL, pagination.perPage, user_username, pagination.currentPage, location.search, selectedChannel, fromTo, searchValue]);
+  }, [pagination.currentPage, location.search, selectedChannel, fromTo, searchValue]);
 
   return (
     <>

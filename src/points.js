@@ -580,7 +580,6 @@ const getAll = async( username, fromTo, channel, itemsPerPage, page, searchStrin
 
     let whereUser = '';
     let paginationParams = '';
-    let searchForm = '';
 
     if (fromTo === 'from') {
       if (channel === 'all' || undefined === channel) {
@@ -629,9 +628,11 @@ const getAll = async( username, fromTo, channel, itemsPerPage, page, searchStrin
     'INNER JOIN channel ON score.channel_id = channel.channel_id ' +
     'INNER JOIN user uTo ON score.to_user_id = uTo.user_id ' +
     'INNER JOIN user uFrom ON score.from_user_id = uFrom.user_id ' +
-    whereUser + searchForm +
+    whereUser +
     'ORDER BY score.timestamp DESC ' +
     paginationParams;
+
+    console.log("WHERE USER: " + whereUser);
 
     const query = mysql.format( str );
     const queryCount = mysql.format( countScores );

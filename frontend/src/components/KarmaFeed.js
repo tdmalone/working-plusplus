@@ -1,10 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useCallback, useState, useEffect } from 'react';
 import axios from 'axios';
 import queryString from 'query-string';
 import ReactPaginate from 'react-paginate';
 
 import DateFilter from './DateFilter';
 import moment from 'moment';
+
+import _ from "lodash";
 
 const KarmaFeed = props => {
 
@@ -32,8 +34,6 @@ const KarmaFeed = props => {
     currentPage: 0
   });
 
-  const [paginationSearch, setPaginationSearch] = useState(pagination.currentPage);
-
   const handlePageClick = async e => {
     const selectedPage = e.selected;
     const offset = selectedPage * pagination.perPage;
@@ -46,33 +46,46 @@ const KarmaFeed = props => {
       }
     });
 
-    setPaginationSearch(pagination.currentPage);
-
   }
 
-  // console.log(pagination);
+  useEffect(() => {
+
+    const getChannels = async () => {
+      await axios
+        .get(channelsURL)
+        .then((res) => {
+          setListChannels(res.data);
+        })
+        .catch((err) => console.error(err.message));
+    };
+    getChannels();
+
+  },[channelsURL]);
+
+  const [searchValue, setSearchValue] = useState("");
+  const debounce = useCallback(
+    _.debounce(_searchVal => {
+      handlePageClick({ selected: 0 });
+      setSearchValue(_searchVal);
+    }, 500),
+    []
+  );
+
+  useEffect(() => {
+    debounce(props.search);
+  }, [props.search]);
 
   useEffect(() => {
     const fromUsers = async() => {
 
-      let page;
-      const itemsPerPage = pagination.perPage;
-      const searchString = props.search;
-
-      // if (searchString) {
-
-      //   page = 1;
-      //   handlePageClick({selected: 0});
-      //   setPaginationSearch(pagination.currentPage);
-
-      // } else {
-
-        page = pagination.currentPage + 1;
-        setPaginationSearch(pagination.currentPage);
-
-      // }
-
-      await axios.get(fromUsersURL, {params: {itemsPerPage: itemsPerPage, page: page, searchString: searchString}})
+      await axios
+        .get(fromUsersURL, {
+          params: {
+            itemsPerPage: pagination.perPage,
+            page: pagination.currentPage + 1,
+            searchString: props.search
+          }
+        })
         .then(res => {
           setFromUsers(res.data.results);
 
@@ -88,19 +101,8 @@ const KarmaFeed = props => {
     }
     fromUsers();
 
-    const getChannels = async() => {
-      await axios.get(channelsURL)
-        .then(res => {
-          setListChannels(res.data);
-        })
-        .catch(err => console.error(err.message))
-    }
-    getChannels();
-
     // eslint-disable-next-line
-  }, [fromUsersURL, pagination.currentPage, props.search, channelsURL, channel]);
-
-  //console.log(fromUsersURL);
+  }, [fromUsersURL, pagination.currentPage, searchValue, channel]);
 
   return(
     <>
@@ -199,7 +201,7 @@ const KarmaFeed = props => {
             nextClassName={"page-item"}
             previousLinkClassName={"page-link"}
             nextLinkClassName={"page-link"}
-            forcePage={paginationSearch} />
+            forcePage={pagination.currentPage} />
         </div>
       </div>
       </>
