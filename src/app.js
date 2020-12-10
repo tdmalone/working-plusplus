@@ -88,46 +88,22 @@ const handleGet = async( request, response ) => {
     // provided - the full link can be retrieved by requesting the leaderboard within Slack.
     // TODO: This should probably be split out into a separate function of sorts, like handlePost.
     case '/leaderboard':
-      if ( helpers.isTimeBasedTokenStillValid( request.query.token, request.query.ts ) ) {
-        response.json( await leaderboard.getForWeb( request ) );
-      } else {
-        response
-          .status( HTTP_403 )
-          .send( 'Sorry, this link is no longer valid. Please request a new link in Slack.' );
-      }
+      response.json( await leaderboard.getForWeb( request ) );
       break;
 
     case '/channels':
-      if ( helpers.isTimeBasedTokenStillValid( request.query.token, request.query.ts ) ) {
-        response.json( await leaderboard.getForChannels( request ) );
-      } else {
-        response
-          .status( HTTP_403 )
-          .send( 'Sorry, this link is no longer valid. Please request a new link in Slack.' );
-      }
+      response.json( await leaderboard.getForChannels( request ) );
       break;
 
     case '/fromusers':
-      if ( helpers.isTimeBasedTokenStillValid( request.query.token, request.query.ts ) ) {
-        response.json( await leaderboard.getAllScoresFromUser( request ) );
-      } else {
-        response
-          .status( HTTP_403 )
-          .send( 'Sorry, this link is no longer valid. Please request a new link in Slack.' );
-      }
+      response.json( await leaderboard.getAllScoresFromUser( request ) );
       break;
 
     case '/karmafeed':
-      if ( helpers.isTimeBasedTokenStillValid( request.query.token, request.query.ts ) ) {
-        try {
-          response.json( await leaderboard.getKarmaFeed( request ));
-        } catch(err) {
-          console.log(err.message);
-        }
-      } else {
-        response
-          .status( HTTP_403 )
-          .send( 'Sorry, this link is no longer valid. Please request a new link in Slack.' );
+      try {
+        response.json( await leaderboard.getKarmaFeed( request ));
+      } catch(err) {
+        console.log(err.message);
       }
       break;
 
