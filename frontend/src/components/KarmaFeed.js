@@ -1,4 +1,5 @@
 import React, { useCallback, useState, useEffect } from 'react';
+import { useHistory } from "react-router-dom";
 import axios from 'axios';
 import queryString from 'query-string';
 import ReactPaginate from 'react-paginate';
@@ -13,18 +14,15 @@ const KarmaFeed = props => {
   const apiURL = process.env.REACT_APP_API_URL;
 
   const parsedQuery = queryString.parse(props.location.search);
-  const botUser = parsedQuery.botUser;
-  const token = parsedQuery.token;
-  const ts = parsedQuery.ts;
 
   const [channel, setChannel] = useState(parsedQuery.channel);
-  const [startDate, setStartDate] = useState(moment(0).unix());
-  const [endDate, setEndDate] = useState(moment().unix());
+  const [startDate, setStartDate] = useState(parsedQuery.startDate);
+  const [endDate, setEndDate] = useState(parsedQuery.endDate);
 
-  const fromUsersURL = apiURL + '/karmafeed?token=' + token + '&ts=' + ts + '&botUser=' + botUser + '&channel=' + channel + '&startDate=' + startDate + '&endDate=' + endDate;
+  const fromUsersURL = apiURL + '/karmafeed?channel=' + channel + '&startDate=' + startDate + '&endDate=' + endDate;
   const [fromUsers, setFromUsers] = useState();
 
-  const channelsURL = apiURL + '/channels?token=' + token + '&ts=' + ts + '&botUser=' + botUser + '&channel=' + channel;
+  const channelsURL = apiURL + '/channels?channel=' + channel;
   const [listChannels, setListChannels] = useState();
 
   const [pagination, setPagination] = useState({
@@ -47,6 +45,17 @@ const KarmaFeed = props => {
     });
 
   }
+
+  if (channel === undefined || startDate === undefined || endDate === undefined) {
+    setChannel('all');
+    setStartDate(0);
+    setEndDate(moment().unix());
+  }
+  
+  let history = useHistory();
+  useEffect(() => {
+    history.push('?channel=' + channel + '&startDate=' + startDate + '&endDate=' + endDate)
+  }, [channel, startDate, endDate]);
 
   useEffect(() => {
 
@@ -109,6 +118,7 @@ const KarmaFeed = props => {
     <DateFilter 
       listChannels={listChannels} 
       channel={channel} 
+      query={props.location.search}
       onChannelClick={ value => setChannel(value) }
       onStartDateClick={ value => setStartDate(value) }
       onEndDateClick={ value => setEndDate(value) }

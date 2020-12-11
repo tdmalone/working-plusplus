@@ -108,16 +108,10 @@ const handleGet = async( request, response ) => {
       break;
 
     case '/userprofile':
-      if ( helpers.isTimeBasedTokenStillValid( request.query.token, request.query.ts ) ) {
-        try {
-          response.json( await leaderboard.getUserProfile( request ));
-        } catch(err) {
-          console.log(err.message);
-        }
-      } else {
-        response
-          .status( HTTP_403 )
-          .send( 'Sorry, this link is no longer valid. Please request a new link in Slack.' );
+      try {
+        response.json( await leaderboard.getUserProfile( request ));
+      } catch(err) {
+        console.log(err.message);
       }
       break;
 

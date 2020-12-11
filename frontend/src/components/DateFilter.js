@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import queryString from 'query-string';
 import moment from 'moment';
 import {
   Button,
@@ -8,11 +9,26 @@ import {
   DropdownItem,
   DropdownToggle
 } from 'reactstrap';
+import { split } from 'lodash';
 
 const DateFilter = props => {
 
+  const parsedQuery = queryString.parse(props.query);
   const today = moment().unix();
-  const [isActive, setIsActive] = useState('allTime');
+
+  const [isActive, setIsActive] = useState(
+    (parsedQuery.startDate == moment(0).unix()) ? 'allTime'
+    :
+    (parsedQuery.startDate == moment.unix( today ).subtract(1,'months').startOf('month').unix() && parsedQuery.endDate == moment.unix( today ).subtract(1,'months').endOf('month').unix()) ? 'lastMonth'
+    :
+    (parsedQuery.startDate == moment.unix( today ).subtract(1,'week').startOf('week').add(1, 'day').unix() && parsedQuery.endDate == moment.unix( today ).subtract(1,'week').endOf('week').add(1, 'day').unix()) ? 'lastWeek'
+    :
+    (parsedQuery.startDate == moment.unix( today ).startOf('month').unix() && parsedQuery.endDate == moment.unix( today ).startOf('day').add(1, 'day').unix()) ? 'thisMonth'
+    :
+    (parsedQuery.startDate == moment.unix( today ).startOf('week').add(1, 'day').unix() && parsedQuery.endDate == moment.unix( today ).endOf('week').add(1, 'day').unix()) ? 'thisWeek'
+    :
+    'allTime'
+  );
 
   const filterDates = (active = 'allTime') => {
 
@@ -44,7 +60,7 @@ const DateFilter = props => {
 
       setIsActive(active);
       props.onStartDateClick(moment.unix( today ).startOf('month').unix());
-      props.onEndDateClick(moment.unix( today ).unix());
+      props.onEndDateClick(moment.unix( today ).startOf('day').add(1, 'day').unix());
       props.onSearchClick('');
       props.onFilterClick(0);
 
