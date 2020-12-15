@@ -4,8 +4,9 @@ import axios from 'axios';
 import queryString from 'query-string';
 import ReactPaginate from 'react-paginate';
 
-import DateFilter from './DateFilter';
-import moment from 'moment';
+import DateRange from './DateRange';
+
+import { getUnixTime, endOfDay } from 'date-fns';
 
 import _ from "lodash";
 
@@ -49,7 +50,7 @@ const KarmaFeed = props => {
   if (channel === undefined || startDate === undefined || endDate === undefined) {
     setChannel('all');
     setStartDate(0);
-    setEndDate(moment().unix());
+    setEndDate(getUnixTime(endOfDay(new Date())));
   }
   
   let history = useHistory();
@@ -115,7 +116,7 @@ const KarmaFeed = props => {
 
   return(
     <>
-    <DateFilter 
+    <DateRange 
       listChannels={listChannels} 
       channel={channel} 
       query={props.location.search}

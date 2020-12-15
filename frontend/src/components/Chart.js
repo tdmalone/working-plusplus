@@ -2,11 +2,12 @@ import React, { useCallback, useState, useEffect } from 'react';
 import { BrowserRouter as Router, Link, useHistory } from 'react-router-dom';
 import axios from 'axios';
 import queryString from 'query-string';
-import moment from 'moment';
+
+import { getUnixTime, endOfDay } from 'date-fns';
 
 import _ from "lodash";
 
-import DateFilter from './DateFilter';
+import DateRange from './DateRange';
 
 const Chart = props => {
 
@@ -17,6 +18,12 @@ const Chart = props => {
   const [channel, setChannel] = useState(parsedQuery.channel);
   const [startDate, setStartDate] = useState(parsedQuery.startDate);
   const [endDate, setEndDate] = useState(parsedQuery.endDate);
+
+  if (channel === undefined || startDate === undefined || endDate === undefined) {
+    setChannel('all');
+    setStartDate(0);
+    setEndDate(getUnixTime(endOfDay(new Date())));
+  }
 
   // const apiURL = 'https://a564aa475f76.eu.ngrok.io/leaderboard' + props.location.search;
   const leaderboardURL = apiURL + '/leaderboard?channel=' + channel + '&startDate=' + startDate + '&endDate=' + endDate;
@@ -49,12 +56,6 @@ const Chart = props => {
     // eslint-disable-next-line
   }, [leaderboardURL, channelsURL, channel]);
 
-  if (channel === undefined || startDate === undefined || endDate === undefined) {
-    setChannel('all');
-    setStartDate(0);
-    setEndDate(moment().unix());
-  }
-
   let history = useHistory();
   useEffect(() => {
     history.push('?channel=' + channel + '&startDate=' + startDate + '&endDate=' + endDate)
@@ -78,7 +79,7 @@ const Chart = props => {
 
   return(
     <>
-      <DateFilter 
+      <DateRange 
         listChannels={listChannels} 
         channel={channel} 
         query={props.location.search}
@@ -86,7 +87,7 @@ const Chart = props => {
         onStartDateClick={ value => setStartDate(value) }
         onEndDateClick={ value => setEndDate(value) }
         onSearchClick={ value => props.onClick(value) }
-        onFilterClick={ value => setPaginationSearch(value) }
+        onFilterClick={ value => setPaginationSearch(0) }
       />
 
       {(users === undefined) ?
