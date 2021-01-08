@@ -1,29 +1,35 @@
-import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Link } from 'react-router-dom';
+import React, { useCallback, useState, useEffect } from 'react';
+import { BrowserRouter as Router, Link, useHistory } from 'react-router-dom';
 import axios from 'axios';
 import queryString from 'query-string';
-import moment from 'moment';
 
-import DateFilter from './DateFilter';
+import { getUnixTime, endOfDay } from 'date-fns';
+
+import _ from "lodash";
+
+import DateRange from './DateRange';
 
 const Chart = props => {
 
   const apiURL = process.env.REACT_APP_API_URL;
 
   const parsedQuery = queryString.parse(props.location.search);
-  const botUser = parsedQuery.botUser;
-  const token = parsedQuery.token;
-  const ts = parsedQuery.ts;
 
   const [channel, setChannel] = useState(parsedQuery.channel);
-  const [startDate, setStartDate] = useState(moment(0).unix());
-  const [endDate, setEndDate] = useState(moment().unix());
+  const [startDate, setStartDate] = useState(parsedQuery.startDate);
+  const [endDate, setEndDate] = useState(parsedQuery.endDate);
+
+  if (channel === undefined || startDate === undefined || endDate === undefined) {
+    setChannel('all');
+    setStartDate(0);
+    setEndDate(getUnixTime(endOfDay(new Date())));
+  }
 
   // const apiURL = 'https://a564aa475f76.eu.ngrok.io/leaderboard' + props.location.search;
-  const leaderboardURL = apiURL + '/leaderboard?token=' + token + '&ts=' + ts + '&botUser=' + botUser + '&channel=' + channel + '&startDate=' + startDate + '&endDate=' + endDate;
+  const leaderboardURL = apiURL + '/leaderboard?channel=' + channel + '&startDate=' + startDate + '&endDate=' + endDate;
   const [users, setUsers] = useState();
 
-  const channelsURL = apiURL + '/channels?token=' + token + '&ts=' + ts + '&botUser=' + botUser + '&channel=' + channel;
+  const channelsURL = apiURL + '/channels?channel=' + channel;
   const [listChannels, setListChannels] = useState();
 
   const [paginationSearch, setPaginationSearch] = useState(0);
@@ -50,24 +56,38 @@ const Chart = props => {
     // eslint-disable-next-line
   }, [leaderboardURL, channelsURL, channel]);
 
-  const results = !props.search ? users : users.filter(user =>
-    user.item.toLowerCase().includes(props.search.toLocaleLowerCase())
+  let history = useHistory();
+  useEffect(() => {
+    history.push('?channel=' + channel + '&startDate=' + startDate + '&endDate=' + endDate)
+  }, [channel, startDate, endDate]);
+
+  const [searchValue, setSearchValue] = useState("");
+  const debounce = useCallback(
+    _.debounce(_searchVal => {
+      setSearchValue(_searchVal);
+    }, 500),
+    []
   );
 
-  // console.log(users);
+  useEffect(() => {
+    debounce(props.search);
+  }, [props.search]);
+
+  const results = !searchValue ? users : users.filter(user =>
+    user.item.toLowerCase().includes(searchValue.toLocaleLowerCase())
+  );
 
   return(
     <>
-      <DateFilter 
+      <DateRange 
         listChannels={listChannels} 
         channel={channel} 
-        history={props.history}
+        query={props.location.search}
         onChannelClick={ value => setChannel(value) }
         onStartDateClick={ value => setStartDate(value) }
         onEndDateClick={ value => setEndDate(value) }
-        onSearchClick={ value => props.onSearchClick(value) }
-        onFilterClick={ value => setPaginationSearch(value) }
-        onParamsClick={ value =>  props.onParamsClick(value) }
+        onSearchClick={ value => props.onClick(value) }
+        onFilterClick={ value => setPaginationSearch(0) }
       />
 
       {(users === undefined) ?
