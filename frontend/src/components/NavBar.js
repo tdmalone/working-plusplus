@@ -14,7 +14,7 @@ const NavBar = props => {
   return (
     <Navbar light expand="md">
       <div className="container">
-        <NavbarBrand><img src={logo} alt="Agiledrop" /></NavbarBrand>
+        <NavbarBrand href="/"><img src={logo} alt="Agiledrop" /></NavbarBrand>
         <NavbarToggler onClick={toggle} />
         <Collapse isOpen={isOpen} navbar>
           <Nav className="mr-auto" navbar>
