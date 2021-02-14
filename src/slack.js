@@ -39,15 +39,28 @@ const getUserList = async() => {
   console.log( 'Retrieving user list from Slack.' );
 
   users = {};
-  const userList = await slack.users.list();
+  let pageCount = 0;
+  let usersCount = 0;
+  let flag = '';
+  do {
+      // Max user limit is 1000 per page
+      const userList = await slack.users.list({ cursor: flag, limit: 1000 });
 
-  if ( ! userList.ok ) {
-    throw Error( 'Error occurred retrieving user list from Slack.' );
-  }
+      if ( ! userList.ok ) {
+        throw Error( 'Error occurred retrieving user list from Slack.' );
+      }
 
-  for ( const user of userList.members ) {
-    users[ user.id ] = user;
-  }
+      for ( const user of userList.members ) {
+        users[ user.id ] = user;
+        usersCount++;
+      }
+
+      flag = userList.response_metadata.next_cursour;
+      console.log("Next Flag: ", flag);
+      pageCount++;
+  } while (flag != '')
+
+  console.log(usersCount, " users returened in ", pageCount, " pages. ");
 
   return users;
 
