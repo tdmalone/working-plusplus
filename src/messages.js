@@ -24,7 +24,7 @@ messages[ operations.PLUS ] = [
       'Treat yourself to Sugarfish!? :blowfish::tropical_fish:',
       'Nice work! Do a twirl! :beach-ball:',
       'Well done. Peter\'s Mom would be proud!',
-      'TEST'
+      ''
     ]
   },
   {
@@ -40,7 +40,6 @@ messages[ operations.MINUS ] = [
       'SHAME! SHAME!',
       'Get your shit together! :poop:',
       'Ving is here to moon you.',
-      'Nobody likes you.',
       'Mix in the MR for a week!',
       ':facepunch::anger:',
       ''
