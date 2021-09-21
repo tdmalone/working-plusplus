@@ -207,8 +207,7 @@ const handleEvent = ( event, request ) => {
     return false;
   }
 
-  console.log('type: ', event.type);
-  console.log('subtype: ', event.subtype);
+  console.log('object: ', event);
 
   // If there's no text with the event, there's not a lot we can do.
   if ( 'undefined' === typeof event.text || ! event.text.trim() ) {
