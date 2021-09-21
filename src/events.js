@@ -191,6 +191,8 @@ const handlers = {
  */
 const handleEvent = ( event, request ) => {
 
+  console.log('object: ', event);
+
   // If the event has no type, something has gone wrong.
   if ( 'undefined' === typeof event.type ) {
     console.warn( 'Event data missing' );
@@ -207,7 +209,11 @@ const handleEvent = ( event, request ) => {
     return false;
   }
 
-  console.log('object: ', event);
+  // Ignore event if from a bot
+  if ( 'bot_id' in event ) {
+    console.warn( 'Ignoring bot: ' + event.bot_id );
+    return false;
+  }
 
   // If there's no text with the event, there's not a lot we can do.
   if ( 'undefined' === typeof event.text || ! event.text.trim() ) {
