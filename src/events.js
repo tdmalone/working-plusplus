@@ -97,9 +97,9 @@ const sendHelp = ( event ) => {
     '• `<@' + botUserID + '> leaderboard`: Display the leaderboard\n' +
     '• `<@' + botUserID + '> help`: Display this message\n\n' +
     'You\'ll need to invite me to a channel before I can recognise ' +
-    '`++` and `--` commands in it.\n\n' +
-    'If you\'re a developer, you can teach me new things! ' +
-    'See <https://github.com/tdmalone/working-plusplus|my GitHub repo> to get started.'
+    '`++` and `--` commands in it.\n\n' //+
+    //'If you\'re a developer, you can teach me new things! ' +
+    //'See <https://github.com/tdmalone/working-plusplus|my GitHub repo> to get started.'
   );
 
   return slack.sendMessage( message, event.channel );
@@ -206,6 +206,9 @@ const handleEvent = ( event, request ) => {
     console.warn( 'Unsupported event subtype: ' + event.subtype );
     return false;
   }
+
+  console.log('type: ', event.type);
+  console.log('subtype: ', event.subtype);
 
   // If there's no text with the event, there's not a lot we can do.
   if ( 'undefined' === typeof event.text || ! event.text.trim() ) {
