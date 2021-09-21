@@ -191,8 +191,6 @@ const handlers = {
  */
 const handleEvent = ( event, request ) => {
 
-  console.log('object: ', event);
-
   // If the event has no type, something has gone wrong.
   if ( 'undefined' === typeof event.type ) {
     console.warn( 'Event data missing' );
