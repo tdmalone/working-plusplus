@@ -23,7 +23,8 @@ messages[ operations.PLUS ] = [
       'Buy that plugin you always wanted!',
       'Treat yourself to Sugarfish!? :blowfish::tropical_fish:',
       'Nice work! Do a twirl! :beach-ball:',
-      'Well done. Peter\'s Mom would be proud!'
+      'Well done. Peter\'s Mom would be proud!',
+      'TEST'
     ]
   },
   {
@@ -37,12 +38,12 @@ messages[ operations.MINUS ] = [
     probability: 100,
     set: [
       'SHAME! SHAME!',
-      'Get your shit together!',
+      'Get your shit together! :poop:',
       'Ving is here to moon you.',
-      'You really JOELED it up!',
       'Nobody likes you.',
       'Mix in the MR for a week!',
-      ':facepunch::anger:'
+      ':facepunch::anger:',
+      ''
     ]
   },
   {
