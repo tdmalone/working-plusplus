@@ -97,9 +97,9 @@ const sendHelp = ( event ) => {
     '• `<@' + botUserID + '> leaderboard`: Display the leaderboard\n' +
     '• `<@' + botUserID + '> help`: Display this message\n\n' +
     'You\'ll need to invite me to a channel before I can recognise ' +
-    '`++` and `--` commands in it.\n\n' +
-    'If you\'re a developer, you can teach me new things! ' +
-    'See <https://github.com/tdmalone/working-plusplus|my GitHub repo> to get started.'
+    '`++` and `--` commands in it.\n\n' //+
+    //'If you\'re a developer, you can teach me new things! ' +
+    //'See <https://github.com/tdmalone/working-plusplus|my GitHub repo> to get started.'
   );
 
   return slack.sendMessage( message, event.channel );
@@ -204,6 +204,12 @@ const handleEvent = ( event, request ) => {
   //       Because the 'help' output contains commands in it, that could look interesting!
   if ( 'undefined' !== typeof event.subtype ) {
     console.warn( 'Unsupported event subtype: ' + event.subtype );
+    return false;
+  }
+
+  // Ignore event if from a bot
+  if ( 'bot_id' in event ) {
+    console.warn( 'Ignoring bot: ' + event.bot_id );
     return false;
   }
 
