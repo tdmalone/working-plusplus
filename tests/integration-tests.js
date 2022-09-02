@@ -196,6 +196,12 @@ describe( 'The database', () => {
 
   const extensionExistsQuery = 'SELECT * FROM pg_extension WHERE extname = \'citext\'';
 
+  // Get the new value.
+  const getCurrentScore = {
+    text: 'SELECT score FROM ' + config.scoresTableName + ' WHERE item = $1;',
+    values: [ defaultItem ]
+  };
+
   it( 'does not yet have the ' + config.scoresTableName + ' table', async() => {
     expect.hasAssertions();
     const dbClient = await postgres.connect();
@@ -214,11 +220,14 @@ describe( 'The database', () => {
 
   it( 'creates the ' + config.scoresTableName + ' table on the first request', async() => {
     expect.hasAssertions();
-    await points.updateScore( defaultItem, '++' );
+    const newScore = await points.updateScore( defaultItem, '+' );
+    expect( newScore ).toBe( 1 );
     const dbClient = await postgres.connect();
     const query = await dbClient.query( tableExistsQuery );
-    await dbClient.release();
     expect( query.rows[0].exists ).toBeTrue();
+    const queryScore = await dbClient.query( getCurrentScore );
+    expect( queryScore.rows[0].score ).toBe( 1 );
+    await dbClient.release();
   });
 
   it( 'also creates the case-insensitive extension on the first request', async() => {
@@ -229,14 +238,15 @@ describe( 'The database', () => {
     expect( query.rowCount ).toBe( 1 );
   });
 
-  /* eslint-disable jest/expect-expect */
-  // TODO: This test really should have an assertion, but I can't figure out how to catch the error
-  //       properly... it's possible that updateScore needs rewriting to catch properly. In the
-  //       meantime, this test *does* actually work like expected.
   it( 'does not cause any errors on a second request when everything already exists', async() => {
-    await points.updateScore( defaultItem, '++' );
+    expect.hasAssertions();
+    const newScore = await points.updateScore( defaultItem, '+' );
+    expect( newScore ).toBe( 2 );
+    const dbClient = await postgres.connect();
+    const queryScore = await dbClient.query( getCurrentScore );
+    expect( queryScore.rows[0].score ).toBe( 2 );
+    await dbClient.release();
   });
-  /* eslint-enable jest/expect-expect */
 
   it( 'returns a list of top scores in the correct order', async() => {
     expect.hasAssertions();
@@ -253,9 +263,9 @@ describe( 'The database', () => {
     ];
 
     // Give us a few additional scores so we can check the order works.
-    await points.updateScore( defaultUser, '++' );
-    await points.updateScore( defaultUser, '++' );
-    await points.updateScore( defaultUser, '++' );
+    await points.updateScore( defaultUser, '+' );
+    await points.updateScore( defaultUser, '+' );
+    await points.updateScore( defaultUser, '+' );
 
     const topScores = await points.retrieveTopScores();
     expect( topScores ).toEqual( expectedScores );
