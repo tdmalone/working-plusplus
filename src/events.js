@@ -51,6 +51,25 @@ const handlePlusMinus = async( item, operation, channel ) => {
 };
 
 /**
+ * Handles a = against a user, and then notifies the channel of the new score.
+ *
+ * @param {string} item      The Slack user ID (if user) or name (if thing) of the item being
+ *                           operated on.
+ * @param {string} operation The mathematical operation performed on the item's score.
+ * @param {object} channel   The ID of the channel (Cxxxxxxxx for public channels or Gxxxxxxxx for
+ *                           private channels - aka groups) that the message was sent from.
+ * @return {Promise} A Promise to send a Slack message back to the requesting channel after the
+ *                   points have been updated.
+ */
+const handlePlusEqual = async( item, operation, channel ) => {
+  const score = await points.getScore( item, operation ),
+        operationName = operations.getOperationName( operation ),
+        message = messages.getRandomMessage( operationName, item, score );
+
+  return slack.sendMessage( message, channel );
+};
+
+/**
  * Sends a random thank you message to the requesting channel.
  *
  * @param {object} event   A hash of a validated Slack 'app_mention' event. See the docs at
@@ -94,6 +113,7 @@ const sendHelp = ( event ) => {
     'Sure, here\'s what I can do:\n\n' +
     '• `@Someone++`: Add points to a user or a thing\n' +
     '• `@Someone--`: Subtract points from a user or a thing\n' +
+    '• `@Someone==`: Gets current points from a user or a thing\n' +
     '• `<@' + botUserID + '> leaderboard`: Display the leaderboard\n' +
     '• `<@' + botUserID + '> help`: Display this message\n\n' +
     'You\'ll need to invite me to a channel before I can recognise ' +
@@ -134,9 +154,12 @@ const handlers = {
       return false;
     }
 
+    if ( '=' === operation ) {
+      return handlePlusEqual( item, operation, event.channel );
+    }
+
     // Otherwise, let's go!
     return handlePlusMinus( item, operation, event.channel );
-
   }, // Message event.
 
   /**
@@ -158,7 +181,10 @@ const handlers = {
       help: sendHelp,
       thx: sayThankyou,
       thanks: sayThankyou,
-      thankyou: sayThankyou
+      thankyou: sayThankyou,
+      '++': handlePlusMinus,
+      '--': handlePlusMinus,
+      '==': handlePlusEqual
     };
 
     const validCommands = Object.keys( appCommandHandlers ),

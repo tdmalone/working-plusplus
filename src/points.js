@@ -93,7 +93,44 @@ const updateScore = async( item, operation ) => {
 
 }; // UpdateScore.
 
+/**
+ * Gets score
+ * into the database with an assumed initial score of 0.
+ *
+ * This function also sets up the database if it is not already ready, including creating the
+ * scores table and activating the Postgres case-insensitive extension.
+ *
+ * @param {string} item      The Slack user ID (if user) or name (if thing) of the item being
+ *                           operated on.
+ * @param {string} operation The mathematical operation performed on the item's score.
+ * @return {int} The item's new score after the update has been applied.
+ */
+const getScore = async( item ) => {
+
+  // Connect to the DB, and create a table if it's not yet there.
+  // We also set up the citext extension, so that we can easily be case insensitive.
+  const dbClient = await postgres.connect();
+  await dbClient.query( '\
+    CREATE EXTENSION IF NOT EXISTS citext; \
+    CREATE TABLE IF NOT EXISTS ' + scoresTableName + ' (item CITEXT PRIMARY KEY, score INTEGER); \
+  ' );
+
+  // Get the new value.
+  // TODO: Fix potential SQL injection issues here, even though we know the input should be safe.
+  const dbSelect = await dbClient.query( '\
+    SELECT score FROM ' + scoresTableName + ' WHERE item = \'' + item + '\'; \
+  ' );
+
+  await dbClient.release();
+  const score = dbSelect.rows[0].score;
+
+  console.log( item + ' now on ' + score );
+  return score;
+
+}; // UpdateScore.
+
 module.exports = {
   retrieveTopScores,
-  updateScore
+  updateScore,
+  getScore
 };
